@@ -56,7 +56,9 @@ sub sessions {
     my $routes = $w->query_iterator($local_as);
     my @routes;
     while (my $obj = $routes->next) {
-        push @routes, $obj->route;
+        if (my $route = $obj->route) {
+            push @routes, $route;
+        }
     }
 
     $w->type('aut-num');
