@@ -63,6 +63,14 @@ sub new {
     }
 }
 
+sub error {
+    my ($self, $errortext) = @_;
+    if (defined $errortext) {
+	$self->{_updater_errortext} = $errortext;
+    }
+    return $self->{_updater_errortext};
+}
+
 sub object_type {
     my ($self) = @_;
     return $self->{_order}->[0];
@@ -108,7 +116,7 @@ sub text {
     }
 
     for my $line (@content) {
-	my ($key, $val) = $line =~ /(.+): (.+)/;
+	my ($key, $val) = $line =~ /(.+): ?(.+)/;
 	push @lines, { key => $key, val => $val };
 	if (length $key > $maxkey) {
 	    $maxkey = length $key;

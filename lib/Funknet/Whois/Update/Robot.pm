@@ -109,9 +109,20 @@ Objects without errors have been processed.
 MAILTEXT
 
     for my $object (@objects) {
-	$text .= "Update FAILED: ".($object->error)."\n";
-	$text .= $object->text;
-	$text .= "\n";
+	if ($object->error()) {
+	    $text .= "Update FAILED: ".($object->error)."\n";
+	    $text .= $object->text;
+	    $text .= "\n";
+	} else {
+	    my $type = $object->{_order}->[0];
+	    my $name;
+	    {
+		no strict 'refs';
+		# fucking yuck
+		$name = &{"Funknet::Whois::Object::$type"}($object);
+	    }
+	    $text .= "Update OK: [$type] $name\n";
+	}
     }
 
     $text .= << "MAILTEXT";

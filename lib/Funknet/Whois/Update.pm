@@ -164,20 +164,16 @@ sub update {
     # first get a FWC.
     my $client = Funknet::Whois::Client->new( $self->{_host}, Port => $self->{_port} );
     
-    my (@ok, @noauth, @nosource);
     for my $object (@objects) {
 	if ($object->source ne $self->{_source}) {
-	    warn "no source";
-	    push @nosource, $object;
+	    $object->error("incorrect source: ".$object->source);
 	    next;
 	}
 
 	if ($client->check_auth($object, $keyid32)) {
-	    push @ok, $object;
+	    # nothing
 	} else {
-	    warn "auth fail";
-	    $robot->error("hierarchical authorisation failed for object ".$object->object);
-	    push @noauth, $object;
+	    $object->error("hierarchical authorisation failed for object ".$object->object);
 	}
     }
 
@@ -218,9 +214,16 @@ sub update {
 	    undef $currobj;
 	}
     }
-
-    for my $object (@ok) {
-	$objects->{$object->type}->{$object->name} = $object->text;
+    
+    my $fail = 0;
+    my $success = 0;
+    for my $object (@objects) {
+	if ($object->error()) {
+	    $fail++;
+	} else {
+	    $success++;
+	    $objects->{$object->type}->{$object->name} = $object->text;
+	}
     }
 
     unless(seek DATA, 0, SEEK_SET) {
@@ -237,20 +240,17 @@ sub update {
     flock (DATA, LOCK_UN);
     close DATA;
 
-
     # reply.
 
-    my @failed = (@noauth, @nosource);
-
-    if (scalar (@failed)) {
+    if ($fail > 0) {
 	my $mail_text = $robot->failure_text($keyid32, $robot->header_text, @objects);
 	unless (my $res = $robot->reply_mail( $mail_text, subject => 'FAILED: ' )) {
 	    errorlog("error sending mail: $res");
 	    exit 1;
 	}
-    }
 
-    if (scalar (@ok)) {
+    } else {
+
 	my $mail_text = $robot->success_text($keyid32, $robot->header_text, @objects);
 	unless (my $res = $robot->reply_mail( $mail_text, subject => 'SUCCEEDED: ' )) {
 	    errorlog("error sending mail: $res");
@@ -258,7 +258,7 @@ sub update {
 	}
     }
     
-    return (scalar @ok);
+    return ($success);
 }
 
 sub errorlog {
