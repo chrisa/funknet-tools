@@ -35,6 +35,7 @@
 
 package Funknet::Debug;
 use strict;
+use Data::Dumper;
 
 use vars qw/ @EXPORT @ISA $DEBUG/;
 use Exporter;

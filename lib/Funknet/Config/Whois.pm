@@ -41,6 +41,8 @@ use Net::Whois::RIPE;
 use Funknet::Config::Tunnel;
 use Funknet::Config::TunnelSet;
 use Funknet::Config::BGP;
+use Funknet::Config::Encryption;
+use Funknet::Config::EncryptionSet;
 use Funknet::Debug;
 
 =head1 NAME
@@ -52,6 +54,7 @@ Funknet::Config::Whois
 my $whois = Funknet::Config::Whois->new();
 my $whois_tun = $whois->tunnels;
 my $whois_bgp = $whois->sessions;
+my $whois_enc = $whois->encryption;
 
 =head1 DESCRIPTION
 
@@ -156,9 +159,10 @@ sub tunnels {
 
 	    # check this tunnel is to our AS and the current endpoint.
 	    
+	    my $tun_obj;
 	    if ($as[$i] eq $l->{as} && $ep[$i] eq $l->{endpoint}) {
 
-		my $tun_obj = Funknet::Config::Tunnel->new(
+		$tun_obj = Funknet::Config::Tunnel->new(
 		    name => $tun_name,
 		    local_address => $ad[$i],
 		    remote_address => $ad[1-$i],
@@ -168,16 +172,12 @@ sub tunnels {
 		    source => 'whois',
 		    proto => '4',
 		);
-		if (defined $tun_obj) {
-		    push @local_tun, $tun_obj;
-		}
-	    }
 
             # handle the case where we have a local_public_endpoint parameter
 
-            if (defined $l->{public_endpoint} && $as[$i] eq $l->{as} && $ep[$i] eq $l->{public_endpoint}) {
+	    } elsif (defined $l->{public_endpoint} && $as[$i] eq $l->{as} && $ep[$i] eq $l->{public_endpoint}) {
 
-                my $tun_obj = Funknet::Config::Tunnel->new(
+                $tun_obj = Funknet::Config::Tunnel->new(
                     name => $tun_name,
                     local_address => $ad[$i],
                     remote_address => $ad[1-$i],
@@ -187,82 +187,15 @@ sub tunnels {
                     source => 'whois',
                     proto => '4',
                 );
-                if (defined $tun_obj) {
-                    push @local_tun, $tun_obj;
-                }
             }
-	}
-    }
-
-    # don't uncomment this; it won't work until we have an 'endpoint' object in 
-    # the whois. 
-
-=head2 endpoint object
-
-  endpoint:    SOME-NAME
-  type:        ipip
-  remote-as:   AS65000
-  local-as:    AS65002
-  remote-addr: 10.2.0.37
-  local-addr:  10.2.0.38
-  remote-ep:   131.x.x.x
-  local-ep:    213.210.34.174
-  encryption:  none
-  mnt-by:      ME
-  admin-c:     CA1-FUNKNET
-  tech-c:      CA1-FUNKNET
-  changed:     today
-
-=cut
-
-    if (0) {
-
-	# create tunnels from matching pairs of endpoint objects. 
-
-	foreach my $ep_name ($as->ep) {
-
-	    $w->type('endpoint');
-	    my @ep = $w->query($ep_name); # check behaviour of ->query in list context
-		
-	    # check for match with remote as' endpoint.
-
-	    if ( $ep[0]->remote_as eq $ep[1]->local_as &&
-		 $ep[1]->remote_as eq $ep[0]->local_as &&
-		 
-		 $ep[0]->remote_addr eq $ep[1]->local_addr &&
-		 $ep[1]->remote_addr eq $ep[0]->local_addr &&
-
-		 $ep[0]->remote_ep eq $ep[1]->local_ep &&
-		 $ep[1]->remote_ep eq $ep[0]->local_ep ) {
-		
-		# find our end
-		
-		my $our_ep;
-		for my $i ( 0..1 ) {
-		    if ($ep[1]->local_ep eq $l->{endpoint}) {
-			$our_ep = $i;
-		    }
-		}
-		    
-		# cons the tunnel
-
-		push @local_tun, 
-		Funknet::Config::Tunnel->new(
-		    name => $ep_name,
-		    local_address => $ep[$our_ep]->local_addr,
-		    remote_address => $ep[$our_ep]->remote_addr,
-		    local_endpoint => $ep[$our_ep]->local_ep,
-		    remote_endpoint => $ep[$our_ep]->remote_ep,
-		    type => $ep[$our_ep]->type,
-		    source => 'whois',
-		    proto => '4',
-		);
+	    if (defined $tun_obj) {
+		push @local_tun, $tun_obj;
 	    }
 	}
     }
 
     return Funknet::Config::TunnelSet->new( tunnels => \@local_tun,
-					    source => 'whois' );
+					    source  => 'whois' );
 }
 
 sub sessions {
@@ -335,6 +268,58 @@ sub sessions {
     }
     return $bgp;
 }
-    
+
+sub encryption {
+    my ($self, $tun_set) = @_;
+    my $w = $self->{_net_whois_ripe};
+    my $l = Funknet::Config::ConfigFile->local;
+    $w->type('tunnel');
+    my @local_enc;
+
+    foreach my $tun ($tun_set->tunnels) {
+	my $whois_obj = $w->query($tun->name);
+
+	# we get both encryption attributes, and compare
+	# endpoints with the local endpoint to decide 
+	# which one is ours.
+
+	my @en = $whois_obj->encryption;
+	my @ep = $whois_obj->endpoint;
+
+	my $encr;
+	if ($ep[0] eq $l->{endpoint}) {
+	    $encr = $en[0];
+	}
+	if ($ep[1] eq $l->{endpoint}) {
+	    $encr = $en[1];
+	}
+
+	if (defined $encr) {
+	    my ($type, $param);
+	    if ($encr =~ /^(PGPKEY-.*)/) {
+		$param = $1;
+		$type = 'some crazy pgp encr scheme';
+	    } elsif ($encr =~ /^(X509CERT-.*)/) {
+		$param = $1;
+		$type = 'ipsec';
+	    } elsif ($encr =~ /^(SSHKEY-.*)/) {
+		$param = $1;
+		$type = 'openvpn';
+	    }
+	    my $enc_obj = Funknet::Config::Encryption->new( tun    => $tun,
+							    type   => $type,
+							    param  => $param,
+							    source => 'whois',
+							  );
+	    if (defined $enc_obj) {
+		push @local_enc, $enc_obj;
+	    }
+	}
+    }
+    my $set = Funknet::Config::EncryptionSet->new( encryptions => \@local_enc,
+						   source      => 'whois' );
+    return $set;
+}
+
 
 1;

@@ -306,6 +306,28 @@ sub get_interfaces {
     return @local_tun;
 }
 
+=head2 get_ipsec
+
+Get the current ipsec configuration for all tunnels.
+
+=cut
+
+sub get_ipsec {
+    my ($self) = @_;
+    my $l = Funknet::Config::ConfigFile->local;
+
+    my @local_ipsec;
+
+    $self->login;
+    my @output = $self->{t}->cmd('show interfaces');
+
+    
+    
+
+    $self->logout;
+    return @local_ipsec;
+}
+
 sub check_login {
     my ($self) = @_;
     my $l = Funknet::Config::ConfigFile->local;

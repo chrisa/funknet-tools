@@ -242,6 +242,42 @@ sub local {
 	     endpoint => $config->{local_endpoint},
 	     source => $config->{local_source},
              public_endpoint => $config->{local_public_endpoint},
+	     ipsec => $config->{local_ipsec},
+	   };
+}
+
+sub encryption {
+    my ($self) = @_;
+    if (ref $self) {
+	$config = $self->{config};
+    }
+    
+    return { ipsec    => $config->{encr_ipsec},
+	     cipher1  => $config->{encr_cipher1},
+	     hash1    => $config->{encr_hash1},
+	     cipher2  => $config->{encr_cipher2},
+	     hash2    => $config->{encr_hash2},
+	     proto    => $config->{encr_proto},
+	     dhgroup  => $config->{encr_dhgroup},
+	     keypath  => $config->{encr_keypath},
+	     certpath => $config->{encr_certpath},
+	     ikepath  => $config->{encr_ikepath},
+	     setkeypath => $config->{encr_setkeypath},
+	     pskpath  => $config->{encr_pskpath},
+	   };
+}
+
+sub keystash {
+    my ($self) = @_;
+    if (ref $self) {
+	$config = $self->{config};
+    }
+    
+    return { user => $config->{ks_user},
+	     pass => $config->{ks_pass},
+	     host => $config->{ks_host},
+	     cert => $config->{ks_cert},
+	     path => $config->{ks_path},
 	   };
 }
     

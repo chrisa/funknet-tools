@@ -138,7 +138,14 @@ sub new {
 	    }
 	}
     }
-    if ($self->{_source} eq 'host') {
+    if ($self->{_source} eq 'whois') {
+
+	unless (defined $args{name}) {
+	    $self->warn("$args{ifname}: missing or invalid tunnel name");
+	    return undef;
+	} else {
+	    $self->{_name} = $args{name};
+	}
     }
 	 
     # support the 'local_source' parameter. if it exists, and is a valid
@@ -163,6 +170,15 @@ sub new {
 	bless $self, 'Funknet::Config::Tunnel::Solaris';
 
     return $self;
+}
+
+sub encryption {
+    my ($self, $enc) = @_;
+    if (defined $enc) {
+	$self->{_encryption} = $enc;
+	return $enc;
+    }
+    return undef;
 }
 
 sub as_string {
@@ -204,6 +220,11 @@ sub interface {
     return $self->{_interface};
 }
 
+sub name {
+    my ($self) = @_;
+    return $self->{_name};
+}
+
 sub type {
     my ($self) = @_;
     return $self->{_type};
@@ -218,8 +239,20 @@ sub ifname {
     my ($self) = @_;
     return $self->{_ifname};
 }
+
 sub source {
     my ($self) = @_;
     return $self->{_source};
 }
+
+sub remote_endpoint {
+    my ($self) = @_;
+    return $self->{_remote_endpoint};
+}
+
+sub local_endpoint {
+    my ($self) = @_;
+    return $self->{_local_endpoint};
+}
+
 1;

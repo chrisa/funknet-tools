@@ -1,0 +1,7 @@
+V	050731121522Z		01	unknown	/C=AU/ST=Some-State/O=Internet Widgits Pty Ltd/OU=TestOU2731/CN=TestCN2731
+V	050801122510Z		02	unknown	/C=AU/ST=Some-State/O=Internet Widgits Pty Ltd/OU=TestOU24346/CN=TestCN24346
+V	050801123550Z		03	unknown	/C=AU/ST=Some-State/O=Internet Widgits Pty Ltd/OU=FooOrg/CN=FooCommonName
+V	050801123734Z		04	unknown	/C=AU/ST=Some-State/O=Internet Widgits Pty Ltd/OU=FooOrg/CN=FooCommonName1
+V	050801123905Z		05	unknown	/C=AU/ST=Some-State/O=Internet Widgits Pty Ltd/OU=FooOrg/CN=FooCommonName2
+V	050903182155Z		06	unknown	/C=AU/ST=Some-State/O=Internet Widgits Pty Ltd/OU=TestOU7593/CN=TestCN7593
+V	050903182253Z		07	unknown	/C=AU/ST=Some-State/O=Internet Widgits Pty Ltd/OU=TestOU7609/CN=TestCN7609

@@ -1,0 +1,57 @@
+How to make the encryption code do something:
+
+Look at funknet.conf.dist. Give it an AS number where at least one of
+the tunnels has two encryption attributes. Set up the paths to the
+live key/cert directories, and the live config file directories - make
+sure that you can write to them all - that's encr_keypath,
+encr_certpath, encr_ikepath and encr_setkeypath.
+
+The encryption attributes should be of the form
+X509CERT-xx:xx:xx:xx:xx:xx:xx:xx, where x is a digit. Yes, I know this
+is useless, but there's a regexp in the whoisd that matches that, and
+nothing else. It'll get changed so you can create encryption
+attributes like:
+
+X509CERT-dc=Funknet,dc=org,ou=Testing,cn=TestNode
+
+or somesuch.
+
+Put a key/cert pair in the 'local keystash' directories, and point to
+them with the ks_path config file param. e.g:
+
+ks_param = /tmp/ks
+
+- create -
+
+/tmp/ks
+/tmp/ks/cert/
+/tmp/ks/key/
+
+- then create -
+
+/tmp/ks/cert/X509CERT-00:00:00:00:00:00:00:00
+/tmp/ks/key/X509CERT-00:00:00:00:00:00:00:00
+
+Name your cert the same as the encryption attribute. It doesn't have
+to be a real cert, if the cert isn't meaningful, then it'll use the
+same name as the cert for the key file. The cert should ideally be a
+real cert marked up in whois key-cert object style. If this is the
+case, and the 'owner' field exists, then it'll use that as the name of
+the key file.
+
+Run the code like:
+
+perl config.pl -c -e -a -f funknet.conf-TESTING-ENCRYPTION
+
+(that's -c for 'don't diff, just do config from whois', -e for 'do
+encryption as well', -a for 'apply these changes')
+
+It should generate the BGP and tunnel config as usual, then output the
+contents of a racoon.conf/setkey fragment, and copy the cert/key files
+into the live directories.
+
+
+
+
+
+

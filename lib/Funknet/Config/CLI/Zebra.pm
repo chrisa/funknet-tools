@@ -40,6 +40,7 @@ use Net::IPv4Addr qw/ ipv4_network /;
 
 use Funknet::Config::ConfigFile;
 
+
 =head1 NAME
 
 Funknet::Config::CLI::Zebra;
@@ -67,7 +68,7 @@ sub get_bgp {
     my ($self) = @_;
     
     $self->login;
-    my @output = $self->{t}->cmd('show ip bgp');
+    my @output = $self->_cmd('show ip bgp');
 
     my @networks;
     my ($current,$go,$index);
@@ -102,7 +103,7 @@ sub get_bgp {
 
 	    # check if it's local
 
-	    my @output = $self->{t}->cmd("show ip bgp $prefix");
+	    my @output = $self->_cmd("show ip bgp $prefix");
 	    
 	    for my $line (@output) {
 		if ($line =~ /Local/) {
@@ -117,7 +118,8 @@ sub get_bgp {
 	}
     }
 
-    @output = $self->{t}->cmd('show ip bgp sum');
+    @output = $self->_cmd('show ip bgp sum');
+
     my $local_as;
     foreach my $line (@output) {
 	if ($line =~ /local AS number (\d+)/) {
@@ -138,11 +140,12 @@ sub get_bgp {
 					 routes  => \@networks,
 					 source => 'host');
 
-    @output = $self->{t}->cmd('show ip bgp neighbors');
+    @output = $self->_cmd('show ip bgp neighbors');
     
     my ($neighbors, $current_neighbor);
     foreach my $line (@output) {
 	if ($line =~ /^BGP neighbor is (\d+\.\d+\.\d+\.\d+), +remote AS (\d+)/) {
+            next if ($2 == 0);
 	    $neighbors->{$1}->{remote_as} = $2;
 	    $neighbors->{$1}->{remote_addr} = $1;
 	    $current_neighbor = $1;
@@ -160,7 +163,6 @@ sub get_bgp {
 	    $neighbors->{$current_neighbor}->{soft_reconfig} = 1;
 	}
     }
-
 
   SESSION: for my $peer (keys %$neighbors) {
 
@@ -199,6 +201,18 @@ sub get_bgp {
     }
     $self->logout;
     return $bgp;
+}
+
+sub _cmd {
+    my ($self, $cmd) = @_;
+    return undef unless defined $self->{t};
+    $self->{t}->print($cmd);
+    my @output;
+    while( my $line = $self->{t}->getline( Timeout => 1) ) {
+        last if $line =~ />$/;
+        push @output, $line;
+    }
+    return @output;
 }
 
 sub get_access_list {
@@ -326,6 +340,7 @@ sub login {
 	$self->{t} = new Net::Telnet ( Timeout => 10,
 				       Prompt  => '/[ \>\#]$/',
 				       Port    => 2605,
+                                       Errmode => 'return',
 				     );
 	
 	$self->{t}->open($l->{host});

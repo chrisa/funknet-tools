@@ -37,6 +37,8 @@ use Funknet::Config::TunnelSet;
 use Funknet::Config::BGP;
 use Funknet::Config::CLI;
 
+use Data::Dumper;
+
 =head1 NAME
 
 Funknet::Config::Host.pm
@@ -132,6 +134,9 @@ sub tunnels {
 	# we'd really like to use Net::Interface here, but it needs teaching about tunnels first. 
 	# either that or we'd like to use Zebra to do it, but that *also* needs to be taught how
 	# to configure tunnels. 
+
+	# openvpn point to note - we should have a tun device in the ifconfig list which has 
+	# the relevant information. some OSs even have an 'opened by pid blah' text.
 	
 	# list of interface specs -- actually portable!
 	my $c = `/sbin/ifconfig -a`;
@@ -141,6 +146,8 @@ sub tunnels {
 	    chomp $if;
 	    my $tun = Funknet::Config::Tunnel->new_from_ifconfig( $if, $l->{os} );
 	    if (defined $tun) {
+
+
 		push @local_tun, $tun;
 	    }
 	}
@@ -149,6 +156,25 @@ sub tunnels {
     return Funknet::Config::TunnelSet->new( tunnels => \@local_tun,
 					    source => 'host' );
 }
+
+sub encryption {
+    my ($self, $tun_set) = @_;
+    my @local_enc;
+
+    for my $tun ($tun_set->tunnels) {
+	# try to find some encryption on this tunnel.
+	my $enc = Funknet::Config::Encryption->new( tun    => $tun,
+						    source => 'host',
+						  );
+	if (defined $enc) {
+	    push @local_enc, $enc;
+	}
+    }
+    my $set = Funknet::Config::EncryptionSet->new( encryptions => \@local_enc,
+						   source      => 'host' );
+    return $set;
+}
+
 
 sub sessions {
     my ($self) = @_;

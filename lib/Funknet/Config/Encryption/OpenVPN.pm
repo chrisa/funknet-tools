@@ -31,81 +31,13 @@
 
 =head1 NAME
 
-Funknet::RevUpdate::Robot
-
-=head1 DESCRIPTION
-
-The specifically mail-robot related parts of the RevUpdate code.  See
-Funknet::RevUpdate for the general delegation-checking and dynamic
-update code.
-
-We use Email::Robot, and provide specific implementations of the
-message-text generating methods.
-
-=head1 FUNCTIONS
+Funknet::Config::Encryption::OpenVPN
 
 =cut
 
-package Funknet::RevUpdate::Robot;
+package Funknet::Config::Encryption::OpenVPN;
 use strict;
-
-use Email::Robot;
-use base qw/ Email::Robot /;
-
-sub success_text {
-    my ($self, $zone, @ns) = @_;
-    my $ns_list = join "\n", @ns;
-
-    return << "MAILTEXT";
-
-Funknet Reverse Delegation result:
-
-The zone $zone has been successfully delegated to:
-$ns_list
-
-Regards,
-Dennis
-
-MAILTEXT
-
-}
-
-sub failure_text {
-    my ($self, $zone, @ns) = @_;
-    my $ns_list = join "\n", @ns;
-    my $errorlist = join "\n", $self->error();
-    
-    return << "MAILTEXT";
-
-Funknet Reverse Delegation result:
-
-Your request for the delegation of $zone to:
-$ns_list
-
-has failed for the following reason(s):
-$errorlist
-
-Commiserations,
-Dennis
-
-MAILTEXT
-
-}
-
-sub fatalerror_text {
-    my ($self, $error_text) = @_;
-    return <<"MAILTEXT";
-
-An error occurred processing your reverse delegation request:
-$error_text
-
-Regards,
-Dennis
-
-MAILTEXT
-
-}
+use base qw/ Funknet::Config::Encryption /;
 
 
 1;
-

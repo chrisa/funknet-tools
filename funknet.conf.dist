@@ -6,10 +6,6 @@
 # Replace the username and password with your local router username and password
 # Replace the AS number with your AS number
 
-# rtconfig_path is mandatory
-
-rtconfig_path = /usr/local/bin/RtConfig
-
 # local_as/router/os/host are mandatory
 
 local_as = AS65764
@@ -17,6 +13,11 @@ local_endpoint = 1.2.3.4
 local_host = 127.0.0.1
 local_os = bsd
 local_router = zebra
+
+# if you want encryption with ipsec, you need to set this
+# 'kame' is *BSD and Linux 2.6
+# 'freeswan' is Linux 2.4
+local_ipsec = kame
 
 # if your router is behind a NAT (i.e. you're NATting the 
 # IPIP -- this works on Netscreen at least) then you need to
@@ -27,32 +28,60 @@ local_router = zebra
 local_source = 10.10.10.10
 
 # if u are dynamic u need these
-from_email = 
-pgp_key_dir = 
-pgp_key_id = 
+from_email     = 
+pgp_key_dir    = 
+pgp_key_id     = 
 pgp_passphrase = 
-update_email = 
-signing_email = 
+update_email   = 
+signing_email  = 
 
-# optional:
-ignore_neighbor = 
-ignore_if =
-root = sudo
+username = blah
+password = blah
+enable = blah
 
-# print warnings as they're generated
+# rtconfig_path is mandatory
+#rtconfig_path = /usr/local/bin/RtConfig
 
-warnings = 1
+# for testing, use /bin/true instead of 
+# the actual RtConfig binary
+rtconfig_path = /bin/true
 
-# Lots of debugging info
+ignore_if = tunl0
+ignore_neighbor = none
+warnings = no
 
-debug = 0
+rcfile = /etc/init.d/funknet-tunnels
+root = runas
 
-# stop on errors?
+# encryption
 
-stop = 0
+encr_ipsec   = kame
+encr_cipher1 = aes 3des des
+encr_hash1   = sha md5
+encr_cipher2 = aes 3des des
+encr_hash2   = sha md5
+encr_proto   = esp
+encr_dhgroup = 5
 
-# authentication
+# paths to live dirs for ike daemon and 
+# ipsec policy tool e.g. (racoon+setkey)
 
-username = yourusernameornothing
-password = yourpassword
-enable = yourenablepassword
+encr_ikepath = /tmp/ipsec/racoon
+encr_setkeypath = /tmp/ipsec/setkey
+encr_pskpath = /tmp/ipsec/psk.txt
+
+# where live copies of keys/certs go
+
+encr_keypath = /tmp/ipsec/key
+encr_certpath = /tmp/ipsec/cert
+
+# remote keystash
+
+ks_user = foo
+ks_pass = bar
+ks_host = whois.funknet.org
+ks_cert = "Funknet KeyStash"
+
+# the local keystash cache directory
+
+ks_path = /Users/chris/ks

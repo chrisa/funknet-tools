@@ -32,6 +32,8 @@
 package Funknet::Whois::Object;
 use strict;
 
+use Data::Dumper;
+
 use base qw/ Net::Whois::RIPE::Object /;
 
 =head1 NAME
@@ -98,6 +100,22 @@ sub tunnel_addresses {
     # we get away with this, because this inetnum *must* be a /30,
     # and this hack is always valid for a /30.
     return ( ($network . ($octet+1)) , ($network . ($octet+2)) );
+}
+
+=head2 rawtext
+
+Returns the raw key material from a key-cert object.
+
+=cut
+
+sub rawtext {
+    my ($self) = @_;
+    return undef unless $self->{_methods}->{'key-cert'};
+
+    my $key = join "\n",$self->certif;
+    $key .= "\n";
+    $key =~ s/^certif: //;
+    return $key;
 }
 
 1;

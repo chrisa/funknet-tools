@@ -37,11 +37,24 @@
 package Funknet::Config::Validate;
 use strict;
 use base qw/ Exporter /;
-use vars qw/ @EXPORT_OK /;
+use vars qw/ @EXPORT_OK %EXPORT_TAGS /;
 
 @EXPORT_OK = qw/ is_ipv4 is_ipv6 is_valid_type is_valid_as 
                  is_valid_os is_valid_router is_valid_proto 
-                 is_valid_ifname /;
+                 is_valid_ifname is_valid_encryption 
+		 is_valid_filepath is_valid_ipsec_proto
+		 is_valid_ipsec_keying is_valid_ipsec_cipher
+		 is_valid_ipsec_hash is_valid_ipsec_dhgroup
+		 is_valid_ipsec_ikemethod is_valid_ipsec_policy
+		 /;
+
+%EXPORT_TAGS = (
+		ipsec => [ qw/  is_valid_ipsec_proto is_valid_ipsec_ikemethod
+				is_valid_ipsec_keying is_valid_ipsec_cipher
+				is_valid_ipsec_hash is_valid_ipsec_dhgroup 
+				is_valid_ipsec_policy
+				/ ],
+	       );
 
 sub is_ipv4 {
     my ($addr) = @_;
@@ -128,4 +141,109 @@ sub is_valid_ifname {
     }
 }
 
+sub is_valid_encryption {
+    my ($os) = @_;
+
+    if ($os eq 'ipsec'   ||
+	$os eq 'openvpn' ) {
+	return 1;
+    } else {
+	return 0;
+    }
+}
+
+sub is_valid_ipsec_proto {
+    my ($proto) = @_;
+    
+    if ($proto eq 'esp' ||
+	$proto eq 'ah'  ||
+	$proto eq 'esp+ah' ) {
+	return 1;
+    } else {
+	return 0;
+    }
+}
+
+sub is_valid_ipsec_keying {
+    my ($keying) = @_;
+
+    if ($keying eq 'ike' || 
+	$keying eq 'manual' ) {
+	return 1;
+    } else {
+	return 0;
+    }
+}
+
+sub is_valid_ipsec_policy {
+    my ($policy) = @_;
+
+    if ($policy eq 'ipip-trans' ||
+	$policy eq 'unknown') {
+	return 1;
+    } else {
+	return 0;
+    }
+}
+
+sub is_valid_ipsec_cipher {
+    my ($cipher_string) = @_;
+    
+    my @ciphers = split / /, $cipher_string;
+    for my $cipher (@ciphers) {
+	unless ($cipher eq 'aes' || 
+		$cipher eq 'des' ||
+		$cipher eq '3des' ) {
+	    return 0;
+	} 
+    }
+    return 1;
+}
+
+sub is_valid_ipsec_hash {
+    my ($hash_string) = @_;
+    
+    my @hashs = split / /, $hash_string;
+    for my $hash (@hashs) {
+	unless ($hash eq 'md5'       || 
+		$hash eq 'sha'       ||
+		$hash eq 'hmac_sha1' ||
+		$hash eq 'hmac_md5' ) {
+	    return 0;
+	} 
+    }
+    return 1;
+}
+
+sub is_valid_ipsec_dhgroup {
+    my ($dhgroup) = @_;
+
+    if ($dhgroup eq '1' || 
+	$dhgroup eq '2' ||
+	$dhgroup eq '5' ||
+	$dhgroup eq 'nopfs' ) {
+	return 1;
+    } else {
+	return 0;
+    }
+}
+
+sub is_valid_ipsec_ikemethod {
+    my ($method) = @_;
+
+    if ($method eq 'secret' ||
+	$method eq 'cert' ) {
+	return 1;
+    } else {
+	return 0;
+    }
+}
+
+sub is_valid_filepath {
+    # later...
+    return 1;
+}
+
+      
+	
 1;

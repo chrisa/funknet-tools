@@ -41,6 +41,7 @@ use Funknet::Debug;
 use Funknet::Config::Whois;
 use Funknet::Config::Host;
 use Funknet::Config::CommandSet;
+use Funknet::Config::SystemFileSet;
 use Funknet::Config::ConfigFile;
 
 =head1 NAME
@@ -157,6 +158,27 @@ sub tun_diff {
 						  target => 'host',
 						);
     }
+    return ($diff, $whois_tun, $host_tun);
+}
+
+sub enc_diff {
+    my ($self, $whois_tun, $host_tun) = @_;
+    my $l = Funknet::Config::ConfigFile->local;
+    
+    my $whois = Funknet::Config::Whois->new();
+    my $host = Funknet::Config::Host->new();
+
+    my $whois_enc = $whois->encryption( $whois_tun );
+    my $host_enc = $host->encryption( $host_tun );
+    
+    my $diff;
+    if ($l->{os} eq 'ios') {
+	$diff = Funknet::Config::CommandSet->new( cmds => [ $whois_enc->config ],
+						  target => 'cli',
+						);
+    } else {
+	$diff = Funknet::Config::SystemFileSet->new( files => [ $whois_enc->diff($host_enc) ] );
+    }
     return $diff;
 }
 
@@ -170,7 +192,7 @@ sub bgp_config {
     my $config = Funknet::Config::CommandSet->new( cmds => [ $whois_bgp->config ],
 						   target => 'cli',
 						 );
-    return $config;
+    return ($config, $whois_bgp);
 }
 
 sub tun_config {
@@ -190,7 +212,25 @@ sub tun_config {
 						    target => 'host',
 						  );
     }
-    return $config;
+    return ($config, $whois_tun);
+}
+
+sub enc_config {
+    my ($self, $tun_set) = @_;
+    my $l = Funknet::Config::ConfigFile->local;
+
+    my $whois = Funknet::Config::Whois->new();
+    my $whois_enc = $whois->encryption( $tun_set );
+
+    my ($config, $diff);
+    if ($l->{os} eq 'ios') {
+	$config = Funknet::Config::CommandSet->new( cmds => [ $whois_enc->config ],
+						    target => 'cli',
+						  );
+    } else {
+	$config = Funknet::Config::SystemFileSet->new( files => [ $whois_enc->config ] );
+    }
+    return ($config, $whois_enc);
 }
 
 1;

@@ -38,6 +38,7 @@ use lib './lib';
 use Funknet::Config;
 use Funknet::Debug;
 use Getopt::Std;
+use Data::Dumper;
 
 =head1 NAME
 
@@ -69,6 +70,14 @@ Specify the config file location.
 
 Turn on copious debugging information
 
+=head2 -e
+
+Do encryption config
+
+=head2 -i
+
+Request interactive initial setup of funknet.conf
+
 =head2 -w
 
 Writes out the tunnel config to a file, for use in startup scripts. 
@@ -77,10 +86,14 @@ Writes out the tunnel config to a file, for use in startup scripts.
 =cut
 
 my %opt;
-getopts('ciwaqdf:', \%opt);
+getopts('ciwaqdef:', \%opt);
 
 unless ($opt{f}) {
     print STDERR "usage: $0 -f path_to_config_file\n";
+    exit(1);
+}
+unless (-f $opt{f}) {
+    print STDERR "-f option requires a path to a readable funknet.conf file\n";
     exit(1);
 }
 
@@ -91,17 +104,25 @@ if ($opt{d}) {
 my $config = Funknet::Config->new( configfile  => $opt{f},
 				   interactive => $opt{i}, );
 
-my ($bgp, $tun);
+my ($bgp, $tun, $enc);
 if ($opt{c}) {
+    my ($whois_bgp, $whois_tun, $whois_enc);
     debug("Generating BGP config");
-    $bgp = $config->bgp_config or die "bgp_config failed: ".$config->error;
+    ($bgp, $whois_bgp) = $config->bgp_config or die "bgp_config failed: ".$config->error;
     debug("Generating tunnel config");
-    $tun = $config->tun_config or die "tun_config failed: ".$config->error;
+    ($tun, $whois_tun) = $config->tun_config or die "tun_config failed: ".$config->error;
+    if ($opt{e}) {
+	($enc, $whois_enc) = $config->enc_config($whois_tun) or die "enc_config files: ".$config->error;
+    }
 } else {
     debug("Generating BGP diff");
     $bgp = $config->bgp_diff or die "bgp_diff failed: ".$config->error;
     debug("Generating tunnel diff");
-    $tun = $config->tun_diff or die "tun_diff failed: ".$config->error;
+    my ($whois_tun, $host_tun);
+    ($tun, $whois_tun, $host_tun) = $config->tun_diff or die "tun_diff failed: ".$config->error;
+    if ($opt{e}) {
+	$enc = $config->enc_diff($whois_tun, $host_tun) or die "enc_diff files: ".$config->error; # XXX - need both whois-tun and host-tun, not just the diff
+    }
 }
 
 # Errors
@@ -124,6 +145,11 @@ unless ($opt{q}) {
     print "Tunnels:\n";
     print $tun->as_text;
     print "\n";
+    if ($opt{e}) {
+	print "Encryption:\n";
+	print $enc->as_text;
+	print "\n";
+    }
 }
 
 # Run the commands on the local system.
@@ -132,6 +158,8 @@ if ($opt{a}) {
     $bgp->apply;
     debug("Generating Tunnel config");
     $tun->apply;
+    debug("Generating Encryption config");
+    $enc->apply;
 }
 
 # Write the tunnel config out to the rcfile

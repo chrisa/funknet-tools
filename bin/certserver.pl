@@ -1,4 +1,8 @@
-# Copyright (c) 2003
+#!/usr/local/bin/perl
+#
+# $Id$
+#
+# Copyright (c) 2004
 #	The funknet.org Group.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -29,83 +33,46 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 # SUCH DAMAGE.
 
-=head1 NAME
-
-Funknet::RevUpdate::Robot
-
-=head1 DESCRIPTION
-
-The specifically mail-robot related parts of the RevUpdate code.  See
-Funknet::RevUpdate for the general delegation-checking and dynamic
-update code.
-
-We use Email::Robot, and provide specific implementations of the
-message-text generating methods.
-
-=head1 FUNCTIONS
-
-=cut
-
-package Funknet::RevUpdate::Robot;
 use strict;
+use Funknet::KeyStash::CertServer;
+use Getopt::Std;
 
-use Email::Robot;
-use base qw/ Email::Robot /;
+my %opt;
+getopts('gsc:o:p:', \%opt);
 
-sub success_text {
-    my ($self, $zone, @ns) = @_;
-    my $ns_list = join "\n", @ns;
-
-    return << "MAILTEXT";
-
-Funknet Reverse Delegation result:
-
-The zone $zone has been successfully delegated to:
-$ns_list
-
-Regards,
-Dennis
-
-MAILTEXT
-
+if ($opt{g}) {
+    unless (defined $opt{c} && defined $opt{o} && defined $opt{p}) {
+	print STDERR "need all of Common Name, Organisational Unit and Passphrase for gen+sign\n";
+	exit 1;
+    }
+    my $cs = Funknet::KeyStash::CertServer->new('etc/ca', 'TestCA');
+    my ($newkey, $newreq) = $cs->newreq( cn         => $opt{c},
+					 ou         => $opt{o},
+					 passphrase => $opt{p},
+				       );
+    my $newcert = $cs->sign( req          => $newreq,
+			     capassphrase => 'TestCA',
+			   );
+    unless ($newcert) {
+	print STDERR "problem generating cert -- unique CN for this CA?\n";
+	exit 1;
+    }
+    print "$newkey\n$newcert";
 }
 
-sub failure_text {
-    my ($self, $zone, @ns) = @_;
-    my $ns_list = join "\n", @ns;
-    my $errorlist = join "\n", $self->error();
-    
-    return << "MAILTEXT";
-
-Funknet Reverse Delegation result:
-
-Your request for the delegation of $zone to:
-$ns_list
-
-has failed for the following reason(s):
-$errorlist
-
-Commiserations,
-Dennis
-
-MAILTEXT
-
+if ($opt{s}) {
+    my $req;
+    {
+	local undef $/;
+	$req = <STDIN>;
+    }
+    unless (defined $req) {
+	print STDERR "need a CSR on stdin for sign\n";
+	exit 1;
+    }
+    my $cs = Funknet::KeyStash::CertServer->new('etc/ca', 'TestCA');
+    my $newcert = $cs->sign( req          => $req,
+			     capassphrase => 'TestCA',
+			   );
+    print $newcert;
 }
-
-sub fatalerror_text {
-    my ($self, $error_text) = @_;
-    return <<"MAILTEXT";
-
-An error occurred processing your reverse delegation request:
-$error_text
-
-Regards,
-Dennis
-
-MAILTEXT
-
-}
-
-
-1;
-

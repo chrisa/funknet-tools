@@ -31,81 +31,35 @@
 
 =head1 NAME
 
-Funknet::RevUpdate::Robot
-
-=head1 DESCRIPTION
-
-The specifically mail-robot related parts of the RevUpdate code.  See
-Funknet::RevUpdate for the general delegation-checking and dynamic
-update code.
-
-We use Email::Robot, and provide specific implementations of the
-message-text generating methods.
-
-=head1 FUNCTIONS
+Funknet::Config::Encryption::IPSec::Freeswan
 
 =cut
 
-package Funknet::RevUpdate::Robot;
+package Funknet::Config::Encryption::IPSec::Freeswan;
 use strict;
+use base qw/ Funknet::Config::Encryption::IPSec /;
 
-use Email::Robot;
-use base qw/ Email::Robot /;
 
-sub success_text {
-    my ($self, $zone, @ns) = @_;
-    my $ns_list = join "\n", @ns;
+=head1 METHODS
 
-    return << "MAILTEXT";
+=head2 host_init
 
-Funknet Reverse Delegation result:
+This method takes a complete tunnel object as found from the system,
+and attempts to find the Freeswan transport mode IPSec associated with
+it. It should return a complete
+Funknet::Config::Encryption::IPSec::Freeswan object which will be
+associated with the tunnel object in Host.pm
 
-The zone $zone has been successfully delegated to:
-$ns_list
+=cut
 
-Regards,
-Dennis
+sub host_init {
+    my ($self, $tun) = @_;
 
-MAILTEXT
+    # pick up params from system
 
+    # call the generic ipsec constructor (gets arguments validated) and return
+    my $encr = Funknet::Config::Encryption::IPSec::Freeswan->new( source => 'host' );
+    return $encr;
 }
-
-sub failure_text {
-    my ($self, $zone, @ns) = @_;
-    my $ns_list = join "\n", @ns;
-    my $errorlist = join "\n", $self->error();
-    
-    return << "MAILTEXT";
-
-Funknet Reverse Delegation result:
-
-Your request for the delegation of $zone to:
-$ns_list
-
-has failed for the following reason(s):
-$errorlist
-
-Commiserations,
-Dennis
-
-MAILTEXT
-
-}
-
-sub fatalerror_text {
-    my ($self, $error_text) = @_;
-    return <<"MAILTEXT";
-
-An error occurred processing your reverse delegation request:
-$error_text
-
-Regards,
-Dennis
-
-MAILTEXT
-
-}
-
 
 1;
-
