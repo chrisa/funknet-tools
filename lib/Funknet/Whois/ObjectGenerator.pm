@@ -237,7 +237,7 @@ sub new {
 	$self->{mntner} = $args{mntner};
     }
     if (defined $args{person}) {
-	$self->{person} = get_object('person', $args{person});
+	$self->{person} = $args{person};
     }
     if (defined $args{key_cert}) {
 	$self->{key_cert} = $args{key_cert};
@@ -265,8 +265,8 @@ sub mntner {
 	$m->changed($args{e_mail});
 	$m->source ($self->{source});
 
-	$m->admin_c($self->{person}->admin_c);
-	$m->tech_c($self->{person}->tech_c);
+	$m->admin_c($self->{person});
+	$m->tech_c($self->{person});
 
 	return $m;
 
