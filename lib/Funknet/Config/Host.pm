@@ -1,6 +1,7 @@
 package Funknet::Config::Host;
 use strict;
 use Funknet::Config::Tunnel;
+use Funknet::Config::TunnelSet;
 use Funknet::Config::BGP;
 use Funknet::Config::CLI;
 
@@ -131,7 +132,7 @@ sub tunnels {
 	}
     }
 
-    return \@local_tun;
+    return Funknet::Config::TunnelSet->new( tunnels => \@local_tun );
 }
 
 sub sessions {

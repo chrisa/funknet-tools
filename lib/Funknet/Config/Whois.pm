@@ -2,6 +2,7 @@ package Funknet::Config::Whois;
 use strict;
 use Net::Whois::RIPE;
 use Funknet::Config::Tunnel;
+use Funknet::Config::TunnelSet;
 use Funknet::Config::BGP;
 
 =head1 NAME
@@ -120,7 +121,7 @@ sub tunnels {
 	    }
 	}
     }
-    return \@local_tun;
+    return Funknet::Config::TunnelSet->new( tunnels => \@local_tun );
 }
 
 sub sessions {
