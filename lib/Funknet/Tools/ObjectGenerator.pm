@@ -72,7 +72,7 @@ sub person {
 			   'phone'   => $args{phone},
 			 );
     unless (defined $me) {
-	error("creating person object: ".$gen->error);
+	error("creating person object: \n".$gen->error);
 	return undef;
     } else {
 	return $me;
@@ -102,7 +102,7 @@ sub key_cert {
 			      'certif'  => $args{certif},
 			    );
     unless (defined $key) {
-	error("creating key-cert: ".$gen->error);
+	error("creating key-cert: \n".$gen->error);
 	return undef;
     } else {
 	return $key;
@@ -140,7 +140,7 @@ sub mntner {
 			   'descr'  => $args{descr}, 
 			   'e_mail' => $args{e_mail} );
     unless (defined $me) {
-	error("generating mntner: ".$gen->error);
+	error("generating mntner: \n".$gen->error);
 	return undef;
     } else {
 	return $me;
@@ -211,7 +211,7 @@ sub node_set {
 				      'export' => [ ],
 				    );
     unless (defined $ns->{as}) {
-	error("generating as: ".$gen->error);
+	error("generating as: \n".$gen->error);
 	return undef;
     }
 
@@ -224,7 +224,7 @@ sub node_set {
 	my $t_inetnum = $gen->inetnum_assign( 'name' => $n,
 					      'peer' => $peer );
 	unless (defined $t_inetnum) {
-	    error("generating tunnel inetnum: ".$gen->error);
+	    error("generating tunnel inetnum: \n".$gen->error);
 	    return undef;
 	}
 	
@@ -248,7 +248,7 @@ sub node_set {
 	    push @tun_names, $n;
 	    push @tun_as, $peers->{$peer}->aut_num;
 	} else {
-	    error("generating tunnel: ".$gen->error);
+	    error("generating tunnel: \n".$gen->error);
 	    return undef;
 	}
     }
@@ -268,7 +268,7 @@ sub node_set {
     $ns->{range} = $gen->inetnum('name' => $args{nodename}.'-LAN',
 				 'network' => $args{network} );
     unless (defined $ns->{range}) {
-	error("generating local net inetnum: ".$gen->error);
+	error("generating local net inetnum: \n".$gen->error);
 	return undef;
     }
     
@@ -277,7 +277,7 @@ sub node_set {
 				'route'    => $args{network},
 			      );
     unless(defined $ns->{route}) {
-	error("generating local net route: ".$gen->error);
+	error("generating local net route: \n".$gen->error);
 	return undef;
     }
     return $ns;
@@ -291,7 +291,7 @@ sub error {
     }
 
     if (defined $err) {
-	push @errors, "Tools::OG: $err";
+	push @errors, "Tools::OG: \n$err";
     } else {
 	my @this = @errors;
 	@errors = ();

@@ -421,7 +421,7 @@ sub aut_num_assign {
 
     my $as = assign_as();
     unless (defined $as) {
-	error("assign_as failed: ".Funknet::Whois::Policy::error());
+	error("assign_as failed: \n".Funknet::Whois::Policy::error());
 	return undef;
     }
 
@@ -481,7 +481,7 @@ sub inetnum_assign {
 
     my $inetnum = assign_tunnel_inetnum($args{peer});
     unless (defined $inetnum) {
-	error("assign_tunnel_inetnum failed: ".Funknet::Whois::Policy::error());
+	error("assign_tunnel_inetnum failed: \n".Funknet::Whois::Policy::error());
 	return undef;
     }
 
@@ -577,7 +577,7 @@ sub error {
 	$err = $self;
     }
     if (defined $err) {
-	push @errors, "Whois::OG: $err";
+	push @errors, "Whois::OG: \n$err";
     } else {
 	my @this = @errors;
 	@errors = ();
