@@ -1,3 +1,31 @@
 This is the Funknet tools package. 
 
+To try the code: 
 
+* make sure you have RtConfig available, in /usr/local/bin/RtConfig
+  (or wherever you set in lib/Funknet/Config/AccessList.pm).
+
+* run generate-tuns.pl like:
+
+$ ./generate-tuns.pl <as number inc 'AS'> <local_router> <local_os> <local_host>
+
+valid local_router types: ios, zebra
+valid local_os types: ios, solaris, bsd, linux
+set local_host to your router, which might well be 127.0.0.1
+
+* make sure there's a password set in Funknet::Config::CLI::Secrets.pm
+  that matches your local_host.
+
+This will generate a bunch of output - all of STDERR is Perl's I
+think. First you'll get a dump of the config as it should look, based
+on the whois. Then you get a dump of the config as it is, but
+generated from the system's internal data structures.
+
+Finally you'll get a list of commands required to convert one to the
+other, near enough.
+
+There's also a bunch of Data::Dumper output.
+
+I've tried this running on Solaris but against a Cisco, and running on
+BSD against a local Zebra. For the purposes of this program OSX counts
+as BSD. 
