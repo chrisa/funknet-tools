@@ -62,6 +62,7 @@ access-list term permit 10.2.0.0/24
 access-list term deny any
 !
 line vty
+access-class term
 !
 (END_EXAMPLE)
 
