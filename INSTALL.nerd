@@ -119,6 +119,35 @@ source:       FUNKNET
 
 (END_MAIL)
 
+(BEGIN_MAIL)
+
+inetnum:      10.2.5.64 - 10.2.5.67
+netname:      KATGATE-TUN
+descr:        KATGATE-TUN tunnel /30
+country:      GB
+admin-c:      DOUG-FUNKNET
+tech-c:       DOUG-FUNKNET
+rev-srv:      ns1.nodnol.org
+rev-srv:      ns2.nodnol.org
+status:       ASSIGNED PA
+notify:       doug@netdotnet.net
+mnt-by:       DOUG-MNT
+changed:      doug@lemonia.org
+source:       FUNKNET
+
+(END_MAIL)
+
+(BEGIN_MAIL)
+
+route:        192.168.130.0/24
+descr:        KATGATE
+origin:       AS65016
+mnt-by:       DOUG-MNT
+changed:      doug@lemonia.org
+source:       FUNKNET
+
+(END_MAIL)
+
 # and then update blank's (central nerd) tunnel info,
 # chances are, you dont have auth on the central node, but if you do,
 # this can be retrieved with:
