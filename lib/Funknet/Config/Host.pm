@@ -105,6 +105,11 @@ The data structure returned is a reference to an array of
 Funknet::Config::Tunnel objects. (todo: get some interface stats
 here?)
 
+=head2 firewall
+
+This method returns a FirewallRuleSet object representing the current
+host configuration
+
 =head1 SPELLING
 
 This entire package mis-spels the word 'Neighbour'. Unfortunately so
