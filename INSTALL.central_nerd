@@ -178,7 +178,6 @@ cat - >> /usr/local/etc/rc.d/local.sh << EOF
 # funknet
 /usr/local/sbin/zebra -d
 /usr/local/sbin/bgpd -d
-/usr/local/sbin/racoon -l /var/log/racoon.log
 sleep 2
 
 # FIXME when funknet-tools gets a lemon-port
