@@ -47,6 +47,8 @@ update code.
 package Funknet::RevUpdate::Robot;
 use strict;
 
+use PGP::Mail;
+
 my @error;
 
 =head2 new
