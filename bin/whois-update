@@ -1,0 +1,8 @@
+#!/usr/bin/perl
+use strict;
+use Funknet::Whois::Update;
+
+my $u = new Funknet::Whois::Update("FUNKNET",1);
+$u->update;
+
+
