@@ -19,19 +19,23 @@
 cd PORTSDIR/../
 vi zero-lemon-ports/common/lemon.port.mk
 
+cd zero-lemon-ports/meta/server-tarball/
+
 # >>>>WARNING<<<< to avoid adding some root/user ssh accounts, knock out
 # the lemon/sysadmin-* and lemon/user-* BUILD_DEPENDS lines...
-vi zero-lemon-ports/meta/server-tarball/Makefile
+vi Makefile
+rootdo make
 
 # server-tarball is a dependency of natd-firewall-tarball, but the install
-# targets for natd-firewall-tarball arent needed in this case.
+# targets for either arent needed in this case.
 # only the DEPENDS are, hence the need to be run as root...
 
+cd PORTSDIR/../
 cd zero-lemon-ports/meta/natd-firewall-tarball
 
 # edit Makefile so FUNKNET_ENABLE is enabled,
 # and SPEEDTOUCH_ENABLE and FUNKNET_GPGKEY arent...
-o (you really should not host a central-nerd on a dyn-ip modem connection)
+# (you really should not host a central-nerd on a dyn-ip modem connection)
 vi Makefile
 rootdo make
 
