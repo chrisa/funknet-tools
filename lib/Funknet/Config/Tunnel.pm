@@ -160,4 +160,9 @@ sub local_os {
     my ($self) = @_;
     return $self->{_local_os};
 }
+
+sub ifname {
+    my ($self) = @_;
+    return $self->{_ifname};
+}
 1;
