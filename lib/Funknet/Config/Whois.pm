@@ -47,6 +47,8 @@ use Funknet::Config::FirewallRule;
 use Funknet::Config::FirewallRuleSet;
 use Funknet::Debug;
 
+use base qw/ Funknet::Config /;
+
 =head1 NAME
 
 Funknet::Config::Whois
@@ -149,9 +151,14 @@ sub tunnels {
     my $as = $w->query($l->{as});
     
     my @local_tun;
-    foreach my $tun_name ($as->tun) {
+  TUNNEL: foreach my $tun_name ($as->tun) {
 	$w->type('tunnel');
 	my $tun = $w->query($tun_name);
+
+	if (!defined $tun) {
+	    $self->warn("tun object $tun_name missing?");
+	    next TUNNEL;
+	}
 	
 	for my $i ( 0..1 ) {
 	    my @as = $tun->as;
@@ -255,6 +262,11 @@ sub sessions {
 	$w->type('tunnel');
 	my $tun = $w->query($tun_name);
 
+	if (!defined $tun) {
+	    $self->warn("tun object $tun_name missing?");
+	    next SESSION;
+	}
+	
 	for my $i ( 0..1 ) {
 	    my @as = $tun->as;
 	    my @ad = $tun->address;
