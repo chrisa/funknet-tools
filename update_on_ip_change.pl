@@ -40,7 +40,6 @@
 # name of the tunnel object to compare against.
 
 use strict;
-use Net::Whois::RIPE;
 use Mail::GnuPG;
 use MIME::Entity;
 use Net::Interface;
@@ -49,6 +48,8 @@ use Getopt::Std;
 
 use lib './lib';
 use Funknet::Config;
+use Funknet::Config::Whois;
+use Funknet::Config::Validate qw/is_valid_as/;
 
 use Data::Dumper;
 
@@ -71,7 +72,6 @@ my $ip_info = inet_ntoa($addr);
 #{
 #	print STDERR "best update the funknet.conf\n";
 #	$config->{local_endpoint} = $ip_info;
-#	print Dumper $config;
 #	$config->write();
 #}
 
@@ -88,12 +88,12 @@ my $hostname = qx[/bin/hostname];
 my $whois = Funknet::Config::Whois->new;
 unless (defined $whois)
 {
-	die "Error getting a  Funknet::Config::Whois object\n";
+	die "Error getting a Funknet::Config::Whois object\n";
 }
 
 my @tunnel_objects = $whois->my_tunnels;
 
-if(!($local_as =~ /AS65\d\d\d/))
+unless (is_valid_as($local_as))
 {
 	print STDERR "invalid local_as : (format AS65xxx)\n";
 	exit(1);
