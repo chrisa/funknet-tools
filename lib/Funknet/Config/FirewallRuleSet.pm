@@ -124,39 +124,33 @@ sub diff {
     my $l = Funknet::ConfigFile::Tools->local;
     my $whois_source = Funknet::ConfigFile::Tools->whois_source;
 
-    if(! defined($host)) {
-	@cmds = $whois->config();
-    }
-    else {
-
-	# first check we have the objects the right way around.
-	unless ($whois->source eq 'whois' && $host->source eq 'host') {
-	    $whois->warn("diff passed objects backwards");
-	    return undef;
-	}    
+    # first check we have the objects the right way around.
+    unless ($whois->source eq 'whois' && $host->source eq 'host') {
+	$whois->warn("diff passed objects backwards");
+	return undef;
+    }    
     
-	# create hashes
-	my ($whois_fwall, $host_fwall);
-	for my $fwall ($whois->firewall) {
-	    $whois_fwall->{$fwall->as_hashkey} = 1;
-	}
-	for my $fwall ($host->firewall) {
-	    $host_fwall->{$fwall->as_hashkey} = 1;
-	}
-
-	for my $h ($host->firewall) {
-	    unless ($whois_fwall->{$h->as_hashkey}) {
-		push @cmds, $h->delete;
-	    }
-	}
-
-	for my $w ($whois->firewall) {
-	    unless ($host_fwall->{$w->as_hashkey}) {
-		push @cmds, $w->create;
-	    }
+    # create hashes
+    my ($whois_fwall, $host_fwall);
+    for my $fwall ($whois->firewall) {
+	$whois_fwall->{$fwall->as_hashkey} = 1;
+    }
+    for my $fwall ($host->firewall) {
+	$host_fwall->{$fwall->as_hashkey} = 1;
+    }
+    
+    for my $h ($host->firewall) {
+	unless ($whois_fwall->{$h->as_hashkey}) {
+	    push @cmds, $h->delete;
 	}
     }
     
+    for my $w ($whois->firewall) {
+	unless ($host_fwall->{$w->as_hashkey}) {
+	    push @cmds, $w->create;
+	}
+    }
+
     my $cmdset = Funknet::Config::CommandSet->new( cmds => \@cmds,
 						   target => 'cli',
 						 );

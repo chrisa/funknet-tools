@@ -101,12 +101,16 @@ sub local_firewall_rules {
 	    debug("new_rule_object");
 	    push (@rules_out, $new_rule_object);
 	}
-    return (Funknet::Config::FirewallRuleSet::IPTables->new(
-						firewall => \@rules_out,
-						source => 'host'));
-    }
-    else {
-	return undef;
+	return Funknet::Config::FirewallRuleSet::IPTables->new(
+							       firewall => \@rules_out,
+							       source => 'host'
+							      );
+    } else {
+	# explicitly empty RuleSet
+	return Funknet::Config::FirewallRuleSet::IPTables->new(
+							       firewall => [],
+							       source => 'host'
+							      );
     }
 }
 
