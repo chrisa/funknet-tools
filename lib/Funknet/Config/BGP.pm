@@ -24,19 +24,13 @@ sub new {
 	$self->{_local_as} = $asno;
     }
 
-#     unless (defined $args{local_os} && is_valid_os($args{local_os})) {
-# 	warn "missing local_os";
-# 	return undef;
-#     } else {
-# 	$self->{_local_os} = $args{local_os};
-#     }
+    unless (defined $args{routes} && ref $args{routes} eq 'ARRAY') {
+	warn "no routes";
+        $self->{_routes} = [];
+    } else {
+        $self->{_routes} = $args{routes}; 
+    }
 
-#     unless (defined $args{local_router} && is_valid_router($args{local_router})) {
-# 	warn "missing local_router";
-# 	return undef;
-#     } else {
-# 	$self->{_local_router} = $args{local_router};
-#     }
     return $self;
 }
 
@@ -83,6 +77,12 @@ sub config {
     my ($self) = @_;
     
     my $config = "router bgp $self->{_local_as}\n";
+
+    if (defined $self->{_routes} && ref $self->{_routes} eq 'ARRAY') {	
+        for my $route (@{ $self->{_routes}}) {
+            $config .= " network $route\n";
+        }
+    }	
 
     foreach my $neighbor (@{ $self->{_neighbors} }) {
 	$config .= $neighbor->config;

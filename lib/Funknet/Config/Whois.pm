@@ -50,10 +50,22 @@ sub tunnels {
 sub sessions {
     my ($self, $local_as) = @_;
     my $w = $self->{_net_whois_ripe};
+
+    $w->type('route');
+    $w->inverse_lookup('origin');
+    my $routes = $w->query_iterator($local_as);
+    my @routes;
+    while (my $obj = $routes->next) {
+        push @routes, $obj->route;
+    }
+
     $w->type('aut-num');
+    $w->{FLAG_i} = '';
     my $as = $w->query($local_as);
 
+
     my $bgp = Funknet::Config::BGP->new( local_as => $local_as,
+                                         routes  => \@routes,
 					 source => 'whois');
     
     for my $tun_name ($as->tun) {
