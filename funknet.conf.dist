@@ -1,12 +1,21 @@
-# funknet.conf
-# 
+# funknet.conf.dist - sample config file for Funknet auto-tunneling config
+#
+# $Id$
+
+# NOTES: 
+#
+# Copy this file to funknet.conf
+# Replace the username and password with your local router username and password  
+# Replace the AS number with your AS number
+
+ 
 # local_as/router/os/host are mandatory
 
 local_as       = AS64512
 local_router   = ios
 local_os       = ios
-local_host     = x.x.x.x
-local_endpoint = y.y.y.y
+local_host     = 1.2.3.4
+local_endpoint = 5.6.7.8
 
 # optional:
 
@@ -17,6 +26,10 @@ root = sudo
 # print warnings as they're generated
 
 warnings = 1
+
+# Lots of debugging info
+
+debug = 0
 
 # stop on errors?
 

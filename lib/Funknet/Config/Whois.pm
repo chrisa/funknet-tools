@@ -1,3 +1,5 @@
+# $Id$
+#
 # Copyright (c) 2003
 #	The funknet.org Group.
 #
@@ -32,10 +34,15 @@
 
 package Funknet::Config::Whois;
 use strict;
+
 use Net::Whois::RIPE;
 use Funknet::Config::Tunnel;
 use Funknet::Config::TunnelSet;
 use Funknet::Config::BGP;
+
+use base qw/Funknet::Config /;
+
+use Funknet::Config;
 
 =head1 NAME
 
@@ -97,11 +104,13 @@ local_os flag passed to the constructor.
 sub new {
     my ($class, %args) = @_;
     my $self = bless {}, $class;
+    debug("Creating a Net::Whois::RIPE object");
     $self->{_net_whois_ripe} = Net::Whois::RIPE->new( 'whois.funknet.org' );
     unless (defined $self->{_net_whois_ripe}) {
 	die "couldn't get a Net::Whois::RIPE object";
     }
     $self->{_net_whois_ripe}->source('FUNKNET');
+    debug("Done creating a Net::Whois::RIPE object");
     return $self;
 }
 
@@ -236,8 +245,6 @@ sub sessions {
     $w->{FLAG_i} = '';
     my $as = $w->query($l->{as});
 
-    
-
     my $bgp = Funknet::Config::BGP->new( 
 	local_as => $l->{as},
 	routes  => \@routes,
@@ -247,7 +254,7 @@ sub sessions {
 	
 	$w->type('tunnel');
 	my $tun = $w->query($tun_name);
-	
+
 	for my $i ( 0..1 ) {
 	    my @as = $tun->as;
 	    my @ad = $tun->address;

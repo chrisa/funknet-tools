@@ -1,3 +1,5 @@
+# $Id$
+#
 # Copyright (c) 2003
 #	The funknet.org Group.
 #
@@ -33,7 +35,7 @@
 package Funknet::Config::ConfigFile;
 use strict;
 use Data::Dumper;
-use vars qw/ $AUTOLOAD /;
+use vars qw/ $AUTOLOAD @ISA /;
 use Carp qw/ cluck /;
 use Funknet::Config::Validate qw / is_ipv4 is_ipv6 is_valid_as is_valid_router is_valid_os /;
 use base qw/ Funknet::Config /;
@@ -53,8 +55,11 @@ An abstraction over a simple test config file. Syntax is:
     key = value
     key = value, value, value
 
+    # Comment
+    foo = bar  # comment
+
 A repeated key causes the values to be added to the existing values
-rather than overwriting.
+rather than overwriting them.
 
 =head1 METHODS
 
@@ -79,62 +84,86 @@ my $config;
 sub new {
     my ($class, $file) = @_;
     my $self = bless {}, $class;
+    debug("Reading config file '$file'");
     open CONF, $file
-	or die "can't open config file $file: $!";
+	or die "Can't open config file $file: $!";
     while (my $line = <CONF>) {
 	chomp $line;
 	next unless $line;
-	next if $line =~ /^#/;
-	my ($key, $values) = $line =~ /(.+)\s*=\s*(.+)/;
-	$key =~ s/^\s+//;
-	$key =~ s/\s+$//;
-	$values =~ s/^\s+//;
-	$values =~ s/\s+$//;
+	next if $line =~ /^\s*(#|$)/; # ignore whitespace lines
+	$line =~ s/#.*$//; # strip comments
+        if (my ($key, $values) = $line =~ /(.+)\s*=\s*(.+)/) {
+
+	    # Ignore whitespace
+ 	    $key =~ s/^\s+//;
+	    $key =~ s/\s+$//;
+	    $values =~ s/^\s+//;
+	    $values =~ s/\s+$//;
 	
-	if (exists $config->{$key}) {
-	    my @values;
-	    if ($values =~ /,/) {
-		@values = split /\s*,\s*/,$values;
+	    if (exists $config->{$key}) {
+		# Add value to existing key
+		my @values;
+		if ($values =~ /,/) {
+		    @values = split /\s*,\s*/,$values;
+		} else {
+		    @values = ($values);
+		}
+		if (ref $config->{$key} eq 'ARRAY') {
+		    push @{ $config->{$key} }, @values;
+		} else {
+		    $config->{$key} = [ $config->{$key}, @values ];
+		}
 	    } else {
-		@values = ($values);
-	    }
-	    if (ref $config->{$key} eq 'ARRAY') {
-		push @{ $config->{$key} }, @values;
-	    } else {
-		$config->{$key} = [ $config->{$key}, @values ];
-	    }
-	} else {
-	    if ($values =~ /,/) {
-		$config->{$key} = [ split /\s*,\s*/,$values ];
-	    } else {
-		$config->{$key} = $values;
+		# Make new key
+		if ($values =~ /,/) {
+		    $config->{$key} = [ split /\s*,\s*/,$values ];
+		} else {
+		    $config->{$key} = $values;
+		}
 	    }
 	}
     }
+    debug("Closing config file");
     close CONF;
+
+    debug("Parsing config file");
     $self->{config} = $config;
 
+    if (defined $config->{debug} && $config->{debug}==1) {
+	$Funknet::Config::DEBUG = 1;
+    }
+
+    debug("Testing local_as");
     unless (defined $config->{local_as} && is_valid_as($config->{local_as})) {
-	$self->warn("missing local_as");
-	return undef;
-    } 
-    unless (defined $config->{local_host} && is_ipv4($config->{local_host})) {
-	$self->warn("missing local_host");
-	return undef;
-    } 
-    unless (defined $config->{local_endpoint} && is_ipv4($config->{local_endpoint})) {
-	$self->warn("missing local_endpoint");
-	return undef;
-    } 
-    unless (defined $config->{local_router} && is_valid_router($config->{local_router})) {
-	$self->warn("missing local_router");
-	return undef;
-    } 
-    unless (defined $config->{local_os} && is_valid_os($config->{local_os})) {
-	$self->warn("missing local_os");
+	$self->warn("missing or invalid 'local_as' in $file");
 	return undef;
     } 
 
+    debug("Testing local_host");
+    unless (defined $config->{local_host} && is_ipv4($config->{local_host})) {
+	$self->warn("missing or invalid 'local_host' in $file");
+	return undef;
+    } 
+
+    debug("Testing local_endpoint");
+    unless (defined $config->{local_endpoint} && is_ipv4($config->{local_endpoint})) {
+	$self->warn("missing or invalid 'local_endpoint' in $file");
+	return undef;
+    }
+
+    debug("Testing local_router");     
+    unless (defined $config->{local_router} && is_valid_router($config->{local_router})) {
+	$self->warn("missing or invalid 'local_router' in $file");
+	return undef;
+    } 
+
+    debug("Testing local_os");
+    unless (defined $config->{local_os} && is_valid_os($config->{local_os})) {
+	$self->warn("missing or invalid 'local_os' in $file");
+	return undef;
+    } 
+
+    debug("Done parsing config file");
     return $self;
 }
 
@@ -158,6 +187,10 @@ sub warn {
 sub error {
     goto &Funknet::Config::error;
 }
+sub debug {
+    goto &Funknet::Config::debug;
+}
+
 
 sub AUTOLOAD {
     my ($self) = @_;

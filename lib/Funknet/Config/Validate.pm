@@ -1,3 +1,5 @@
+# $Id$
+#
 # Copyright (c) 2003
 #	The funknet.org Group.
 #
@@ -34,7 +36,6 @@ package Funknet::Config::Validate;
 use strict;
 use base qw/ Exporter /;
 use vars qw/ @EXPORT_OK /;
-use Network::IPv4Addr qw/ ipv4_parse /;
 
 @EXPORT_OK = qw/ is_ipv4 is_ipv6 is_valid_type is_valid_as 
                  is_valid_os is_valid_router is_valid_proto 
@@ -42,14 +43,16 @@ use Network::IPv4Addr qw/ ipv4_parse /;
 
 sub is_ipv4 {
     my ($addr) = @_;
-    my $checked;
-    eval {
-	$checked = ipv4_parse($addr);
-    };
-    unless ($@) {
-	return $checked;
+    if (defined($addr) &&
+	$addr ne "" &&
+	$addr =~ m/^\d+\.\d+\.\d+\.\d+$/ ) {
+	for (split /\./, $addr ) {
+	    return 0 if $_ < 0 or $_ > 255;
+	}
+	return 1;
+    } else {
+	return 0;
     }
-    return undef;
 }
 
 sub is_ipv6 {

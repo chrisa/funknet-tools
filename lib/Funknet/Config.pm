@@ -1,3 +1,5 @@
+# $Id$
+#
 # Copyright (c) 2003
 #	The funknet.org Group.
 #
@@ -32,12 +34,16 @@
 
 package Funknet::Config;
 use strict;
+
+use vars qw/ @EXPORT @ISA $DEBUG /;
+use base qw/ Exporter /;
+@EXPORT = qw/ $DEBUG &debug /;
+$DEBUG = 0;
+
 use Funknet::Config::Whois;
 use Funknet::Config::Host;
 use Funknet::Config::CommandSet;
 use Funknet::Config::ConfigFile;
-
-use Data::Dumper;
 
 =head1 NAME
 
@@ -49,11 +55,17 @@ Funknet::Config
 
 =head1 DESCRIPTION
 
+    Reads and parses a Funknet config file
+
 =head1 METHODS
 
 =head2 new
 =head2 diff
 =head2 apply
+
+=head1 FUNCTIONS
+
+=head2 debug
 
 =cut
 
@@ -65,7 +77,7 @@ sub new {
     $self->{_error} = [];
     $self->{_warn} = [];
     $self->{_config} = Funknet::Config::ConfigFile->new( $args{configfile} )
-	or die "couldn't load config file";
+	or die "Couldn't load config file";
     return $self;
 }
 
@@ -109,7 +121,10 @@ sub bgp_diff {
     
     my $whois = Funknet::Config::Whois->new();
     my $host = Funknet::Config::Host->new();
+
+    debug("Creating BGP session from whois data");
     my $whois_bgp = $whois->sessions;
+    debug("Creating BGP session from host data");
     my $host_bgp = $host->sessions;
     
     my $diff = Funknet::Config::CommandSet->new( cmds => [ $whois_bgp->diff($host_bgp) ],
@@ -138,6 +153,16 @@ sub tun_diff {
 						);
     }
     return $diff;
+}
+
+sub debug {
+
+    my $msg = shift;
+
+    if ($DEBUG) {
+	print STDERR "FUNKNET: $msg\n";
+    }
+
 }
 
 1;

@@ -1,4 +1,7 @@
 #!/usr/local/bin/perl -w
+#
+# $Id$
+#
 # Copyright (c) 2003
 #	The funknet.org Group.
 #
@@ -57,20 +60,30 @@ This is the main driver script for Funknet::Config.
 
 Specify the config file location.
 
+=head2 -d
+
+Turn on copious debugging information
+
 =cut
 
 my %opt;
-getopts('aqf:', \%opt);
+getopts('aqdf:', \%opt);
 
 unless ($opt{f}) {
     print STDERR "usage: $0 -f path_to_config_file\n";
     exit(1);
 }
 
+if ($opt{d}) {
+    $DEBUG = 1;
+}
+
 my $config = Funknet::Config->new( configfile => $opt{f} );
 
 # Generate the changes between current (host) and desired (whois) config.
+debug("Generating BGP config");
 my $bgp = $config->bgp_diff or die "bgp_diff failed: ".$config->error;
+debug("Generating tunnel config");
 my $tun = $config->tun_diff or die "tun_diff failed: ".$config->error;
 
 # Errors
@@ -97,6 +110,8 @@ unless ($opt{q}) {
 
 # Run the commands on the local system.
 if ($opt{a}) {
+    debug("Generating BGP config");
     $bgp->apply;
+    debug("Generating Tunnel config");
     $tun->apply;
 }
