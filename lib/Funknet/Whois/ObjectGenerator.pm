@@ -460,6 +460,7 @@ sub inetnum_assign {
     my $inetnum = $self->inetnum( 'name' => $args{name},
 				  'network' => $inetnum );
     $inetnum->tunnel();
+    return $inetnum;
 }
 
 sub tunnel {
