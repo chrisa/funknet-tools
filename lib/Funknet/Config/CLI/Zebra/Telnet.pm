@@ -36,6 +36,7 @@ use base qw/ Funknet::Config::CLI::Zebra /;
 
 use Net::Telnet;
 use Funknet::ConfigFile::Tools;
+use Funknet::Debug;
 
 =head1 NAME
 
@@ -50,6 +51,7 @@ A derivative of CLI::Zebra using Telnet to talk to the vty.
 sub cmd {
     my ($self, $cmd) = @_;
     return undef unless defined $self->{t};
+    debug("running: $cmd");
     $self->{t}->print($cmd);
     my @output;
     while( my $line = $self->{t}->getline( Timeout => 1) ) {
