@@ -51,6 +51,9 @@ Class abstracting methods of getting root.
 
 =cut
 
+
+use Data::Dumper;
+
 sub new {
     my ($class) = @_;
     my $self = bless {}, $class;
@@ -66,10 +69,11 @@ sub new {
 	
 	$self->{_pipe} = sub ($) {
 	    my ($cmd, $data) = @_;
-	    open PIPE, ">sudo $cmd" 
+	    open PIPE, "|sudo $cmd" 
 		or Funknet::Config::error("couldn't pipe to sudo $cmd");
 	    print PIPE $data;
 	};
+	return $self;
 		      
     } elsif ($root_method eq 'userv') {
 		    
@@ -81,10 +85,11 @@ sub new {
       
       $self->{_pipe} = sub ($) {
 	  my ($cmd, $data) = @_;
-	  open PIPE, ">userv $cmd" # XXX neither's this, most likely.
+	  open PIPE, "|userv $cmd" # XXX neither's this, most likely.
 	    or Funknet::Config::error("couldn't pipe to userv $cmd");
 	  print PIPE $data;
 	};
+	return $self;
 
     } elsif ($root_method eq 'runas') {
 
@@ -96,10 +101,11 @@ sub new {
 
 	$self->{_pipe} = sub ($) {
 	  my ($cmd, $data) = @_;
-	  open PIPE, "> $cmd" 
+	  open PIPE, "|$cmd" 
 	    or Funknet::Config::error("couldn't pipe to $cmd");
 	  print PIPE $data;
 	};
+	return $self;
 
     } else {
 	return undef;

@@ -96,6 +96,7 @@ sub as_text {
     my $l = Funknet::Config::ConfigFile->local;
     if (scalar @{ $self->{_cmds} }) {
 	my $text = join "\n", @{ $self->{_cmds} };
+	$text .= "\n";
 	return $text;
     } else {
 	return '';
@@ -120,6 +121,7 @@ sub as_text {
     my ($self) = @_;
     if (scalar @{ $self->{_cmds} }) {
 	my $text = join "\n", @{ $self->{_cmds} };
+	$text .= "\n";
 	return $text;
     } else {
 	return '';

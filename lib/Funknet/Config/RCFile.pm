@@ -33,6 +33,7 @@
 package Funknet::Config::RCFile;
 use strict;
 
+use Data::Dumper;
 =head1 NAME
 
 Funknet::Config::RCFile;
@@ -41,7 +42,6 @@ Funknet::Config::RCFile;
 
 Class abstracting an rcfile to be run on boot. Tunnel creation
 commands for Unix will be saved through this module. 
-
 =head1 METHODS
 
 =cut
@@ -51,6 +51,7 @@ sub new {
     my $self = bless {}, $class;
     $self->{_rcfile} = Funknet::Config::ConfigFile->rcfile;
     $self->{_root} = Funknet::Config::Root->new;
+print STDERR Dumper $self;
     return $self;
 }
 
