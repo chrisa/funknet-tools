@@ -101,6 +101,12 @@ sub new_from_ifconfig {
 	$interface = $2;
 	$ifname = "$1$2";
     }
+    if ( $if =~ /^(tun)(\d+)/)
+    {
+	$type = 'openvpn';
+	$interface = $2;
+	$ifname = "$1$2";
+    }
 	
     defined $type or return undef;
 
@@ -129,6 +135,7 @@ sub delete {
     {
 	if    (/ipip/) {$tun_type = 'gif';}
 	elsif (/gre/) {$tun_type = 'gre';}
+	elsif (/openvpn/) {$tun_type = 'tun';}
     }
 
     return "ifconfig $tun_type$self->{_interface} destroy";
@@ -142,13 +149,20 @@ sub create {
     {
 	if    (/ipip/) {$tun_type = 'gif';}
 	elsif (/gre/) {$tun_type = 'gre';}
+	elsif (/openvpn/) {$tun_type = 'tun';}
     }
      
-    return (
-	"ifconfig $tun_type$inter create mtu 1480",
-	"ifconfig $tun_type$inter tunnel $self->{_local_endpoint} $self->{_remote_endpoint}",
-	"ifconfig $tun_type$inter inet $self->{_local_address} $self->{_remote_address} netmask 255.255.255.252"
-     );
+    if ($tun_type == 'tun') {
+        return (
+            "openvpn --local $self->{_local_endpoint} --remote $self->{_remote_endpoint} --dev $tun_type$inter --ifconfig $self->{_local_address} $self->{_remote_address} --user nobody --group nobody --daemon"
+        );
+    } else {
+        return (
+	    "ifconfig $tun_type$inter create mtu 1480",
+	    "ifconfig $tun_type$inter tunnel $self->{_local_endpoint} $self->{_remote_endpoint}",
+	    "ifconfig $tun_type$inter inet $self->{_local_address} $self->{_remote_address} netmask 255.255.255.252"
+        );
+    }
 }
 
 sub ifsym {
