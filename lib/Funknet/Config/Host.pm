@@ -126,7 +126,7 @@ sub tunnels {
 
 	my $cli = Funknet::Config::CLI->new();
 	@local_tun = $cli->get_interfaces;
-	
+
     } else {
 
 	# we'd really like to use Net::Interface here, but it needs teaching about tunnels first. 

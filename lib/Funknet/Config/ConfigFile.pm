@@ -231,6 +231,8 @@ sub local {
 	     host   => $config->{local_host},
 	     router => $config->{local_router},
 	     endpoint => $config->{local_endpoint},
+	     source => $config->{local_source},
+             public_endpoint => $config->{local_public_endpoint},
 	   };
 }
     

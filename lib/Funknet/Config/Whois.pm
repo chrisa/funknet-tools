@@ -149,7 +149,7 @@ sub tunnels {
 	    my @as = $tun->as;
 	    my @ep = $tun->endpoint;
 	    my @ad = $tun->address;
-	    
+
 	    # check this tunnel is to our AS and the current endpoint.
 	    
 	    if ($as[$i] eq $l->{as} && $ep[$i] eq $l->{endpoint}) {
@@ -168,6 +168,25 @@ sub tunnels {
 		    push @local_tun, $tun_obj;
 		}
 	    }
+
+            # handle the case where we have a local_public_endpoint parameter
+
+            if (defined $l->{public_endpoint} && $as[$i] eq $l->{as} && $ep[$i] eq $l->{public_endpoint}) {
+
+                my $tun_obj = Funknet::Config::Tunnel->new(
+                    name => $tun_name,
+                    local_address => $ad[$i],
+                    remote_address => $ad[1-$i],
+                    local_endpoint => $l->{endpoint},
+                    remote_endpoint => $ep[1-$i],
+                    type => $tun->type,
+                    source => 'whois',
+                    proto => '4',
+                );
+                if (defined $tun_obj) {
+                    push @local_tun, $tun_obj;
+                }
+            }
 	}
     }
 

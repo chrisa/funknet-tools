@@ -18,6 +18,14 @@ local_host = 127.0.0.1
 local_os = bsd
 local_router = zebra
 
+# if your router is behind a NAT (i.e. you're NATting the 
+# IPIP -- this works on Netscreen at least) then you need to
+# specify the source explicitly here, otherwise the local_endpoint
+# is used as the tunnel source. this address should probably
+# always be RFC1918-space.
+
+local_source = 10.10.10.10
+
 # if u are dynamic u need these
 from_email = 
 pgp_key_dir = 

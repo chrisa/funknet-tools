@@ -140,7 +140,16 @@ sub new {
     }
     if ($self->{_source} eq 'host') {
     }
-	    
+	 
+    # support the 'local_source' parameter. if it exists, and is a valid
+    # ipv4 address, then replace $self->{_local_endpoint} with it, and 
+    # move existing value to $self->{_local_public_endpoint}
+
+    if (exists $l->{source} && defined $l->{source} && is_ipv4($l->{source})) {
+	$self->{_local_public_endpoint} = $self->{_local_endpoint};
+	$self->{_local_endpoint} = $l->{source};
+    }
+   
     # rebless if we have a specific OS to target 
     # for this tunnel endpoint.
 
