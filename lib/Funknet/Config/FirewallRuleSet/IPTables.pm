@@ -80,33 +80,39 @@ sub local_firewall_rules {
 	my @rules = split ('\n', $whole_set);
 	my @rules_out;
 
-	foreach my $rule (@rules) {
+    foreach my $rule (@rules) {
+
 	    my ($src, $dest, $proto, $policy, $src_port, $dst_port);
+	    my ($first_half, $second_half);
+
 	    chomp($rule);
 	    next if $rule =~ /^Chain/;
 	    next if $rule =~ /target/;
 	    debug("$rule");
-	    $src_port = $dst_port = $src = $dest = $proto = $policy = $rule;
 
-	    $policy =~ s/^\s+\d+\s+\d+\s+(\w+).*/$1/;
-	    $proto =~ s/^\s+\d+\s+\d+\s+\w+\s+(\w+).*/$1/;
-	    if($proto == 4) { $proto = 'ipencap' };
+	    ($first_half, $second_half) = split ('--', $rule);
 
-	    $src =~ s/^\s+\d+\s+\d+\s+\w+\s+\w+\s+--\s+\S+\s+\S+\s+(\d+\.\d+\.\d+\.\d+).*/$1/;
-	    $dest =~ s/^\s+\d+\s+\d+\s+\w+\s+\w+\s+--\s+\S+\s+\S+\s+\d+\.\d+\.\d+\.\d+\s+(\d+\.\d+\.\d+\.\d+).*/$1/;
+	    $first_half =~ s/^\s+\d+\s+\d+\s+(\w+)\s+(\w+).*/$1,$2/;
+	    $second_half =~ s/^\s+\S+\s+\S+\s+(\d+\.\d+\.\d+\.\d+)\s+(\d+\.\d+\.\d+\.\d+).*/$1,$2/;
 
-	    if($src_port =~ /spt:/) {
-	        $src_port =~ s/^\s+\d+\s+\d+\s+\w+\s+\w+\s+--\s+\S+\s+\S+\s+\d+\.\d+\.\d+\.\d+\s+\d+\.\d+\.\d+\.\d+\s+\w+\s+spt:(\d+).*/$1/;
+	    ($policy, $proto) = split(',',$first_half);
+	    ($src, $dest) = split(',',$second_half);
+
+	    if($proto == 4) { $proto = 'ipencap'; }
+
+	    if($rule =~ /spt:/) {
+		$src_port = $rule;
+		$src_port =~ s/^\s+\d+\s+\d+\s+\w+\s+\w+\s+--\s+\S+\s+\S+\s+\d+\.\d+\.\d+\.\d+\s+\d+\.\d+\.\d+\.\d+\s+\w+\s+spt:(\d+).*/$1/;
 	    } else {
-	        $src_port = undef;
+		$src_port = undef;
 	    }
 
-	    if($dst_port =~ /dpt:/) {
-	        $dst_port =~ s/.*dpt:(\d+).*/$1/;
+	    if($rule =~ /dpt:/) {
+		$dst_port = $rule;
+		$dst_port =~ s/.*dpt:(\d+).*/$1/;
 	    } else {
-	        $dst_port = undef;
+		$dst_port = undef;
 	    }
-
 
 	    debug("proto is $proto");
 	    my $new_rule_object = Funknet::Config::FirewallRule->new(
