@@ -121,7 +121,7 @@ sub is_valid_proto {
 sub is_valid_ifname {
     my ($ifname) = @_;
     
-    if ($ifname =~ /^[a-zA-Z]+\d+$/) {
+    if ($ifname =~ /^[.a-zA-Z]+\d+$/) {
 	return 1;
     } else {
 	return 0;
