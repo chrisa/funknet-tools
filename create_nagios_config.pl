@@ -132,7 +132,7 @@ define service{
         max_check_attempts      5
         check_period            24x7
         normal_check_interval   15
-        Retry_check_interval    1
+        retry_check_interval    1
         notification_interval   30
         notification_period     24x7
         notification_options    w,c,r
