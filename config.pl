@@ -53,6 +53,10 @@ This is the main driver script for Funknet::Config.
 
 'apply', Actually carries out the commands it proposes.
 
+=head2 -c
+
+'config', just do the config based on whois, don't try and do a diff.
+
 =head2 -q 
 
 'quiet', for use in crontab, warnings and notifications of changes only. 
@@ -68,7 +72,7 @@ Turn on copious debugging information
 =cut
 
 my %opt;
-getopts('iwaqdf:', \%opt);
+getopts('ciwaqdf:', \%opt);
 
 unless ($opt{f}) {
     print STDERR "usage: $0 -f path_to_config_file\n";
@@ -82,16 +86,23 @@ if ($opt{d}) {
 my $config = Funknet::Config->new( configfile  => $opt{f},
 				   interactive => $opt{i}, );
 
-# Generate the changes between current (host) and desired (whois) config.
-debug("Generating BGP config");
-my $bgp = $config->bgp_diff or die "bgp_diff failed: ".$config->error;
-debug("Generating tunnel config");
-my $tun = $config->tun_diff or die "tun_diff failed: ".$config->error;
+my ($bgp, $tun);
+if ($opt{c}) {
+    debug("Generating BGP config");
+    $bgp = $config->bgp_config or die "bgp_config failed: ".$config->error;
+    debug("Generating tunnel config");
+    $tun = $config->tun_config or die "tun_config failed: ".$config->error;
+} else {
+    debug("Generating BGP diff");
+    $bgp = $config->bgp_diff or die "bgp_diff failed: ".$config->error;
+    debug("Generating tunnel diff");
+    $tun = $config->tun_diff or die "tun_diff failed: ".$config->error;
+}
 
 # Errors
 
 my $warnings = $config->warn;
-my $errors = $config->error;
+my $errors   = $config->error;
 if ($warnings && !$config->{_config}->{warnings}) {
     print "warnings generated:\n$warnings\n";
 }
