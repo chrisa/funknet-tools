@@ -48,6 +48,8 @@ local Funknet router's view of the world.
 
 =cut
 
+my $cf;
+
 sub traceroute {
     my ($address, $cb) = @_;
     unless (is_ipv4($address)) {
@@ -56,7 +58,9 @@ sub traceroute {
     my $output;
 
     # must init ConfigFile first
-    my $cf = Funknet::Config::ConfigFile->new('/home/funknet/funknet-tools/funknet.conf-MUNKY');
+    unless (defined $cf) {
+	$cf = Funknet::Config::ConfigFile->new('/home/funknet/funknet-tools/funknet.conf-MUNKY');
+    }
     my $cli = Funknet::Config::CLI->new()
       or return undef;
     $cli->login;
