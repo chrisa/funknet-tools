@@ -39,7 +39,7 @@ use Funknet::ConfigFile::CertServer;
 use Getopt::Std;
 
 my %opt;
-getopts('gsc:o:p:f:', \%opt);
+getopts('gwsc:o:p:f:', \%opt);
 
 my $config = Funknet::ConfigFile::CertServer->new($opt{f});
 my $l = $config->local();
@@ -61,7 +61,12 @@ if ($opt{g}) {
 	print STDERR "problem generating cert -- unique CN for this CA?\n";
 	exit 1;
     }
-    print "$newkey\n$newcert";
+    print "$newkey\n$newcert\n";
+    
+    if ($opt{w}) {
+	my $object = $cs->object($newcert);
+	print "$object\n";
+    }
 }
 
 if ($opt{s}) {

@@ -385,7 +385,8 @@ sub sign {
         warn "couldn't chdir to $old: $!";
     }
 
-    return $certtext;
+    my ($cert) = $certtext =~ /(-----BEGIN CERTIFICATE-----.*-----END CERTIFICATE-----)/s;
+    return $cert;
 }
 
 =head2 pkcs12
@@ -511,5 +512,71 @@ sub pkcs12 {
     return $pkcs12text;
 }    
 
+=head2 object
+
+Takes a PEM cert and returns the basis for a whois object
+Doesn't bother with the contacts, mntner etc. 
+
+Params: 
+    cert: the certificate in PEM format
+
+Returns: 
+    part of a key-cert object. 
+
+=cut
+
+sub object {
+    my ($self, $cert) = @_;
+    my $object;
+    
+    # make a work directory for openssl
+    my $workdir = "ca_tmp_$$";
+    system("mkdir $workdir");
+
+    # put the cert in the workdir
+    unless (open CERT, ">$workdir/whois.cert") {
+        warn "can't open $workdir/whois.cert for writing: $!";
+        return undef;
+    }
+    print CERT $cert;
+    close CERT;
+
+    # call to openssl
+    my @output = `openssl x509 -in $workdir/whois.cert -subject`;
+    unless (scalar @output) {
+	warn "openssl x509 failed: $!";
+	return undef;
+    }
+    my $dn = $output[0];
+    chomp $dn;
+    
+    # grab the cn from the dn string, e.g.
+    # subject= /C=GB/ST=London/L=London/O=Funknet.org/OU=FooCo/CN=FooBox
+    my ($cn) = $dn =~ m!CN=([^/]+)!i;
+    unless (defined $cn) {
+	warn "couldn't parse cn from $dn";
+	return undef;
+    }
+
+    # remove the subject=
+    $dn =~ s/^subject= /X509CERT-/;
+
+    # prepend all the lines of the cert with certif:
+    $cert =~ s/\n/\ncertif:    /g;
+    $cert = "certif:    $cert";
+    
+    # assemble the object
+    $object = <<"OBJ";
+key-cert:  $dn
+method:    X509
+owner:     $cn
+$cert
+OBJ
+
+    # clear up. we don't keep track of cert output; that's the caller's job.
+    system("rm -Rf $workdir");
+    
+    return $object;
+}
 
 1;
