@@ -50,6 +50,9 @@ sub diff {
     if (defined $host->local_as && $host->local_as != $whois->local_as) {
 	push @cmds, "no router bgp ".$host->local_as;
 	push @cmds, "router bgp ".$whois->local_as;
+    } else {
+	# not sure of this logic, but will fix current bork -- doug
+	push @cmds, "router bgp ".$whois->local_as;
     }
     
     # see what we need to do to the 'network' statements
