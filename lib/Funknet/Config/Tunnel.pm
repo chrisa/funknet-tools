@@ -19,7 +19,7 @@ sub new {
     }
 
     unless (defined $args{type} && is_valid_type($args{type})) {
-	warn "missing or invalid type: $args{type}";
+	warn "missing or invalid type";
 	return undef;
     } else {
 	$self->{_type} = $args{type};
@@ -34,7 +34,7 @@ sub new {
     if ($self->{_proto} eq 'IPv4') {
 	for my $addr (qw/ local_address remote_address local_endpoint remote_endpoint / ) {
 	    unless (is_ipv4 ($args{$addr})) {
-		warn "invalid ipv4 address: $addr";
+		warn "invalid ipv4 address";
 		return undef;
 	    } else {
 		$self->{"_$addr"} = $args{$addr};
@@ -43,7 +43,7 @@ sub new {
     } elsif ($self->{_proto} eq 'IPv6') {
 	for my $addr (qw/ local_address remote_address / ) {
 	    unless (is_ipv6 ($args{$addr})) {
-		warn "invalid ipv6 address: $addr";
+		warn "invalid ipv6 address";
 		return undef;
 	    } else {
 		$self->{"_$addr"} = $args{$addr};
@@ -51,7 +51,7 @@ sub new {
 	}
 	for my $addr (qw/ local_endpoint remote_endpoint / ) {
 	    unless (is_ipv4 ($args{$addr})) {
-		warn "invalid ipv4 address: $addr";
+		warn "invalid ipv4 address";
 		return undef;
 	    } else {
 		$self->{"_$addr"} = $args{$addr};

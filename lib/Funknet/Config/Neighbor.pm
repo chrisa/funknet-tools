@@ -65,8 +65,6 @@ sub diff {
     my ($whois, $host) = @_;
     my @cmds;
 
-    warn "checking route-maps on session ".$host->remote_addr;
-
     unless ($whois->remote_as == $host->remote_as) {
 	# change of as - delete, restart from scratch.
 	push @cmds, "no neighbor ".$host->remote_addr;

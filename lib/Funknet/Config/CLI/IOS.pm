@@ -36,7 +36,7 @@ not needed.
 
 =cut
 
-sub get_bgp { my ($self) = @_;
+ sub get_bgp { my ($self) = @_;
 
     my $t = new Net::Telnet ( Timeout => 10,
 			      Prompt  => '/[\>\#]$/',
