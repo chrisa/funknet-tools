@@ -38,31 +38,30 @@ sub config {
     my ($self) = @_;
     my $l = Funknet::Config::ConfigFile->local;
     
-    my $config = "router bgp $l->{as}\n";
+    my @cmds;
+    push @cmds, "router bgp $l->{as}";
 
     if (defined $self->{_routes} && ref $self->{_routes} eq 'ARRAY') {	
         for my $route (@{ $self->{_routes}}) {
-            $config .= " network $route\n";
+            push @cmds, " network $route\n";
         }
     }	
 
     foreach my $neighbor (keys %{ $self->{_neighbors} }) {
-	$config .= $self->{_neighbors}->{$neighbor}->config;
+	push @cmds, $self->{_neighbors}->{$neighbor}->config;
     }
-    $config .= "!\n";
-
 
     foreach my $neighbor (keys %{ $self->{_neighbors} }) {
 	my $n_obj = $self->{_neighbors}->{$neighbor};
 	if (defined $n_obj->{_acl_in}) {
-	    $config .= $n_obj->{_acl_in}->config;
+	    push @cmds, $n_obj->{_acl_in}->config;
 	}
 	if (defined $n_obj->{_acl_out}) {
-	    $config .= $n_obj->{_acl_out}->config;
+	    push @cmds, $n_obj->{_acl_out}->config;
 	}
     }
 
-    return $config;
+    return @cmds;
 }
     
 
