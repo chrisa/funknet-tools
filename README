@@ -16,6 +16,9 @@ router. See the Perl dependencies in the DEPENDENCIES file.
 To try the code: 
 
 * copy funknet.conf.dist to funknet.conf and edit to taste. 
+  -- *or* run config.pl, specifying a non-existent config file and 
+     the -i switch, which will prompt you for the config params
+     shown below. This requires Term::Interact. 
 
 * make sure you have RtConfig available (in /usr/local/bin/RtConfig by
   default -- set the 'rtconfig_path' param in your funknet.conf).
