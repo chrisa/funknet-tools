@@ -55,7 +55,7 @@ use Funknet::RevUpdate        qw/ do_update check_delegate /;
 use Funknet::Whois            qw/ parse_object check_auth /;
 use PGP::Mail;
 
-my $testing = 1; # getopt
+my $testing = 0; # getopt
 
 # parse mail, check sig.
 
