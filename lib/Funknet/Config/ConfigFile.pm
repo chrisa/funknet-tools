@@ -68,7 +68,7 @@ config object which you can use to access keys.
 To retrieve a key, call ->key on the ConfigFile object, or as a class
 method. Multi-value key semantics: called in scalar context, returns
 the value, or the first value of a list. Called in list context,
-returns either the list or just the on value. Never returns a
+returns either the list or just the one value. Never returns a
 reference.
 
 =cut
@@ -90,6 +90,7 @@ sub new {
 	$key =~ s/\s+$//;
 	$values =~ s/^\s+//;
 	$values =~ s/\s+$//;
+	
 	if (exists $config->{$key}) {
 	    my @values;
 	    if ($values =~ /,/) {
@@ -97,10 +98,10 @@ sub new {
 	    } else {
 		@values = ($values);
 	    }
-	    if (ref $config->{key} eq 'ARRAY') {
-		push @{ $config->{key} }, @values;
+	    if (ref $config->{$key} eq 'ARRAY') {
+		push @{ $config->{$key} }, @values;
 	    } else {
-		$config->{key} = [ $config->{key}, @values ];
+		$config->{$key} = [ $config->{$key}, @values ];
 	    }
 	} else {
 	    if ($values =~ /,/) {
