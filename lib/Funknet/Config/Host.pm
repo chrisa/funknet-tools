@@ -128,6 +128,10 @@ sub tunnels {
 	@local_tun = $cli->get_interfaces;
 	
     } else {
+
+	# we'd really like to use Net::Interface here, but it needs teaching about tunnels first. 
+	# either that or we'd like to use Zebra to do it, but that *also* needs to be taught how
+	# to configure tunnels. 
 	
 	# list of interface specs -- actually portable!
 	my $c = `/sbin/ifconfig -a`;
