@@ -145,7 +145,7 @@ sub create {
     }
      
     return (
-	"ifconfig $tun_type$inter create",
+	"ifconfig $tun_type$inter create mtu 1480",
 	"ifconfig $tun_type$inter tunnel $self->{_local_endpoint} $self->{_remote_endpoint}",
 	"ifconfig $tun_type$inter inet $self->{_local_address} $self->{_remote_address} netmask 255.255.255.252"
      );
