@@ -62,6 +62,11 @@ foreach my $as (@as_list) {
 foreach my $tun (@tun_list) {
     get_address($tun, \@addr_list);
 }
+
+foreach my $addr (@addr_list) {
+    check_inetnum($addr);
+}
+
 my @sorted = sort { inet_aton($a->{address}) cmp inet_aton($b->{address}) }
              @addr_list;
 
@@ -148,6 +153,32 @@ sub get_address {
 	        debug("EEP: $address ($tunnel_name) overlaps with $overlap->{tunnel}");
 	    }
 	}
+    }
+}
+
+sub check_inetnum {
+    my ($addr) = @_;
+
+    debug("check_inetnum: creating N::W::R for address $addr->{address}");
+    my $whois = Net::Whois::RIPE->new('whois.funknet.org');
+    $whois->type('inetnum');
+
+    debug('check_inetnum: querying');
+    my $inetnum = $whois->query($addr->{address});
+    if (!defined $inetnum) {
+	debug("EEP: can't obtain an intenum for $addr->{address}");
+	return;
+    }
+
+    # don't think this can happen
+    if (!defined $inetnum->netname) {
+	debug("EEP: inetnum for $addr->{address} has no netname");
+	return;
+    }
+
+    if ($inetnum->netname ne $addr->{tunnel}) {
+	debug("EEP: tunnel $addr->{tunnel} mismatches with inetnum ".$inetnum->netname.' ('.$inetnum->inetnum.')');
+	return;
     }
 }
 
