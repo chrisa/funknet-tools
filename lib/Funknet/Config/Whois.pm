@@ -106,7 +106,9 @@ sub new {
     my ($class, %args) = @_;
     my $self = bless {}, $class;
     debug("Creating a Net::Whois::RIPE object");
-    $self->{_net_whois_ripe} = Net::Whois::RIPE->new( 'whois.funknet.org' );
+    my $host = Funknet::Config::ConfigFile->whois_host || 'whois.funknet.org';
+    my $port = Funknet::Config::ConfigFile->whois_port || 43;
+    $self->{_net_whois_ripe} = Net::Whois::RIPE->new($host,Timeout=>10,Port=>$port);
     unless (defined $self->{_net_whois_ripe}) {
 	die "couldn't get a Net::Whois::RIPE object";
     }

@@ -151,6 +151,8 @@ sub _get_whois {
     my (%args) = @_;
 
     my $rtconfig_path = Funknet::Config::ConfigFile->rtconfig_path;
+    my $host = Funknet::Config::ConfigFile->whois_host || 'whois.funknet.org';
+    my $port = Funknet::Config::ConfigFile->whois_port || 43;
 
     # if it's not there, just return undef;
     unless (-x $rtconfig_path) { 
@@ -158,7 +160,7 @@ sub _get_whois {
     }
     
     my $rtconfig = 
-	$rtconfig_path . ' -h whois.funknet.org -p 43 -s FUNKNET -protocol ripe ' . 
+	$rtconfig_path . " -h $host -p $port -s FUNKNET -protocol ripe " . 
 	'-config cisco -cisco_use_prefix_lists';
 
     my $command = 
