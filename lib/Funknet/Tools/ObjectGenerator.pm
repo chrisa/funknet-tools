@@ -128,6 +128,9 @@ sub mntner {
     unless (defined $args{e_mail}) {
 	error( "didn't get an email address" );
     }
+    unless (defined $args{referral_by}) {
+	error( "didn't get a referral mntner name" );
+    }
 
     if (scalar @errors > 0) {
 	return undef;
@@ -136,10 +139,11 @@ sub mntner {
     my $gen = Funknet::Whois::ObjectGenerator->new('source' => 'FUNKNET', 
 						   'person' => $args{person} );
     
-    my $me = $gen->mntner( 'name'   => $args{name}, 
-			   'auth'   => $args{auth},
-			   'descr'  => $args{descr}, 
-			   'e_mail' => $args{e_mail} );
+    my $me = $gen->mntner( 'name'         => $args{name}, 
+			   'auth'         => $args{auth},
+			   'descr'        => $args{descr}, 
+			   'referral_by'  => $args{referral_by}, 
+			   'e_mail'       => $args{e_mail} );
     unless (defined $me) {
 	error("generating mntner: \n".$gen->error);
 	return undef;
@@ -233,6 +237,7 @@ sub node_set {
 	
 	my $t_inetnum = $gen->inetnum_assign( 'name' => $n,
 					      'peer' => $peer );
+
 	unless (defined $t_inetnum) {
 	    error("generating tunnel inetnum: \n".$gen->error);
 	    return undef;

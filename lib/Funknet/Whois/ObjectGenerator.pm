@@ -264,8 +264,11 @@ sub mntner {
     if (defined $args{name} &&
 	defined $args{auth} && 
 	defined $args{descr} &&
-	defined $args{e_mail}) {
+	defined $args{e_mail} &&
+	defined $args{referral_by}) {
 	
+	my $mnt_by = $args{mnt_by} || $args{name};
+
 	my $m = parse_object(tmpl('mntner'));
 	$m->mntner($args{name});
 	$m->descr ($args{descr});
@@ -276,6 +279,9 @@ sub mntner {
 
 	$m->admin_c($self->{person});
 	$m->tech_c($self->{person});
+
+	$m->mnt_by($mnt_by);
+	$m->referral_by($referral_by);
 
 	return $m;
 
