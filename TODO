@@ -1,4 +1,4 @@
-Known bugs:
+=== Configuration
 
 * diffing access-lists isn't done yet. this might turn out to be hard,
   or we might just replace the existing one with the whois one...
@@ -21,10 +21,8 @@ Known bugs:
     -- this should probably be covered by the 'ignore' concept. 
        ignore_neighbour, etc. 
 
-* Linux ifconfig-reading is stubbed out at the moment. 
-
 * some network statements in the BGP configs aren't visible in 
-  'sho ip bgp', so we miss them. 
+  'sho ip bgp', so we miss them. -- is this still true?
 
 * add methods in Funknet::Config to provide access to configs other
   than as a diff -- both current Host config and proposed Whois
@@ -33,3 +31,19 @@ Known bugs:
 * tests!
 
 * this persistent tunnel config malarkey
+
+=== Reverse Update robot
+
+* should check for existence of the domain object it gets sent. 
+
+* should be doing an SOA check?
+
+* should have some sort of human intervention mode?
+
+=== Web Services
+
+* should work, ideally. 
+
+* interface to routing tables
+
+* ability for central nodes to forward requests to correct router
