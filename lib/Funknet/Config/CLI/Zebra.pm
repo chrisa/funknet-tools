@@ -100,9 +100,30 @@ sub get_bgp {
 	}
     }
 
+    @output = $t->cmd('show ip bgp sum');
+    my $local_as;
+    foreach my $line (@output) {
+	if ($line =~ /local AS number (\d+)/) {
+	    $local_as = "AS$1";
+	}
+	if ($line =~ /BGP not active/) {
+            $local_as = 'AS00000';
+        }
+	if ($line =~ /No IPv4 neighbor is configured/) {
+            $local_as = 'AS00000';
+        }
+    }
+    if (!defined $local_as) {
+	$local_as = 'AS00000';
+    }
+
+    my $bgp = Funknet::Config::BGP->new( local_as => $local_as,
+					 routes  => \@networks,
+					 source => 'host');
+
     @output = $t->cmd('show ip bgp neighbors');
     
-    my ($neighbors, $current_neighbor, $local_as);
+    my ($neighbors, $current_neighbor);
     foreach my $line (@output) {
 	if ($line =~ /^BGP neighbor is (\d+\.\d+\.\d+\.\d+), +remote AS (\d+)/) {
 	    $neighbors->{$1}->{remote_as} = $2;
@@ -115,14 +136,8 @@ sub get_bgp {
 	if ($line =~ /^ Description: (.+)/ && $current_neighbor) {
 	    $neighbors->{$current_neighbor}->{description} = $1;
 	}
-	if ($line =~ /local AS (\d+)/) {
-	    $local_as = "AS$1";
-	}
     }
 
-    my $bgp = Funknet::Config::BGP->new( local_as => $local_as,
-					 routes  => \@networks,
-					 source => 'host');
 
     for my $peer (keys %$neighbors) {
 
