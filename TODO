@@ -15,22 +15,19 @@
   root to alter tunnels. Is userv portable enough? 
 
 * Lots of little BGP statements are missing. There needs to be a way
-  to put arbitrary extra commands in there, as well as things like
-  iBGP sessions.
+  to put arbitrary extra commands in there -- soft reconfig is done. 
+
+* iBGP sessions, random other bits of BGP.
     -- this should probably be covered by the 'ignore' concept. 
-       ignore_neighbour, etc. 
+       ignore_neighbor, etc. 
 
 * some network statements in the BGP configs aren't visible in 
   'sho ip bgp', so we miss them. -- is this still true?
 
-* add methods in Funknet::Config to provide access to configs other
-  than as a diff -- both current Host config and proposed Whois
-  config.
-
 * tests!
   -- started, in t/. 
 
-* this persistent tunnel config malarkey
+* this persistent tunnel config malarkey -- use zebra tunnelfoo
 
 * BGP neighbor config doesn't notice when the tunnel is for another
   router in the same AS, whereas tunnel config does (by comparing
@@ -38,7 +35,9 @@
   here as tunnels do.
 
 * soft-reconfig -- this is applied to every neighbor, but the diff
-  code doesn't yet know how to use it.
+  code doesn't yet know how to use it. -- done - does it work?
+
+* check_login doesn't work -- just returns 1.
 
 === Reverse Update robot
 
