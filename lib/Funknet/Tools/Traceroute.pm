@@ -82,7 +82,7 @@ sub traceroute {
 
 	    $asnum = $cli->get_as($ip);
 	    if ( $asnum && $asnum > 0 && $asnum < 65535 ) {
-		$asnum = "[AS$asnum]";
+		$asnum = "[AS $asnum]";
 	    }
 	    else {
 		$asnum = '';
