@@ -200,10 +200,6 @@ sub ifsym {
     return 'tun';
 }
 
-sub tunnel_proto {
-    return 'udp';
-}
-
 sub valid_type {
     my ($type) = @_;
     $type eq 'tun' && return 1;
@@ -211,14 +207,29 @@ sub valid_type {
     return 0;
 }
 
-sub tunnel_source_port {
+sub firewall_rules {
     my ($self) = @_;
-    return $self->{_ovpn_port};
-}
+    my @rules_out;
 
-sub tunnel_destination_port {
-    my ($self) = @_;
-    return $self->{_ovpn_port};
+    push (@rules_out, 
+	  Funknet::Config::FirewallRule->new(
+					     proto               => 'udp',
+					     source_address      => $self->{_local_endpoint},
+					     destination_address => $self->{_remote_endpoint},
+					     source_port         => $self->{_ovpn_port},
+					     destination_port    => $self->{_ovpn_port},
+					     source              => $self->{_source},));
+    
+    push (@rules_out, 
+	  Funknet::Config::FirewallRule->new(
+					     proto               => 'udp',
+					     source_address      => $self->{_remote_endpoint},
+					     destination_address => $self->{_local_endpoint},
+					     source_port         => $self->{_ovpn_port},
+					     destination_port    => $self->{_ovpn_port},
+					     source              => $self->{_source},));
+    
+    return (@rules_out);
 }
 
 sub tunnel_opvn_file {

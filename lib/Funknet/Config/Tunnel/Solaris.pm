@@ -154,15 +154,36 @@ sub ifsym {
     return 'ip.tun';
 }
 
-sub tunnel_proto {
-    return '4';
-}
-
 sub valid_type {
     my ($type) = @_;
     $type eq 'ipip' && return 1;
     $type eq 'gre'  && return 1;
     return 0;
+}
+
+sub firewall_rules {
+    my ($self) = @_;
+    my @rules_out;
+
+    my $proto;
+    if ($self->{_type} eq 'ipip') { $proto = '4' };
+    if ($self->{_type} eq 'gre')  { $proto = 'gre' };
+    
+    push (@rules_out, 
+	  Funknet::Config::FirewallRule->new(
+					     proto               => $proto,
+					     source_address      => $self->{_local_endpoint},
+					     destination_address => $self->{_remote_endpoint},
+					     source              => $self->{_source},));
+    
+    push (@rules_out, 
+	  Funknet::Config::FirewallRule->new(
+					     proto               => $proto,
+					     source_address      => $self->{_remote_endpoint},
+					     destination_address => $self->{_local_endpoint},
+					     source              => $self->{_source},));
+    
+    return (@rules_out);
 }
 
 1;

@@ -119,10 +119,6 @@ sub ifsym {
     return 'Tunnel';
 }
 
-sub tunnel_proto {
-    return '4';
-}
-
 sub host_tunnels {
     my ($class) = @_;
 
@@ -130,6 +126,31 @@ sub host_tunnels {
     my @local_tun = $cli->get_interfaces;
     
     return @local_tun;
+}
+
+sub firewall_rules {
+    my ($self) = @_;
+    my @rules_out;
+
+    my $proto;
+    if ($self->{_type} eq 'ipip') { $proto = '4' };
+    if ($self->{_type} eq 'gre')  { $proto = 'gre' };
+    
+    push (@rules_out, 
+	  Funknet::Config::FirewallRule->new(
+					     proto               => $proto,
+					     source_address      => $self->{_local_endpoint},
+					     destination_address => $self->{_remote_endpoint},
+					     source              => $self->{_source},));
+    
+    push (@rules_out, 
+	  Funknet::Config::FirewallRule->new(
+					     proto               => $proto,
+					     source_address      => $self->{_remote_endpoint},
+					     destination_address => $self->{_local_endpoint},
+					     source              => $self->{_source},));
+    
+    return (@rules_out);
 }
 
 1;

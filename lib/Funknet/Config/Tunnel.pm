@@ -197,35 +197,6 @@ sub new {
     return undef;
 }
 
-sub firewall_rules {
-    my ($self) = @_;
-    my @rules_out;
-
-    my $proto = $self->tunnel_proto();
-    my $source_port      = $self->can("tunnel_source_port") ? $self->tunnel_source_port() : undef;
-    my $destination_port = $self->can("tunnel_destination_port") ? $self->tunnel_destination_port() : undef;
-
-    push (@rules_out, 
-	  Funknet::Config::FirewallRule->new(
-					     proto               => $proto,
-					     source_address      => $self->{_local_endpoint},
-					     destination_address => $self->{_remote_endpoint},
-					     source_port         => $source_port,
-					     destination_port    => $destination_port,
-					     source              => $self->{_source},));
-    
-    push (@rules_out, 
-	  Funknet::Config::FirewallRule->new(
-					     proto               => $proto,
-					     source_address      => $self->{_remote_endpoint},
-					     destination_address => $self->{_local_endpoint},
-					     destination_port    => $source_port,
-					     source_port         => $destination_port,
-					     source              => $self->{_source},));
-    
-    return (@rules_out);
-}
-
 sub encryption {
     my ($self, $enc) = @_;
     if (defined $enc) {
