@@ -61,11 +61,6 @@ access-class term
 zebra -d
 bgpd -d
 
-# checkout anoncvs.aldigital.co.uk-funknet-tools
-cd ~software/unpacked/
-cvs -d :ext:anoncvs.aldigital.co.uk:/home/cvsroot \
-	co anoncvs.aldigital.co.uk-funknet-tools
-
 # sent this mail, signed with my funknet-whois-db-registered key,
 # for katgate to update the whois on reboot ( dynamic ip ),
 # ( see http://www.funknet.org/doc/routing/whois.html ),
@@ -172,7 +167,7 @@ members:	AS65016
 # mails will fail, and the other nodes will not pick up the change in ip.
 
 # configure funknet
-cd ~software/unpacked/anoncvs.aldigital.co.uk-funknet-tools/
+cd /usr/local/funknet-tools/
 cp funknet.conf.dist funknet.conf-KATGATE
 vi funknet.conf-KATGATE
 

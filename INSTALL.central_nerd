@@ -82,11 +82,6 @@ chmod o+r *
 # local.sh, because otherwise it will take ages before you can login...
 mv sshd.sh 001.sshd.sh
 
-# checkout anoncvs.aldigital.co.uk-funknet-tools
-cd ~software/unpacked/
-cvs -d :ext:anoncvs.aldigital.co.uk:/home/cvsroot \
-	co anoncvs.aldigital.co.uk-funknet-tools
-
 # sent this mail, signed with my funknet-whois-db-registered key,
 # ( see http://www.funknet.org/doc/routing/whois.html ),
 # to auto-dbm@funknet.org : (BEGIN_MAIL)
@@ -173,9 +168,9 @@ source:       FUNKNET
 (END_MAIL)
 
 # configure funknet
-cd ~software/unpacked/anoncvs.aldigital.co.uk-funknet-tools/
+cd /usr/local/funknet-tools/
 cp funknet.conf.dist funknet.conf-BLANK
-ln -s funknet.conf-BLANK funknet.conf
+cp funknet.conf-BLANK funknet.conf
 vi funknet.conf
 
 # edit funknet.conf-BLANK for AS etc, make sure root = runas
