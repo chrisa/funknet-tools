@@ -113,8 +113,8 @@ sub node_set {
     for my $peer (@{$args{peers}}) {
 	my $n = $args{nodename}.'-'.$peers->{$peer}->as_name;
 	
-	my $t_inetnum = $gen->inetnum_assign( 'name'    => $n,
-					      'purpose' => 'tunnel' );
+	my $t_inetnum = $gen->inetnum_assign( 'name' => $n,
+					      'peer' => $peer );
 	
 	my $t = $gen->tunnel( 'name'    =>  $args{nodename}.'-'.$peers->{$peer}->as_name,
 			      'as'      => [$peers->{$peer}->aut_num,$ns->{as}->aut_num],

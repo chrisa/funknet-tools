@@ -1,3 +1,6 @@
+#
+# $Id$
+#
 # Copyright (c) 2003
 #	The funknet.org Group.
 #
@@ -34,8 +37,11 @@ use strict;
 
 use vars qw/ @EXPORT_OK @ISA /;
 @ISA = qw/ Exporter /;
-@EXPORT_OK = qw/ assign_as assign_inetnum /;
+@EXPORT_OK = qw/ assign_as assign_tunnel_inetnum /;
 use Exporter;
+
+use Funknet::Whois qw/ get_object /;
+use Funknet::Whois::DirectMysql;
 
 =head1 NAME
 
@@ -44,32 +50,106 @@ Funknet::Whois::Policy
 =head1 DESCRIPTION
 
 Contains functions to allocate networks from larger networks,
-following policy hints in the larger networks' objects.
+following policy hints in the larger networks' objects, and to assign
+AS numbers. Intended to be used by the ObjectGenerator functionality.
+
+=head1 FUNCTIONS
+
+=head2 assign_as
+
+Returns an available AS number. As currently implented returns the
+*next* available AS number, although the only guarantee is the the AS
+was not in use at the time of the query.
+
+Does not take any notice of AS blocks.
 
 =cut
 
 sub assign_as {
     
-#    my $as = 65000;
-#    do {
-#	my $obj = get_object("AS$as");
-#    } while defined $obj;
+    my $dbh = new Funknet::Whois::DirectMysql;
+    
+    # XXX needs to chop off 'AS' for order by.
+    my $sql = "SELECT aut_num 
+                 FROM aut_num 
+             ORDER BY aut_num DESC
+                LIMIT 1";
 
-    my $as = 65050;
+    my $sth = $dbh->prepare($sql);
+    my $rv = $sql->execute();
+    unless ($rv) {
+	warn "database: $DBI::errstr";
+	return undef;
+    }
+    my ($as) = $sth->fetchrow_array;
+    $sth->finish;
     
     return 'AS'.($as + 1);    
 }
 
-sub assign_inetnum {
-    my ($purpose) = @_;
+=head2 assign_tunnel_inetnum
 
-    if ($purpose eq 'tunnel') {
-	
-	my $inetnum = '10.2.0.0/30';
-	return $inetnum;
-	
+Takes a peer AS as 'AS\d+', which is assumed to be a central node to
+which a tunnel allocation has been made, named '$node-TUNNELS'. 
 
+Selects a /30 inetnum from the allocation made to that central node,
+and returns a string suitable for the 'inetnum:' field of the object,
+i.e. "10.2.0.0 - 10.2.0.3".
+
+=cut
+
+sub assign_tunnel_inetnum {
+    my ($peer) = @_;
+    unless ($peer =~ /^AS\d+$/) {
+	return undef;
+    }
+
+    # get aut-num for our peer
+    my $aut_num = get_object($peer);
+    
+    # get tunnelspace inetnum allocation
+    my $netname = $aut_num->as_name . '-TUNNELS';
+    my $tspace = get_object( $netname );
+    my $inum = $tspace->inetnum;
+
+    my $dbh = new Funknet::Whois::DirectMysql;
+	
+    my ($alloc_start, $alloc_end);
+    if ($inum =~ /(.*) - (.*)/) {
+	($alloc_start, $alloc_end) = ($dbh->ipv4_to_int($1), $dbh->ipv4_to_int($2));
     } else {
+	warn "inetnum didn't parse";
+	return undef;
+    }
+    
+    # find highest inetnum in this allocation
+    my $sql = "SELECT begin_in, end_in 
+                 FROM inetnum 
+                WHERE begin_in > ?
+                  AND end_in < ?
+             ORDER BY end_in DESC
+                LIMIT 1";
+
+    my $sth = $dbh->prepare($sql);
+    my $rv = $sql->execute($alloc_start, $alloc_end);
+    unless ($rv) {
+	warn "database: $DBI::errstr";
+	return undef;
+    }
+    my ($tun_start, $tun_end) = $sth->fetchrow_array;
+    $sth->finish;
+    
+    # return the 30 following this
+    
+    $tun_start += 4;
+    $tun_end += 4;
+    
+    if ($tun_start >= $alloc_start && $tun_end <= $alloc_end) {
+	my $start_ip = $dbh->int_to_ipv4($tun_start);
+	my $end_ip = $dbh->int_to_ipv4($tun_end);
+	return "$start_ip - $end_ip";
+    } else {
+	warn "assignment full?";
 	return undef;
     }
 }

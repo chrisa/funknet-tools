@@ -1,3 +1,6 @@
+#
+# $Id$
+#
 # Copyright (c) 2003
 #	The funknet.org Group.
 #
@@ -33,6 +36,7 @@ package Funknet::Whois::DirectMysql;
 use strict;
 use DBI;
 use base qw/ DBI /;
+use Funknet::Config::Validate qw/ is_ipv4 /;
 
 =head1 NAME
 
@@ -88,3 +92,35 @@ sub new {
     bless $dbh, "Funknet::Whois::DirectMysql";
     return $dbh;
 }
+
+
+sub ipv4_to_int {
+    my ($ipv4) = @_;
+
+    unless (is_ipv4($ipv4) && $ipv4 =~ /(\d+)\.(\d+)\.(\d+)\.(\d+)/) {
+	return undef;
+    } else {
+	return ((256 * 256 * 256 * $1) + (256 * 256 * $2) + (256 * $3) + $4);
+    }
+}
+
+sub int_to_ipv4 {
+    my ($int) = @_;
+    
+    unless ($int >= 0 && $int <= 256**4) {
+	return undef;
+    } else {
+	my $oct1 = int($int / (256 * 256 * 256));
+	$int -= ($oct1 * 256 * 256 * 256);
+	my $oct2 = int($int / (256 * 256));
+	$int -= ($oct2 * 256 * 256);
+	my $oct3 = int($int / 256);
+	$int -= ($oct3 * 256);
+	my $oct4 = $int;
+
+	return "$oct1.$oct2.$oct3.$oct4";
+    }
+}
+
+
+1;
