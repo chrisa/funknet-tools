@@ -1,6 +1,7 @@
 package Funknet::Config::CLI::Zebra;
 use strict;
 use Net::Telnet;
+use Data::Dumper;
 
 =head1 NAME
 
@@ -51,7 +52,16 @@ sub get_bgp {
 	}
 	next unless $go;
 	if ($line =~ /^\*?\>?\s+(\d+\.\d+\.\d+\.\d+)(\/\d+)?\s+0\.0\.0\.0/) {
-	    push @networks, "$1$2";
+		my $mask;
+		if (!defined($2))
+		{
+			$mask='/24';
+		}
+		else
+		{
+			$mask=$2;
+		}
+	    push @networks, "$1$mask";
 	}
 	if ($line =~ /^\*?\>?\s+(\d+\.\d+\.\d+\.\d+)(\/\d+)?\s+$/) {
 	    $current = "$1$2";
