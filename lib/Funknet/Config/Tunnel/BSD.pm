@@ -57,9 +57,10 @@ sub new_from_ifconfig {
     my ($class, $if) = @_;
 
     my $type;
-    $if =~ /^gif(\d+)/ and $type = 'ipip';
-    $if =~ /^gre(\d+)/ and $type = 'gre';
-    my $interface = $1;
+    $if =~ /^(gif)(\d+)/ and $type = 'ipip';
+    $if =~ /^(gre)(\d+)/ and $type = 'gre';
+    my $interface = $2;
+    my $ifname = "$1$2";
     defined $type or return undef;
 
     my ($local_endpoint, $remote_endpoint) = $if =~ /tunnel inet (\d+\.\d+\.\d+\.\d+) --> (\d+\.\d+\.\d+\.\d+)/;
@@ -73,6 +74,7 @@ sub new_from_ifconfig {
 	remote_endpoint => $remote_endpoint,
 	interface => $interface,
 	type => $type,
+	ifname => $ifname,
 	local_os => 'bsd',
 	source => 'host',
     );
