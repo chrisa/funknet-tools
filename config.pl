@@ -69,6 +69,11 @@ Specify the config file location.
 
 Turn on copious debugging information
 
+=head2 -w
+
+Writes out the tunnel config to a file, for use in startup scripts. 
+(Must be used with -c, to generate a full config)
+
 =cut
 
 my %opt;
@@ -131,6 +136,10 @@ if ($opt{a}) {
 
 # Write the tunnel config out to the rcfile
 if ($opt{w}) {
+    if ($opt{c}) {
 	debug("Writing tunnel config");
 	$tun->writeout;
+    } else {
+	debug("attempt to write tunnel config to RCFile from a diff");
+    } 
 }
