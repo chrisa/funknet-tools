@@ -56,11 +56,11 @@ my @addr_list = ();
 my @as_list = @{get_as()};
 
 foreach my $as (@as_list) {
-    get_tunnels($as, \@tun_list);
+    get_tunnels_from_as($as, \@tun_list);
 }
 
 foreach my $tun (@tun_list) {
-    get_address($tun, \@addr_list);
+    get_address_from_tunnel($tun, \@addr_list);
 }
 
 foreach my $addr (@addr_list) {
@@ -107,7 +107,7 @@ sub get_as {
     return(\@as_list);
 }
 
-sub get_tunnels {
+sub get_tunnels_from_as {
     my ($as_name, $tun_list) = @_;
 
     debug("get_tunnels: creating N::W::R for as $as_name");
@@ -129,15 +129,10 @@ sub get_tunnels {
     }
 }
 
-sub get_address {
+sub get_address_from_tunnel {
     my ($tunnel_name, $addr_list) = @_;
 
-    debug("get_address: creating N::W::R for tunnel $tunnel_name");
-    my $whois = Net::Whois::RIPE->new('whois.funknet.org');
-    $whois->type('tunnel');
-
-    debug('get_address: querying');
-    my $tunnel = $whois->query($tunnel_name);
+    my $tunnel = get_tunnel($tunnel_name);
     if (!defined $tunnel) {
 	error("get_address failed for $tunnel_name");
     }
@@ -156,15 +151,32 @@ sub get_address {
     }
 }
 
-sub check_inetnum {
+sub get_inetnum {
     my ($addr) = @_;
-
-    debug("check_inetnum: creating N::W::R for address $addr->{address}");
+    debug("get_inetnum: creating N::W::R for address $addr");
     my $whois = Net::Whois::RIPE->new('whois.funknet.org');
     $whois->type('inetnum');
 
-    debug('check_inetnum: querying');
-    my $inetnum = $whois->query($addr->{address});
+    debug('get_inetnum: querying');
+    my $inetnum = $whois->query($addr);
+    return ($inetnum);
+}
+
+sub get_tunnel {
+    my ($name) = @_;
+    debug("get_tunnel: creating N::W::R for $name");
+    my $whois = Net::Whois::RIPE->new('whois.funknet.org');
+    $whois->type('tunnel');
+
+    debug('get_tunnel: querying');
+    my $tunnel = $whois->query($name);
+    return ($tunnel);
+}
+
+sub check_inetnum {
+    my ($addr) = @_;
+
+    my $inetnum = get_inetnum($addr->{address});
     if (!defined $inetnum) {
 	debug("EEP: can't obtain an intenum for $addr->{address}");
 	return;
@@ -177,7 +189,14 @@ sub check_inetnum {
     }
 
     if ($inetnum->netname ne $addr->{tunnel}) {
-	debug("EEP: tunnel $addr->{tunnel} mismatches with inetnum ".$inetnum->netname.' ('.$inetnum->inetnum.')');
+	debug("EEP: tunnel   : $addr->{tunnel} ($addr->{address}) mismatches");
+	debug("EEP: inetnum  : ".$inetnum->netname.' ('.$inetnum->inetnum.')');
+	my $assign = get_inetnum($addr->{tunnel});
+	if (defined $assign && defined $assign->inetnum) {
+	    debug('EEP: assigned : '.$assign->inetnum);
+	} else {
+	    debug("EEP: no specific net assigned for $addr->{tunnel}");
+	}
 	return;
     }
 }
