@@ -13,20 +13,23 @@ sub config {
         }
     }	
 
-    foreach my $neighbor (@{ $self->{_neighbors} }) {
-	$config .= $neighbor->config;
+    foreach my $neighbor (keys %{ $self->{_neighbors} }) {
+	$config .= $self->{_neighbors}->{$neighbor}->config;
     }
     $config .= "!\n";
 
-    foreach my $neighbor (@{ $self->{_neighbors} }) {
-	if (defined $neighbor->{_acl_in}) {
-	    $config .= $neighbor->{_acl_in}->config;
+    foreach my $neighbor (keys %{ $self->{_neighbors} }) {
+	my $n_obj = $self->{_neighbors}->{$neighbor};
+	if (defined $n_obj->{_acl_in}) {
+	    $config .= $n_obj->{_acl_in}->config;
 	}
-	if (defined $neighbor->{_acl_out}) {
-	    $config .= $neighbor->{_acl_out}->config;
+	if (defined $n_obj->{_acl_out}) {
+	    $config .= $n_obj->{_acl_out}->config;
 	}
     }
     return $config;
 }
+
     
+
 1;

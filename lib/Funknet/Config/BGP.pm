@@ -54,7 +54,7 @@ sub add_session {
 						  acl_out     => $args{acl_out},
 						);
     if (defined $session) {
-	push @{$self->{_neighbors}}, $session;
+	$self->{_neighbors}->{$args{remote_addr}} = $session;
     }
 }
 
