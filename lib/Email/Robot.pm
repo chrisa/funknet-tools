@@ -105,7 +105,7 @@ Returns a useful block of headers as a text blob.
 
 sub header_text {
     my ($self) = @_;
-    return "this would be a header\n";
+    return $self->{_headertext};
 }
 
 =head2 process_header 
@@ -129,6 +129,19 @@ sub process_header {
 	}
 	elsif($l =~ /^from:\s+/i) {
 	    $self->{_fromline} = _getemails($l);
+	    $self->{_headertext} .= "$l\n";
+	}
+	elsif($l =~ /^subject:\s+/i) {
+	    $self->{_headertext} .= "$l\n";
+	}
+	elsif($l =~ /^message-id:\s+/i) {
+	    $self->{_headertext} .= "$l\n";
+	}
+	elsif($l =~ /^date:\s+/i) {
+	    $self->{_headertext} .= "$l\n";
+	}
+	elsif($l =~ /^cc:\s+/i) {
+	    $self->{_headertext} .= "$l\n";
 	}
 	elsif($l =~ /^reply-to:\s+/i) {
 	    $self->{_replytoline} = _getemails($l);
