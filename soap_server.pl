@@ -24,7 +24,7 @@ Funknet::WebServices::IRR::Daemon
     ->new(LocalAddr => $host, LocalPort => $port,
           Reuse => 1)
     ->dispatch_to('/home/funknet/funknet-tools/lib/Funknet/WebServices', 
-		  'Funknet::WebServices::IRR::SOAP')
+		  'Funknet::WebServices::IRR')
     ->handle;
 
 exit 0;
