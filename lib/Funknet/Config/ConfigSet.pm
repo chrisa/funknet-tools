@@ -101,4 +101,16 @@ sub apply {
     }
 }
 
+sub cmds {
+    my ($self) = @_;
+
+    my @cmds;
+    if (defined $self->{_cmds}) {
+	for my $cmd (@{ $self->{_cmds} }) {
+	    push @cmds, $cmd->cmds;
+	}
+    }
+    return @cmds;
+}
+
 1;
