@@ -2,6 +2,46 @@ package Funknet::Config::Tunnel::Solaris;
 use strict;
 use base qw/ Funknet::Config::Tunnel /;
 
+=head1 NAME
+
+Funknet::Config::Tunnel::Solaris
+
+=head1 DESCRIPTION
+
+This class contains methods for parsing, creating and deleting tunnel
+interfaces on Solaris.
+
+=head1 METHODS
+
+=head2 config
+
+Returns the configuration of the Tunnel object as text. This should be
+in roughly the format used by the host. TODO: make this be
+so. Currently we just dump the information in an arbitrary format.
+
+=head2 new_from_ifconfig
+
+Reads a host interface description taken from ifconfig and parses the
+useful information from it. Only 'ip.tun' (equivalent to BSD 'gif')
+interfaces are supported for Solaris; other interface types cause this
+method to return undef.
+
+=head2 create
+
+Returns a list of strings containing commands to configure a tunnel
+interface on Solaris. The interface details are passed in as part of
+$self, and the new interface number is passed in as $inter. The
+commands should assume that no interface with that number currently
+exists.
+
+=head2 delete
+
+Returns a list of strings containing commands to unconfigure a tunnel
+interface on Solaris. The interface should be removed
+(i.e. unplumbed), not just put into the 'down' state.
+
+=cut
+
 sub config {
     my ($self) = @_;
 
@@ -26,7 +66,7 @@ sub new_from_ifconfig {
 
     return Funknet::Config::Tunnel->new(
 	name => 'none',
-\	local_address => $local_address,
+	local_address => $local_address,
 	remote_address => $remote_address,
 	local_endpoint => $local_endpoint,
 	remote_endpoint => $remote_endpoint,

@@ -101,6 +101,9 @@ sub tunnels {
 	$w->type('tunnel');
 	my $tun = $w->query($tun_name);
 	
+	# check that the tunnel endpoint matches the local_host param here?
+	# to allow for multiple routers in an AS?
+
 	for my $i ( 0..1 ) {
 	    my @as = $tun->as;
 	    my @ep = $tun->endpoint;

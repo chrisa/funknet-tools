@@ -1,11 +1,32 @@
 package Funknet::Config::Tunnel;
 use strict;
-use Funknet::Config::Validate qw/ is_ipv4 is_ipv6 is_valid_type /;
 
+use Funknet::Config::Validate qw/ is_ipv4 is_ipv6 is_valid_type /;
 use Funknet::Config::Tunnel::BSD;
 use Funknet::Config::Tunnel::IOS;
 use Funknet::Config::Tunnel::Linux;
 use Funknet::Config::Tunnel::Solaris;
+
+=head1 NAME
+
+Funknet::Config::Tunnel
+
+=head1 DESCRIPTION
+
+This is the generic Tunnel class. It reads the local_os parameter set
+by higher-level code, and calls the appropriate routines in the
+OS-specific classes, returning an object blessed into a specific
+class.
+
+=head1 EXTENDING
+
+Adding a new OS' tunnel implementation requires the following changes:
+extend sub new to read the new local_os parameter; likewise
+new_from_ifconfig. Add a new module Funknet::Config::Tunnel::NewOS.pm
+and use it in this module. Add the new OS' local_os flag to
+Funknet::Config::Validate.pm. Implement specific methods in NewOS.pm. 
+
+=cut
 
 sub new {
     my ($class, %args) = @_;
