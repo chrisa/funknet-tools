@@ -150,13 +150,22 @@ sub tunnels {
     $w->type('aut-num');
     my $as = $w->query($l->{as});
     
+    if (defined $as) {
+	debug("loaded aut-num for $l->{as}");
+    } else {
+	$self->warn("aut-num not found for $l->{as}");
+	return undef;
+    }
+    
     my @local_tun;
   TUNNEL: foreach my $tun_name ($as->tun) {
 	$w->type('tunnel');
 	my $tun = $w->query($tun_name);
 
-	if (!defined $tun) {
-	    $self->warn("tun object $tun_name missing?");
+	if (defined $tun) {
+	    debug("loaded tunnel for $tun_name");
+	} else {
+	    $self->warn("tunnel object $tun_name missing?");
 	    next TUNNEL;
 	}
 	
@@ -248,8 +257,22 @@ sub sessions {
         }
     }
 
+    if (scalar @routes) {
+	debug("found ".(scalar @routes). " routes for $l->{as}");
+    } else {
+	$self->warn("no routes found for $l->{as}");
+	return undef;
+    }
+
     $w->type('aut-num');
     my $as = $w->query($l->{as});
+
+    if (defined $as) {
+	debug("loaded aut-num for $l->{as}");
+    } else {
+	$self->warn("aut-num not found for $l->{as}");
+	return undef;
+    }
 
     my $bgp = Funknet::Config::BGP->new( 
 					local_as => $l->{as},
@@ -262,8 +285,10 @@ sub sessions {
 	$w->type('tunnel');
 	my $tun = $w->query($tun_name);
 
-	if (!defined $tun) {
-	    $self->warn("tun object $tun_name missing?");
+	if (defined $tun) {
+	    debug("loaded tunnel for $tun_name");
+	} else {
+	    $self->warn("tunnel object $tun_name missing?");
 	    next SESSION;
 	}
 	

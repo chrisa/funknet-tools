@@ -32,6 +32,7 @@
 
 package Funknet::Config::AccessList;
 use strict;
+use Funknet::Debug;
 use base qw/ Funknet::Config /;
 
 =head1 NAME
@@ -167,6 +168,10 @@ sub _get_whois {
     my $command = 
 	'@RtConfig '.$args{dir}.' AS'.$args{source_as}.' '.$args{source_addr}.' AS'.
 	$args{peer_as}.' '.$args{peer_addr}."\n";
+    
+    # this is just to lose the extra \n to tidy the debug output
+    my ($debug_command) = $command =~ m!(.*)\n!;
+    debug("running RtConfig: $debug_command");
 
     my @output = `echo '$command' | $rtconfig`;
     
