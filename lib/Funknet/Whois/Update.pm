@@ -222,7 +222,11 @@ sub update {
 	    $fail++;
 	} else {
 	    $success++;
-	    $objects->{$object->type}->{$object->name} = $object->text;
+	    if (defined $object->delete()) {
+		$objects->{$object->type}->{$object->name} = undef;
+	    } else {
+		$objects->{$object->type}->{$object->name} = $object->text;
+	    }
 	}
     }
 

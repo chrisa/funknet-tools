@@ -47,8 +47,6 @@ use strict;
 use Email::Robot;
 use base qw/ Email::Robot /;
 
-use Data::Dumper;
-
 sub success_text {
     my ($self, $keyid, $header, @objects) = @_;
 
@@ -73,8 +71,11 @@ MAILTEXT
 	    # fucking yuck
 	    $name = &{"Funknet::Whois::Object::$type"}($object);
 	}
-	
-	$text .= "Update OK: [$type] $name\n";
+	if (defined $object->delete()) {
+	    $text .= "Delete OK: [$type] $name\n";
+	} else {
+	    $text .= "Update OK: [$type] $name\n";
+	}
     }
 
     $text .= << "MAILTEXT";
@@ -121,7 +122,11 @@ MAILTEXT
 		# fucking yuck
 		$name = &{"Funknet::Whois::Object::$type"}($object);
 	    }
-	    $text .= "Update OK: [$type] $name\n";
+	    if (defined $object->delete()) {
+		$text .= "Delete OK: [$type] $name\n";
+	    } else {
+		$text .= "Update OK: [$type] $name\n";
+	    }
 	}
     }
 
