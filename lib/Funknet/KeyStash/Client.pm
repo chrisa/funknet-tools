@@ -130,7 +130,7 @@ sub get_key {
 	if ($subject eq $self->{_www_cert} &&
 	    $issuer  eq $self->{_www_ca} ) 
 	  {
-	      my $key = $res->message;
+	      my $key = $res->content;
 	      
 	      # write a local copy
 	      $self->_write_file('key',$cn,$key);

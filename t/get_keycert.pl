@@ -39,4 +39,4 @@ if (!defined $key) {
     exit 1;
 }
 
-print "OK";
+print "OK\n";
