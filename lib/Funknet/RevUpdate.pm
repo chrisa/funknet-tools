@@ -50,6 +50,7 @@ use vars qw/ @EXPORT_OK @ISA /;
 use Exporter; 
 
 my @auth_zones = qw/ 10.in-addr.arpa 16.172.in-addr.arpa 168.192.in-addr.arpa /;
+my @errors;
 
 =head2 check_delegate
 
@@ -66,32 +67,44 @@ sub check_delegate {
 
     my $ok;
     for my $ns (@ns) {
+
+	# check we've been given a valid-looking nameserver - mustn't be numeric.
+	unless ($ns =~ /^[-a-z.]$/) {
+	    push @errors, "nameserver $ns doesn't look right";
+	}
+
+	# query the nameservers we've been given for the zone we've been asked to 
+	# delegate to them. 
+
 	$res->nameservers($ns);
+
+	# SOA check ?
+
+	# NS check
+
 	my $query = $res->query($rev_zone, 'NS');
-	
 	my @results;
 	if ($query) {
 	    foreach my $rr (grep { $_->type eq 'NS' } $query->answer) {
 		push @results, $rr->nsdname;
 	    }
 	} else {
-	    print STDERR "query failed: ", $res->errorstring, "\n";
+	    push @errors, "query failed: ", $res->errorstring;
+	    return undef;
 	} 
 
 	# the list @results should be the same as @ns. 
 
-	print STDERR Dumper { ns => \@ns, results => \@results };	
-	
 	if ((join /-/,sort @ns) eq (join /-/,sort @results)) {
-	    print STDERR "match for $ns\n";
 	    $ok++;
+	} else {
+	    push @errors, "nameserver $ns has incorrect NS records: " . join ',',@results;
 	}
     }
     if ($ok == scalar @ns) {
-	print STDERR "returning ok\n";
 	return 1;
     } else {
-	print STDERR "returning not ok\n";
+	push @errors, "nameservers to delegate to don't have correct NS records";
 	return undef;
     }
 }
@@ -124,8 +137,10 @@ sub do_update {
     # create the key object
     
     my $keyfile  = "etc/revupdate.key"; 
-    open KEY, $keyfile
-	or die "can't open keyfile: $!";
+    unless (open KEY, $keyfile) {
+	push @errors, "couldn't open $keyfile: $!";
+    }
+
     my $key_name = <KEY>; chomp $key_name;
     my $key      = <KEY>; chomp $key;
     my $tsig = Net::DNS::RR->new("$key_name TSIG $key");
@@ -148,14 +163,28 @@ sub do_update {
     # Did it work?
     if (defined $reply) {
             if ($reply->header->rcode eq "NOERROR") {
-                print STDERR "Update succeeded\n";
 		return 1;
         } else {
-            print STDERR "Update failed: ", $reply->header->rcode, "\n";
+            push @errors, "Update failed: ", $reply->header->rcode;
 	    return undef;
             }
     } else {
-        print STDERR "Update failed: ", $res->errorstring, "\n";
+        push @errors, "Update failed: ", $res->errorstring;
 	return undef;
     } 
 }
+
+=head2 errors
+
+Returns the error stack. 
+
+=cut
+
+sub errors {
+    if (wantarrary) {
+	return @errors;
+    } else {
+	return join ',',@errors;
+    }
+}
+
