@@ -38,7 +38,9 @@ use Test::More tests => 24;
 
 BEGIN { use_ok ( 'Funknet::Config::Host' ); }
 
-Funknet::Config::ConfigFile::make_local_sub('AS64512');
+# TEST PHASE ONE -- AS64512, an IOS site. 
+
+Funknet::Config::ConfigFile::make_local_sub(as => 'AS64512');
 
 my $host = new Funknet::Config::Host;
 my $bgp = $host->sessions;
@@ -85,6 +87,58 @@ is ($t->{_remote_endpoint}, '1.4.3.2',                      'remote endpoint is 
 is ($t->source,             'host',                        'source of tunnel object is host');
 is ($t->type,               'ipip',                         'type of tunnel object is ipip');
 is ($t->{_proto},           '4',                            'protocol of tunnel object is IPv4');
+
+# # TEST PHASE ONE -- AS64515, a Zebra/BSD site. 
+
+# Funknet::Config::ConfigFile::make_local_sub( as => 'AS64515',
+#                                              os => 'bsd',
+# 					     router => 'zebra' );
+
+# my $host = new Funknet::Config::Host;
+# my $bgp = $host->sessions;
+# my $tun = $host->tunnels;
+
+# # test BGP object
+
+# is (ref $bgp,     'Funknet::Config::BGP::IOS', 'we have a BGP::IOS object');
+# is ($bgp->source, 'host',                     'source of BGP object is host');
+
+# my @neighbors = $bgp->neighbors;
+# is (scalar @neighbors, 1, 'we have 1 BGP neighbor');
+# ok (defined $bgp->{_neighbors}->{'10.0.0.2'}, 'it is 10.0.0.2');
+
+# my $n = $bgp->{_neighbors}->{'10.0.0.2'};
+# is (ref $n,          'Funknet::Config::Neighbor', 'we have a Neighbor object');
+# is ($n->source,      'host',                     'source of Neighbor object is host');
+# is ($n->remote_addr, '10.0.0.2',                  'peer is 10.0.0.2');
+# is ($n->remote_as,   '64513',                     'peer AS is AS64513');
+# is ($n->description, 'SOMETEST-OTHERTEST',        'description is SOMETEST-OTHERTEST');
+
+# TODO: {
+
+# local $TODO = 'looks like bgp network parsing doesn\'t actually work very well';
+
+# is (scalar @{$bgp->routes}, 1,            'we have one BGP network');
+# is ($bgp->{_routes}->[0],   '1.0.0.0/24', 'it is 1.0.0.0/24');
+# };
+
+# is ($bgp->{_local_as},      '64512',      'our AS is 64512');
+
+# # test tunnel object
+
+# is (ref $tun,             'Funknet::Config::TunnelSet', 'we have a TunnelSet object');
+# is ($tun->source,         'host',                      'source of TunnelSet object is host');
+# is (scalar $tun->tunnels, 1,                            'we have one tunnel');
+
+# my $t = $tun->{_tunnels}->[0];
+# is (ref $t,                 'Funknet::Config::Tunnel::IOS', 'it is an IOS tunnel');
+# is ($t->{_local_address},   '10.0.0.1',                     'local address is 10.0.0.1');
+# is ($t->{_remote_address},  '10.0.0.2',                     'remote address is 10.0.0.2');
+# is ($t->{_local_endpoint},  '1.2.3.4',                      'local endpoint is 1.2.3.4');
+# is ($t->{_remote_endpoint}, '1.4.3.2',                      'remote endpoint is 1.4.3.2');
+# is ($t->source,             'host',                        'source of tunnel object is host');
+# is ($t->type,               'ipip',                         'type of tunnel object is ipip');
+# is ($t->{_proto},           '4',                            'protocol of tunnel object is IPv4');
 
 
 # ==========================================================================
@@ -583,15 +637,14 @@ use strict;
 # factory method for a 'local' sub. don't ask. just don't ask. 
 
 sub make_local_sub {
-
-    my $as = shift;
+    my (%args) = @_;
 
     my $local_hash = {
-	 as       => $as,
-	 os       => 'ios',
-	 host     => '127.0.0.1',
-	 router   => 'ios',
-	 endpoint => '1.2.3.4',
+	 as       => $args{as}         || 'AS64514',
+	 os       => $args{os}         || 'ios',
+	 host     => $args{host}       || '127.0.0.1',
+	 router   => $args{router}     || 'ios',
+	 endpoint => $args{endpoint}   || '1.2.3.4',
     };
 
     *local=sub {
