@@ -1,0 +1,18 @@
+funknet-tools for FreeBSD
+---------------------------------
+
+cvsweb:	http://zero.lemonia.org/cgi-bin/cvsweb.cgi/zero-lemon-ports/packages/funknet-tools
+
+if you have ssh access to zero.lemonia.org:
+cvs -d zero.lemonia.org:/home/cvsroot co zero-lemon-ports
+
+the funknet-tools port depends on an amount of the zero-lemon-ports tree
+this is because some of its dependencies are sub-optimal or non-existant
+
+the funknet-tools port downloads:
+	http://blank.netdotnet.net/funknet-tools-DATE.tar.gz
+
+this package, port, and associated files, can be auto-updated by running:
+	blank.netdotnet.net:~doug/make-funknet-tools-tarball.sh
+
+ -- doug <doug@lemonia.org>, Sun, 20 Jun 2004 20:00:23 +0000
