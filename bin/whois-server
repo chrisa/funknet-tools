@@ -33,7 +33,7 @@ sub cleanup {
     exit 0;
 }
 
-$pidfile = '/var/run/whois-server-'.($config->whois_source()).'.pid';
+$pidfile = ($config->pidfile_dir).'/whois-server-'.($config->whois_source()).'.pid';
 if (-f $pidfile) {
     open PID, "$pidfile"
       or die "can't open pidfile $pidfile: $!";
