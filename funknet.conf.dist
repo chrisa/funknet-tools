@@ -18,6 +18,10 @@ root = sudo
 
 warnings = 1
 
+# stop on errors?
+
+stop = 0
+
 # authentication
 
 username = yourusernameornothing
