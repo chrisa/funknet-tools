@@ -28,6 +28,7 @@
   config.
 
 * tests!
+  -- started, in t/. 
 
 * this persistent tunnel config malarkey
 
