@@ -34,6 +34,7 @@ package Funknet::Config::CommandSet;
 use strict;
 use Funknet::Config::CLI;
 use Funknet::Config::Root;
+use Funknet::Config::RCFile;
 
 =head1 NAME
 
@@ -94,8 +95,7 @@ sub as_text {
     my ($self) = @_;
     my $l = Funknet::Config::ConfigFile->local;
     if (scalar @{ $self->{_cmds} }) {
-	my $text = "in enable mode on $l->{host}\n";
-	$text .= join "\n", @{ $self->{_cmds} };
+	my $text = join "\n", @{ $self->{_cmds} };
 	return $text;
     } else {
 	return '';
@@ -119,8 +119,7 @@ use base qw/ Funknet::Config::CommandSet /;
 sub as_text {
     my ($self) = @_;
     if (scalar @{ $self->{_cmds} }) {
-	my $text = "as root on localhost:\n";
-	$text .= join "\n", @{ $self->{_cmds} };
+	my $text = join "\n", @{ $self->{_cmds} };
 	return $text;
     } else {
 	return '';
@@ -146,6 +145,15 @@ sub apply {
         return $text;
     } else {
         return '';
+    }
+}
+
+sub writeout {
+    my ($self) = @_;
+
+    if (scalar @{ $self->{_cmds} }) {
+	my $rcfile = Funknet::Config::RCFile->new();
+	$rcfile->write($self);
     }
 }
 
