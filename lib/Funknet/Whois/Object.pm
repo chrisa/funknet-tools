@@ -32,6 +32,8 @@
 package Funknet::Whois::Object;
 use strict;
 
+use base qw/ Net::Whois::RIPE::Object /;
+
 =head1 NAME
 
 Funknet::Whois::Object
@@ -58,12 +60,12 @@ sub text {
 	my ($key, $val) = $line =~ /(.+): (.+)/;
 	push @lines, { key => $key, val => $val };
 	if (length $key > $maxkey) {
-	    $maxkey = $key;
+	    $maxkey = length $key;
 	}
     }
     $text = '';
     for my $line (@lines) {
-	$text .= $line->{key} . (' ' x ($maxkey - length $line->{key})) . ': ' . $line->{key};
+	$text .= $line->{key} . ': ' . (' ' x ($maxkey - length $line->{key})) . $line->{val} . "\n";
     }
     return $text;
 }
