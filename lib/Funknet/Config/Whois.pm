@@ -5,9 +5,6 @@ use Funknet::Config::Tunnel;
 use Funknet::Config::TunnelSet;
 use Funknet::Config::BGP;
 
-
-use Data::Dumper;
-
 =head1 NAME
 
 Funknet::Config::Whois
@@ -123,10 +120,6 @@ sub sessions {
     
     $w->type('route');
     $w->inverse_lookup('origin');
-
-    print Dumper $w;
-
-    print Dumper $l;
 
     my $routes = $w->query_iterator($l->{as});
     my @routes;
