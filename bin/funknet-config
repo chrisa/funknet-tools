@@ -139,7 +139,10 @@ if ($opt{c}) {
     }
     if ($opt{e}) {
 	debug("Generating encryption diff");
-	$enc = $config->enc_diff($whois_tun, $host_tun) or die "enc_diff files: ".$config->error; 
+	$enc = $config->enc_diff($whois_tun, $host_tun) or die "enc_diff files: ".$config->error;
+	# replace the $tun diff from above with a regenned 
+	# one that includes the possible encryption config
+	$tun = $whois_tun->diff($host_tun);
     }
 }
 

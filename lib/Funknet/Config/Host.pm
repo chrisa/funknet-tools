@@ -36,9 +36,8 @@ use Funknet::Config::Tunnel;
 use Funknet::Config::TunnelSet;
 use Funknet::Config::BGP;
 use Funknet::Config::CLI;
+use Funknet::Config::Validate qw/ is_valid_os /;
 use Funknet::Debug;
-
-use Data::Dumper;
 
 =head1 NAME
 
@@ -129,35 +128,20 @@ sub tunnels {
     my @local_tun;
     my $l = Funknet::ConfigFile::Tools->local;
 
-    # special case of cisco needing CLI module
-    if ($l->{os} eq 'ios') {
-
-	my $cli = Funknet::Config::CLI->new();
-	@local_tun = $cli->get_interfaces;
-
-    } else {
-
-	# we'd really like to use Net::Interface here, but it needs teaching about tunnels first. 
-	# either that or we'd like to use Zebra to do it, but that *also* needs to be taught how
-	# to configure tunnels. 
-
-	# openvpn point to note - we should have a tun device in the ifconfig list which has 
-	# the relevant information. some OSs even have an 'opened by pid blah' text.
-	
-	# list of interface specs -- actually portable!
-	my $c = `/sbin/ifconfig -a`;
-	my @if = split /(?=^[a-z])/m,$c;
-
-	for my $if (@if) {
-	    chomp $if;
-	    my $tun = Funknet::Config::Tunnel->new_from_ifconfig( $if, $l->{os} );
-	    if (defined $tun) {
-
-
-		push @local_tun, $tun;
-	    }
-	}
+    unless (ref $l->{os}) {
+	$l->{os} = [ $l->{os} ];
     }
+    
+    for my $t (@{ $l->{os} }) {
+	
+ 	# validate this os, and get its corresponding 
+ 	# class name (correct capitalisation really).
+ 	my $tclass;
+ 	next unless ($tclass = is_valid_os($t));	
+	
+	no strict;
+	push @local_tun, &{"Funknet::Config::Tunnel::".$tclass."::host_tunnels"};
+     }
 
     return Funknet::Config::TunnelSet->new( tunnels => \@local_tun,
 					    source => 'host' );
@@ -172,16 +156,9 @@ sub firewall {
     my $fwall_set;
     my $l = Funknet::ConfigFile::Tools->local;
 
-    # special case of cisco needing CLI module
-    if ($l->{os} eq 'ios') {
+    $fwall_obj = Funknet::Config::FirewallRuleSet->new(source => 'host');
+    $fwall_set = $fwall_obj->local_firewall_rules;
 
-#	my $cli = Funknet::Config::CLI->new();
-#	@local_fwall = $cli->local_firewall_rules;
-
-    } else {
-	$fwall_obj = Funknet::Config::FirewallRuleSet->new(source => 'host');
-	$fwall_set = $fwall_obj->local_firewall_rules;
-    }
     return($fwall_set);
 }
 

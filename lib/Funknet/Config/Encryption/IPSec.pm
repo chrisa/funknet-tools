@@ -276,5 +276,4 @@ sub peer {
     return $self->{_peer};
 }
 
-
 1;

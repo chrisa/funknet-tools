@@ -84,6 +84,23 @@ sub config {
 	"$self->{_local_address} -> $self->{_remote_address}\n";
 }
 
+sub host_tunnels {
+    my ($class) = @_;
+    my @local_tun;
+
+    my $c = `/sbin/ifconfig -a`;
+    my @if = split /(?=^[a-z])/m,$c;
+    
+    for my $if (@if) {
+	chomp $if;
+	my $tun = Funknet::Config::Tunnel::Solaris->new_from_ifconfig( $if );
+	if (defined $tun) {
+	    push @local_tun, $tun;
+	}
+    }
+    return @local_tun;
+}
+
 sub new_from_ifconfig {
     my ($class, $if) = @_;
 
@@ -139,6 +156,13 @@ sub ifsym {
 
 sub tunnel_proto {
     return '4';
+}
+
+sub valid_type {
+    my ($type) = @_;
+    $type eq 'ipip' && return 1;
+    $type eq 'gre'  && return 1;
+    return 0;
 }
 
 1;

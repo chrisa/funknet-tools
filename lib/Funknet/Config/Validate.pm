@@ -41,7 +41,7 @@ use vars qw/ @EXPORT_OK %EXPORT_TAGS /;
 
 @EXPORT_OK = qw/ is_ipv4 is_ipv6 is_valid_type is_valid_as is_valid_firewall
                  is_valid_os is_valid_router is_valid_proto 
-                 is_valid_ifname is_valid_encryption 
+                 is_valid_ifname is_valid_encryption
 		 is_valid_filepath is_valid_ipsec_proto
 		 is_valid_ipsec_keying is_valid_ipsec_cipher
 		 is_valid_ipsec_hash is_valid_ipsec_dhgroup
@@ -78,10 +78,11 @@ sub is_ipv6 {
 sub is_valid_type {
     my ($type) = @_;
 
-    if ($type eq 'sit'  ||
-	$type eq 'tun' ||
-	$type eq 'tap' ||
-	$type eq 'ipip' ||
+    if ($type eq 'sit'     ||
+	$type eq 'tun'     ||
+	$type eq 'tap'     ||
+	$type eq 'ipip'    ||
+	$type eq 'openvpn' ||
 	$type eq 'gre') {
 	return 1;
     } else {
@@ -103,15 +104,13 @@ sub is_valid_firewall {
 sub is_valid_os {
     my ($os) = @_;
 
-    if ($os eq 'linux'   ||
-	$os eq 'bsd'     ||
-	$os eq 'ios'     ||
-	$os eq 'openvpn'     ||
-	$os eq 'solaris' ) {
-	return 1;
-    } else {
-	return 0;
-    }
+    $os eq 'linux'   && return 'Linux';
+    $os eq 'bsd'     && return 'BSD';
+    $os eq 'ios'     && return 'IOS';
+    $os eq 'openvpn' && return 'OpenVPN';
+    $os eq 'solaris' && return 'Solaris';
+    
+    return 0;
 }
 
 sub is_valid_router {

@@ -183,4 +183,9 @@ sub _parse_openvpn_conf {
     return $config;
 }
 
+sub peer {
+    my ($self) = @_;
+    return $self->{_tun}->{_remote_endpoint};
+}
+
 1;

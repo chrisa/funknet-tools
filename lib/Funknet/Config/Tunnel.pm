@@ -33,7 +33,7 @@
 package Funknet::Config::Tunnel;
 use strict;
 
-use Funknet::Config::Validate qw/ is_ipv4 is_ipv6 is_valid_type 
+use Funknet::Config::Validate qw/ is_ipv4 is_ipv6 is_valid_type is_valid_os
                                   is_valid_proto is_valid_ifname /;
 use Funknet::Config::Tunnel::BSD;
 use Funknet::Config::Tunnel::IOS;
@@ -161,22 +161,42 @@ sub new {
 	$self->{_local_public_endpoint} = $self->{_local_endpoint};
 	$self->{_local_endpoint} = $l->{source};
     }
-   
-    # rebless if we have a specific OS to target 
-    # for this tunnel endpoint.
 
-    $l->{os} eq 'bsd' and 
-	bless $self, 'Funknet::Config::Tunnel::BSD';
-    $l->{os} eq 'ios' and 
-	bless $self, 'Funknet::Config::Tunnel::IOS';
-    $l->{os} eq 'linux' and
-	bless $self, 'Funknet::Config::Tunnel::Linux';
-    $l->{os} eq 'solaris' and
-	bless $self, 'Funknet::Config::Tunnel::Solaris';
-    $l->{os} eq 'openvpn' and
-	bless $self, 'Funknet::Config::Tunnel::OpenVPN';
+    # make the decision as to what type of tunnel we'll set up here. 
+    # we have two params, $l->{os} and $self->{_type}. 
+    #
+    # $l->{os} is a list, and we offer $self->{_type} to each
+    # tunnel class in turn; if it accepts then we bless into 
+    # that class. 
+    #
+    # this will be ok if there are no namespace clashes in $self->{_type},
+    # if that happens, we'll go with the first one. 
 
-    return $self;
+    unless (ref $l->{os}) {
+	$l->{os} = [ $l->{os} ];
+    }
+
+    for my $t (@{ $l->{os} }) {
+	
+ 	# validate this os, and get its corresponding 
+ 	# class name (correct capitalisation really).
+ 	my $tclass;
+ 	next unless ($tclass = is_valid_os($t));	
+
+	# i'd so use "no strict refs" here, but it 
+	# just makes my perl go "Unknown error":
+	# (This is perl, v5.8.1-RC3 built for darwin-thread-multi-2level)
+
+	no strict;
+	my $type = &{"Funknet::Config::Tunnel::".$tclass."::valid_type"}($self->{_type});
+ 	if ($type) {
+ 	    bless $self, "Funknet::Config::Tunnel::$tclass";
+ 	    return $self;
+ 	}
+    }
+    
+    $self->warn("no tunnel class accepted $self->{_type}");
+    return undef;
 }
 
 sub firewall_rules {

@@ -123,4 +123,13 @@ sub tunnel_proto {
     return '4';
 }
 
+sub host_tunnels {
+    my ($class) = @_;
+
+    my $cli = Funknet::Config::CLI->new();
+    my @local_tun = $cli->get_interfaces;
+    
+    return @local_tun;
+}
+
 1;

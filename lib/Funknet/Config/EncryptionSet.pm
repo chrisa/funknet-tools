@@ -171,7 +171,14 @@ sub diff {
 	}
     }
 
-    return @diff;
+    my $fileset = Funknet::Config::SystemFileSet->new(
+						      files => \@diff,
+						     );
+
+    my $cs = Funknet::Config::ConfigSet->new(
+					     files => [ $fileset ],
+					    );
+    return $cs;
 }
 
 1;
