@@ -206,5 +206,27 @@ sub check_login {
     }
 }
 
+sub exec_enable {
+    my ($self, $cmdset) = @_;
+
+    my $t = new Net::Telnet ( Timeout => 10,
+                              Prompt  => '/[ \>\#]$/',
+                              Port    => 23,
+                            );
+    $t->input_log(\*STDOUT);
+    $t->open($self->{_local_host});
+    $t->cmd($self->{_password});
+    $t->cmd('terminal length 0');
+    $t->cmd('enable');
+    $t->cmd($self->{_enable});
+    for my $cmd ($cmdset->cmds) {
+        for my $cmd_line (split /\n/, $cmd) {
+            $t->cmd($cmd_line);
+            sleep 2;
+        }
+    }
+    $t->cmd('disable');
+    $t->close;
+}
 
 1;
