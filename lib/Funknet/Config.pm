@@ -74,7 +74,7 @@ The funknet-tools autoconfig system.
 =cut
 
 use vars qw/ $VERSION /;
-$VERSION = 0.99;
+$VERSION = 0.8;
 
 my (@warnings, @errors);
 
