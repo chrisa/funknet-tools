@@ -4,6 +4,7 @@ use strict;
 
 use lib './lib';
 
+use Funknet::Whois;
 use Net::Whois::RIPE;
 use Data::Dumper;
 
@@ -13,7 +14,9 @@ my @done;
 my %nerd_autnum_objects;
 my %splurby_nerd_tunnels;
 my %as_names;
+my %as_nums;
 my %endpoints;
+my %nerd_tunnels;
 
 my $whois = Net::Whois::RIPE->new( 'whois.funknet.org');
 unless (defined $whois)
@@ -22,52 +25,29 @@ unless (defined $whois)
 }
 
 my $transobj = $whois->query('AS-FUNKTRANSIT');
-my $trans_text = $transobj->text();
-my @lines = split('\n',$trans_text);
 
-foreach my $thing (@lines)
-{
-	if($thing =~ /^members:/)
-	{
-		$thing =~ s/[^A]+(AS\d\d\d\d\d)/$1/;
-		push (@ass,$thing);
-	}
-}
+@ass = $transobj->members;
 
 $whois->type('aut-num');
 
-foreach my $thing (@ass)
+foreach my $thing ($transobj->members)
 {
 	next if (($thing eq 'AS65000') or ($thing eq 'AS65023'));
 	$whois->type('aut-num');
 	my $reply = $whois->query($thing);
-	my $text = $reply->text;
-	@lines = split('\n',$text);
-	foreach my $bitch (@lines)
-	{
-        	if($bitch =~ /^as-name:/)
-        	{
-			$bitch =~ s/as-name: (.*)/$1/;
-			$whois->type('tunnel');
-			$as_names{$thing} = $bitch;
-        	}
-	}
+	$nerd_autnum_objects{$thing} = $reply;
+	$as_names{$thing} = $reply->as_name;
+	$as_nums{$reply->as_name} = $thing;
 }
 
 $whois->type('aut-num');
 my $splurby_aut_num = $whois->query('AS65000');
-my $splurby_aut_text = $splurby_aut_num->text();
-@lines = split('\n',$splurby_aut_text);
 
-foreach my $thing (@lines)
+foreach my $thing ($splurby_aut_num->tun)
 {
-        if($thing =~ /^tun:/)
-        {
-		$thing =~ s/tun: (.*)/$1/;
 		$whois->type('tunnel');
 		my $tun = $whois->query($thing);
 		$splurby_nerd_tunnels{$thing} = $tun;		
-        }
 }
 
 foreach my $splurby_tun (keys(%splurby_nerd_tunnels))
@@ -83,13 +63,11 @@ foreach my $splurby_tun (keys(%splurby_nerd_tunnels))
 		my $tmp = shift(@endpoints);
 		$ip = shift(@endpoints);
 		$other_as = $as2;
-		print STDERR "as1 matched\n";
 	}
 	elsif ($as2  =~ /AS65000/m)
 	{
 		$ip = shift(@endpoints);
 		$other_as = $as1;
-		print STDERR "as2 matched\n";
 	}
 	$endpoints{$other_as} = $ip;
 	print "$other_as:$ip\n";
@@ -135,9 +113,13 @@ foreach my $thing (@ass)
 		print FILE "tech-c: CA1-FUNKNET\n";
 		print FILE "mnt-by: FUNK-MNT\n";
 		print FILE "notify: chris\@nodnol.org\n";
+		print FILE "notify: dunc\@lemonia.org\n";
 		print FILE "changed: dunc\@lemonia.org\n";
 		print FILE "source: FUNKNET\n";
 		print FILE "\n";
+
+		push(@{$nerd_tunnels{$thing}},$tunnel_name);
+		push(@{$nerd_tunnels{$twat}},$tunnel_name);
 
 		push(@done,"$local_as_name:$remote_as_name");
 		push(@done,"$remote_as_name:$local_as_name");
@@ -152,5 +134,62 @@ foreach my $thing (@ass)
 		}
 	}
 }
+close(FILE);
+
+open(FILE,">nerd_autnum_objects");
+foreach my $nerd_aut_nums (keys(%nerd_autnum_objects))
+{
+	my $my_as_name = $as_names{$nerd_aut_nums};
+
+	my @new_tunnels;	
+	my @new_import;	
+	my @new_export;	
+
+	my @old_tunnels = $nerd_autnum_objects{$nerd_aut_nums}->tun;	
+	my @old_import = $nerd_autnum_objects{$nerd_aut_nums}->ximport;	
+	my @old_export = $nerd_autnum_objects{$nerd_aut_nums}->export;	
+
+	foreach my $thing (@old_tunnels)
+	{
+		push(@new_tunnels,$thing);
+	}
+	foreach my $thing (@old_import)
+	{
+		push(@new_import,$thing);
+	}
+	foreach my $thing (@old_export)
+	{
+		push(@new_export,$thing);
+	}
+	foreach my $thing (@{$nerd_tunnels{$nerd_aut_nums}})
+	{
+		my $other_as;
+
+		if($thing =~ /^$my_as_name/)
+		{
+			($other_as = $thing) =~ s/^$my_as_name-(.*)/$1/; 
+		}
+		else
+		{
+			($other_as = $thing) =~ s/(.*)-$my_as_name$/$1/;
+		}
+		
+		push(@new_tunnels,$thing);
+		my $new_imp = "from $as_nums{$other_as} action pref=100; accept $as_nums{$other_as} and NOT $nerd_aut_nums";
+		my $new_exp = "to $as_nums{$other_as} announce $nerd_aut_nums";
+		push(@new_import,$new_imp); 
+		push(@new_export,$new_exp); 
+	}
+
+	$nerd_autnum_objects{$nerd_aut_nums}->tun(\@new_tunnels);
+	$nerd_autnum_objects{$nerd_aut_nums}->export(\@new_export);
+	$nerd_autnum_objects{$nerd_aut_nums}->ximport(\@new_import);
+	
+	my $text = $nerd_autnum_objects{$nerd_aut_nums}->text;
+	print FILE "$text";
+	print FILE "\n";
+	print FILE "\n";
+}
+
 close(FILE);
 exit(0);
