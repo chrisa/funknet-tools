@@ -37,7 +37,7 @@
 package Funknet::Config::Whois;
 use strict;
 
-use Net::Whois::RIPE;
+use Funknet::Whois::Client;
 use Funknet::Config::Tunnel;
 use Funknet::Config::TunnelSet;
 use Funknet::Config::BGP;
@@ -110,21 +110,23 @@ local_os flag passed to the constructor.
 sub new {
     my ($class, %args) = @_;
     my $self = bless {}, $class;
-    debug("Creating a Net::Whois::RIPE object");
+    debug("Creating a Funknet::Whois::Client object");
     my $host = Funknet::ConfigFile::Tools->whois_host || 'whois.funknet.org';
     my $port = Funknet::ConfigFile::Tools->whois_port || 43;
-    $self->{_net_whois_ripe} = Net::Whois::RIPE->new($host,Timeout=>10,Port=>$port);
-    unless (defined $self->{_net_whois_ripe}) {
-	die "couldn't get a Net::Whois::RIPE object";
+    $self->{_fwc} = Funknet::Whois::Client->new($host, 
+						Timeout => 10, 
+						Port    => $port);
+    unless (defined $self->{_fwc}) {
+	die "couldn't get a Funknet::Whois::Client object";
     }
-    $self->{_net_whois_ripe}->source(Funknet::ConfigFile::Tools->whois_source || 'FUNKNET');
-    debug("Done creating a Net::Whois::RIPE object");
+    $self->{_fwc}->source(Funknet::ConfigFile::Tools->whois_source || 'FUNKNET');
+    debug("Done creating a Funknet::Whois::Client object");
     return $self;
 }
 
 sub my_tunnels {
     my ($self) = @_;
-    my $w = $self->{_net_whois_ripe};
+    my $w = $self->{_fwc};
     my $l = Funknet::ConfigFile::Tools->local;
     $w->type('aut-num');
     my $as = $w->query($l->{as});
@@ -142,15 +144,13 @@ sub my_tunnels {
 
 sub tunnels {
     my ($self) = @_;
-    my $w = $self->{_net_whois_ripe};
+    my $w = $self->{_fwc};
     my $l = Funknet::ConfigFile::Tools->local;
     $w->type('aut-num');
     my $as = $w->query($l->{as});
     
     my @local_tun;
-    
     foreach my $tun_name ($as->tun) {
-	
 	$w->type('tunnel');
 	my $tun = $w->query($tun_name);
 	
@@ -159,10 +159,12 @@ sub tunnels {
 	    my @ep = $tun->endpoint;
 	    my @ad = $tun->address;
 
+
 	    # check this tunnel is to our AS and one of the current endpoints.
 	    
 	    my $tun_obj;
 	    if ($as[$i] eq $l->{as} && _is_current_endpoint($l, $ep[$i])) {
+
 		$tun_obj = Funknet::Config::Tunnel->new(
 							name => $tun_name,
 							local_address => $ad[$i],
@@ -179,15 +181,15 @@ sub tunnels {
 	    } elsif (defined $l->{public_endpoint} && $as[$i] eq $l->{as} && $ep[$i] eq $l->{public_endpoint}) {
 
                 $tun_obj = Funknet::Config::Tunnel->new(
-                    name => $tun_name,
-                    local_address => $ad[$i],
-                    remote_address => $ad[1-$i],
-                    local_endpoint => $l->{endpoint},
-                    remote_endpoint => $ep[1-$i],
-                    type => $tun->type,
-                    source => 'whois',
-                    proto => '4',
-                );
+							name => $tun_name,
+							local_address => $ad[$i],
+							remote_address => $ad[1-$i],
+							local_endpoint => $l->{endpoint},
+							remote_endpoint => $ep[1-$i],
+							type => $tun->type,
+							source => 'whois',
+							proto => '4',
+						       );
             }
 	    if (defined $tun_obj) {
 		push @local_tun, $tun_obj;
@@ -203,7 +205,7 @@ sub firewall {
     my ($self, $tun_set) = @_;
     debug("Creating Firewall config from Whois data");
 
-    my $w = $self->{_net_whois_ripe};
+    my $w = $self->{_fwc};
     my $l = Funknet::ConfigFile::Tools->local;
     $w->type('aut-num');
     my $as = $w->query($l->{as});
@@ -225,7 +227,7 @@ sub firewall {
 	
 sub sessions {
     my ($self) = @_;
-    my $w = $self->{_net_whois_ripe};
+    my $w = $self->{_fwc};
     my $l = Funknet::ConfigFile::Tools->local;
     
     $w->type('route');
@@ -241,14 +243,14 @@ sub sessions {
     }
 
     $w->type('aut-num');
-    $w->{FLAG_i} = '';
     my $as = $w->query($l->{as});
 
     my $bgp = Funknet::Config::BGP->new( 
-	local_as => $l->{as},
-	routes  => \@routes,
-	source => 'whois');
-    
+					local_as => $l->{as},
+					routes  => \@routes,
+					source => 'whois',
+				       );
+
   SESSION: for my $tun_name ($as->tun) {
 	
 	$w->type('tunnel');
@@ -282,13 +284,13 @@ sub sessions {
 							      );
 		
 		$bgp->add_session(
-		    description => $tun_name,
-		    remote_as => $as[1-$i],
-		    local_addr => $ad[$i],
-		    remote_addr => $ad[1-$i],
-		    acl_in => $acl_in, 
-		    acl_out => $acl_out,
-		);
+				  description => $tun_name,
+				  remote_as => $as[1-$i],
+				  local_addr => $ad[$i],
+				  remote_addr => $ad[1-$i],
+				  acl_in => $acl_in, 
+				  acl_out => $acl_out,
+				 );
 	    }
 	}
     }
@@ -297,7 +299,7 @@ sub sessions {
 
 sub encryption {
     my ($self, $tun_set) = @_;
-    my $w = $self->{_net_whois_ripe};
+    my $w = $self->{_fwc};
     my $l = Funknet::ConfigFile::Tools->local;
     $w->type('tunnel');
     my @local_enc;

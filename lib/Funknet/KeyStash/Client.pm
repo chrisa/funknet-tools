@@ -59,9 +59,9 @@ use LWP::UserAgent;
 use HTTP::Request;
 use URI::Escape;
 use IO::Scalar;
-use Net::Whois::RIPE;
-use Net::Whois::RIPE::Object;
 use Funknet::Whois qw/ get_object /;
+use Funknet::Whois::Client;
+use Funknet::Whois::Object;
 
 use Data::Dumper;
 
@@ -140,9 +140,8 @@ sub get_cert {
 
     # check local keystash
     if (my $data = $self->_check_file('cert', $name)) {
-	my $sh = new IO::Scalar \$data;
-	my $object = Net::Whois::RIPE::Object->new($sh);
-	return bless $object, 'Funknet::Whois::Object';
+	my $object = Funknet::Whois::Object->new($data);
+	return $object;
     }
     
     # give up and retrieve the key from the server.

@@ -221,7 +221,6 @@ use Funknet::Config::Validate qw/ is_ipv4 is_valid_as / ;
 use Funknet::Whois qw / get_object parse_object /;
 use Funknet::Whois::Templates qw / tmpl /;
 use Funknet::Whois::Policy qw / assign_as assign_tunnel_inetnum /;
-use Net::Whois::RIPE;
 use Net::IPv4Addr qw/ ipv4_network ipv4_broadcast /;
 use Data::Dumper;
 

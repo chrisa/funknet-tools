@@ -71,6 +71,8 @@ sub new {
     my $self = bless {}, $class;
     my $l = Funknet::ConfigFile::Tools->local;
 
+#    print STDERR Dumper \%args;
+
     unless (defined $args{source} && ($args{source} eq 'whois' || $args{source} eq 'host')) {
 	$self->warn("tunnel: missing or invalid source");
 	return undef;

@@ -31,41 +31,90 @@
 
 package Funknet::Whois::Object;
 use strict;
-
 use Data::Dumper;
 
-use base qw/ Net::Whois::RIPE::Object /;
+use vars qw/ $AUTOLOAD /;
 
 =head1 NAME
 
 Funknet::Whois::Object
 
-=head1 DESCRIPTION
-
-Subclass of Net::Whois::RIPE::Object providing an overloaded ->text
-method.
-
-=head2 text
-
-Overloads Net::Whois::RIPE::Object->text adding pretty-printing.
-
 =cut
+
+sub new {
+    my ($class, $text) = @_;
+    my $self = bless {}, $class;
+
+    for my $line (split /\n/, $text) {
+	my ($key, $val) = $line =~ /(.+):\s+(.+)/;
+	next unless ($key && $val);
+	push @{ $self->{_methods}->{$key} }, $val;
+	push @{ $self->{_content} }, $val;
+	
+	if (${ $self->{_order} }[-1] ne $key) {
+	    push @{ $self->{_order} }, $key;
+	}
+    }
+
+    if (scalar @{ $self->{_content} } > 0) {
+	return $self;
+    } else {
+	return undef;
+    }
+}
+
+sub object_type {
+    my ($self) = @_;
+    return $self->{_order}->[0];
+}
+
+sub AUTOLOAD {
+    my ($self, $new) = @_;
+
+    my $name = $AUTOLOAD;
+    $name =~ s/.*://;   # strip fully-qualified portion
+    $name =~ s/_/-/;    # change _ to - in method name: same as 'add'
+    $name =~ s/^x//;    # strip x off the front so we can call import
+    
+    unless (exists $self->{_methods}->{$name} ) {
+	return undef;
+    }
+    
+    if (defined $new) {
+	if (ref $new eq 'ARRAY') {
+	    $self->{_methods}->{$name} = $new;
+	} else {
+	    $self->{_methods}->{$name} = [ $new ];
+	}
+    }
+
+    return wantarray 
+      ? @{$self->{_methods}->{$name}}
+	: $self->{_methods}->{$name}->[0];
+}
+
+sub DESTROY {}
 
 sub text {
     my ($self) = @_;
-    
-    my $text = $self->SUPER::text;
 
     my @lines;
     my $maxkey = 0;
-    for my $line (split /\n/, $text) {
+
+    my @content;
+    for my $method (@{ $self->{_order} }) {
+	next unless $self->{_methods}->{$method}->[0]; 
+	push @content, map { $method.':    '.$_ } @{ $self->{_methods}->{$method} };
+    }
+
+    for my $line (@content) {
 	my ($key, $val) = $line =~ /(.+): (.+)/;
 	push @lines, { key => $key, val => $val };
 	if (length $key > $maxkey) {
 	    $maxkey = length $key;
 	}
     }
-    $text = '';
+    my $text = '';
     for my $line (@lines) {
 	$text .= $line->{key} . ': ' . (' ' x ($maxkey - length $line->{key})) . $line->{val} . "\n";
     }
@@ -74,7 +123,9 @@ sub text {
     # applies to key-cert: mostly.
     $text =~ s/ +$//g;
 
-    return $text;
+    return wantarray 
+	? @content 
+	: $text;
 }
 
 sub tunnel {

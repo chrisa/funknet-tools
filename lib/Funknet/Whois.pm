@@ -50,14 +50,12 @@ use vars qw/ @EXPORT_OK @ISA /;
 use Exporter; 
 
 use IO::Scalar;
-use Net::Whois::RIPE;
-use Net::Whois::RIPE::Object;
 use Funknet::Whois::Object;
 
 =head2 parse_object
 
-Takes a whois object as text, returns a Net::Whois::RIPE::Object
-object (this is only here because the Net::Whois::RIPE::Object
+Takes a whois object as text, returns a Funknet::Whois::Object
+object (this is only here because the Funknet::Whois::Object
 constructor expects a handle, and we have a string).
 
 Yeah, this should probably proxy through a Funknet::Whois::Object 
@@ -67,9 +65,8 @@ constructor.
 
 sub parse_object {
     my ($object_text) = @_;
-    my $sh = new IO::Scalar \$object_text;
-    my $object = Net::Whois::RIPE::Object->new($sh);
-    return bless $object, 'Funknet::Whois::Object';
+    my $object = Funknet::Whois::Object->new($object_text);
+    return $object;
 }
 
 =head2 check_auth
@@ -82,7 +79,7 @@ sub check_auth {
     my ($object, $keyid) = @_;
     my $auth_ok;
 
-    my $w = Net::Whois::RIPE->new( 'whois.funknet.org' );
+    my $w = Funknet::Whois::Client->new( 'whois.funknet.org' );
     $w->type('mntner');
 
   AUTH:
@@ -128,7 +125,7 @@ sub check_zone_auth {
            $inetnum = "$1.0.0.0";
     }
 
-    my $w = Net::Whois::RIPE->new( 'whois.funknet.org' );
+    my $w = Funknet::Whois::Client->new( 'whois.funknet.org' );
     $w->type('inetnum');
     my $in = $w->query($inetnum);
     
@@ -137,7 +134,7 @@ sub check_zone_auth {
     
 sub object_exists {
     my ($object) = @_;
-    ref $object eq 'Net::Whois::RIPE::Object' or return undef;
+    ref $object eq 'Funknet::Whois::Object' or return undef;
 
     # check type, extract primary key.
 
@@ -153,17 +150,17 @@ sub object_exists {
 =head2 get_object
 
 Takes a type string and a primary key, returns the object as a
-Net::Whois::RIPE::Object
+Funknet::Whois::Object
 
 =cut
 
 sub get_object {
     my ($type, $name) = @_;
-    my $w = Net::Whois::RIPE->new( 'whois.funknet.org' );
+    my $w = Funknet::Whois::Object->new( 'whois.funknet.org' );
     $w->type($type);
     my $obj = $w->query($name);
     if (defined $obj && scalar @{ $obj->{_order} }) {
-	return bless $obj, 'Funknet::Whois::Object';
+	return $obj;
     } else { 
 	return undef;
     }
@@ -172,18 +169,18 @@ sub get_object {
 =head2 get_object_inverse
 
 Takes a type string, inverse key name and inverse key data, returns
-the object as a Net::Whois::RIPE::Object.
+the object as a Funknet::Whois::Object.
 
 =cut
 
 sub get_object_inverse {
     my ($type, $key, $value) = @_;
-    my $w = Net::Whois::RIPE->new( 'whois.funknet.org' );
+    my $w = Funknet::Whois::Client->new( 'whois.funknet.org' );
     $w->type($type);
     $w->inverse_lookup($key);
     my $obj = $w->query($value);
     if (defined $obj && scalar @{ $obj->{_order} }) {
-	return bless $obj, 'Funknet::Whois::Object';
+	return $obj;
     } else { 
 	return undef;
     }

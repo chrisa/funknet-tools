@@ -71,7 +71,7 @@ MAILTEXT
 	{
 	    no strict 'refs';
 	    # fucking yuck
-	    $name = &{"Net::Whois::RIPE::Object::$type"}($object);
+	    $name = &{"Funknet::Whois::Object::$type"}($object);
 	}
 	
 	$text .= "Update OK: [$type] $name\n";

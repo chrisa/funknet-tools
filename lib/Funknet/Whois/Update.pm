@@ -115,7 +115,7 @@ sub update {
 	$robot->fatalerror("no valid and known signature found");
     }
 
-    # attempt to create a Net::Whois::RIPE::Object
+    # attempt to create a Funknet::Whois::Object
 
     my @objects;
     for my $text (split /\n\n/, $pgp->data) {
