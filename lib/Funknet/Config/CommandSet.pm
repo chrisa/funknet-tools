@@ -71,8 +71,15 @@ sub as_text {
 
 sub apply {
     my ($self) = @_;
+    if (scalar @{ $self->{_cmds} }) {
+        my $text = join "\n", @{ $self->{_cmds} };
+	qx[$text
+];
+        return $text;
+    } else {
+        return '';
+    }
 
-    warn "in apply";
 }
 
 1;
