@@ -150,6 +150,11 @@ sub _get_whois {
 
     my $rtconfig_path = Funknet::Config::ConfigFile->rtconfig_path;
 
+    # if it's not there, just return undef;
+    unless (-x $rtconfig_path) { 
+	return undef;
+    }
+    
     my $rtconfig = 
 	$rtconfig_path . ' -h whois.funknet.org -p 43 -s FUNKNET -protocol ripe ' . 
 	'-config cisco -cisco_use_prefix_lists';
