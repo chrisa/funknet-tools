@@ -176,36 +176,6 @@ sub new {
 	$Funknet::Config::DEBUG = 1;
     }
 
-    debug("Testing local_as");
-    unless (defined $config->{local_as} && is_valid_as($config->{local_as})) {
-	$self->warn("missing or invalid 'local_as' in $file");
-	return undef;
-    } 
-
-    debug("Testing local_host");
-    unless (defined $config->{local_host} && is_ipv4($config->{local_host})) {
-	$self->warn("missing or invalid 'local_host' in $file");
-	return undef;
-    } 
-
-    debug("Testing local_endpoint");
-    unless (defined $config->{local_endpoint} && is_ipv4($config->{local_endpoint})) {
-	$self->warn("missing or invalid 'local_endpoint' in $file");
-	return undef;
-    }
-
-    debug("Testing local_router");     
-    unless (defined $config->{local_router} && is_valid_router($config->{local_router})) {
-	$self->warn("missing or invalid 'local_router' in $file");
-	return undef;
-    } 
-
-    debug("Testing local_os");
-    unless (defined $config->{local_os} && is_valid_os($config->{local_os})) {
-	$self->warn("missing or invalid 'local_os' in $file");
-	return undef;
-    } 
-
     debug("Done parsing config file");
     return $self;
 }
