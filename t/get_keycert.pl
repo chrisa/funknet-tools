@@ -24,12 +24,12 @@ unless (defined $ks) {
 my $cert = $ks->get_cert($param);
 if (!defined $cert) {
     warn "certificate not found: $param";
-    return undef;
+    exit 1;
 }
 
 my $cn = $cert->owner;
 if (!defined $cn) {
-    $self "using cert filename for key filename: $param";
+    warn "using cert filename for key filename: $param";
     $cn = $param;
 }
 

@@ -97,6 +97,7 @@ sub keystash {
 	     www_pass => $config->{ks_www_pass},
 	     www_host => $config->{ks_www_host},
 	     www_cert => $config->{ks_www_cert},
+	     www_ca   => $config->{ks_www_ca},
 
 	     path => $config->{ks_path},
 

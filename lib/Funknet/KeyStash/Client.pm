@@ -53,7 +53,7 @@ keys in $ks_path/keys/.
 =cut
 
 package Funknet::KeyStash::Client;
-use base qw/ Funknet::Config /;
+use base qw/ Funknet::KeyStash /;
 use strict;
 use LWP::UserAgent;
 use HTTP::Request;
@@ -73,6 +73,7 @@ sub new {
 	    defined $args{www_pass} &&
 	    defined $args{www_host} &&
 	    defined $args{www_cert} &&
+	    defined $args{www_ca} &&
 	    defined $args{path} &&
 	    defined $args{whois_host} &&
 	    defined $args{whois_port} &&
@@ -84,7 +85,8 @@ sub new {
     $self->{_www_user} = $args{www_user};
     $self->{_www_pass} = $args{www_pass};
     $self->{_www_host} = $args{www_host};
-    $self->{_wwW_cert} = $args{www_cert};
+    $self->{_www_cert} = $args{www_cert};
+    $self->{_www_ca}   = $args{www_ca};
 
     $self->{_path} = $args{path};
 
@@ -116,17 +118,28 @@ sub get_key {
     
     # give up and retrieve the key from the server.
     my $uri_cn = uri_escape($cn);
-    my $uri = "http://$self->{_www_host}/keystash/$uri_cn";
+    my $uri = "https://$self->{_www_host}/keystash/$uri_cn";
     my $req = HTTP::Request->new('GET', $uri);
+    $req->authorization_basic($self->{_www_user}, $self->{_www_pass});
     my $res = $self->{_ua}->request($req);
 
     if ($res->code == 200) {
-	my $key = $res->message;
+	my $issuer  = $res->header("client-ssl-cert-issuer");
+	my $subject = $res->header("client-ssl-cert-subject");
 	
-	# write a local copy
-	$self->_write_file('key',$cn,$key);
-
-	return $key;
+	if ($subject eq $self->{_www_cert} &&
+	    $issuer  eq $self->{_www_ca} ) 
+	  {
+	      my $key = $res->message;
+	      
+	      # write a local copy
+	      $self->_write_file('key',$cn,$key);
+	      
+	      return $key;
+	  } else {
+	      $self->warn("https subject/issuer mismatch");
+	      return undef;
+	  }
     } else {
 	$self->warn("https get failed for $cn");
 	return undef;
@@ -201,7 +214,18 @@ sub _check_file {
 sub _write_file {
     my ($self, $type, $name, $data) = @_;
     
-    my $path = $self->{_path} . '/' . $type . '/' . $name;
+    unless ( -d $self->{_path} ) {
+	$self->warn("creating directory $self->{_path}");
+	system ("mkdir -p $self->{_path}");
+    }
+
+    my $dir = $self->{_path} . '/' . $type . '/';
+    unless ( -d $dir ) {
+	$self->warn("creating directory $dir...");
+	mkdir $dir;
+    }
+
+    my $path = $dir . $name;
     if ( -f $path ) {
 	return undef;
     }

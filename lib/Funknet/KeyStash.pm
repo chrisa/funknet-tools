@@ -48,6 +48,32 @@ Implement the keystash as discussed in doc/keystash.txt
 package Funknet::KeyStash;
 use strict;
 
+my (@warnings, @errors);
 
+sub warn {
+    my ($self, $errstr) = @_;
+    if (defined $errstr) {
+	push @warnings, $errstr;
+    } else {
+	if (scalar @warnings) {
+	    return wantarray?@warnings:join "\n", @warnings;
+	} else {
+	    return undef;
+	}
+    }
+}
+
+sub error {
+    my ($self, $errstr) = @_;
+    if (defined $errstr) {
+	push @errors, $errstr;
+    } else {
+	if (scalar @errors) {
+	    return wantarray?@errors:join "\n", @errors;
+	} else {
+	    return undef;
+	}
+    }
+}
 
 1;
