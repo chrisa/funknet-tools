@@ -36,6 +36,9 @@ use Funknet::Whois::ObjectGenerator;
 
 use Data::Dumper;
 
+# error buffer.
+our @errors;
+
 =head1 DESCRIPTION
 
 Reasonable interface to the Funknet::Whois::ObjectGenerator stuff.
@@ -45,22 +48,24 @@ Reasonable interface to the Funknet::Whois::ObjectGenerator stuff.
 sub node_set {
     my (%args) = @_;
 
+    @errors = ();
+
     # check args - we need: list of peers, the local network, mntner, and the name of the node
     
     unless (defined $args{peers}) {
-	warn "didn't get a list of peers";
+	error( "didn't get a list of peers" );
 	return undef;
     }
     unless (defined $args{network}) {
-	warn "didn't get a network";
+	error( "didn't get a network" );
 	return undef;
     }
     unless (defined $args{mntner}) {
-	warn "didn't get a mntner";
+	error( "didn't get a mntner" );
 	return undef;
     }
     unless (defined $args{nodename}) {
-	warn "didn't get a nodename";
+	error( "didn't get a nodename" );
 	return undef;
     }
 
@@ -70,7 +75,7 @@ sub node_set {
     
     my $inetnum = get_object('inetnum', "-x $args{network}");
     if (defined $inetnum) {
-	warn "network is already taken";
+	error( "network is already taken" );
 	return undef;
     }
     
@@ -79,7 +84,7 @@ sub node_set {
     for my $peer (@{$args{peers}}) {
 	$peers->{$peer} = get_object('aut-num', $peer);
 	unless (defined $peers->{$peer}) {
-	    # error? ignore?
+	    error( "peer $peer doesn't exist" );
 	}
     }
     
@@ -87,7 +92,7 @@ sub node_set {
     
     my $mntner = get_object('mntner', $args{mntner});
     unless (defined $mntner) {
-	warn "mntner $args{mntner} doesn't exist";
+	error( "mntner $args{mntner} doesn't exist" );
 	return undef;
     }
     my $gen = Funknet::Whois::ObjectGenerator->new( 'source' => 'FUNKNET',
@@ -146,6 +151,16 @@ sub node_set {
 			      );
     return $ns;
     
+}
+
+sub error {
+    my ($err) = @_;
+
+    if (defined $err) {
+	push @errors, $err;
+    } else {
+	return wantarray ? @errors : join "\n", @errors;
+    }
 }
 
 1;
