@@ -92,9 +92,10 @@ sub new_from_ifconfig {
 # this needs writing for linux - this code was pinched from BSD.pm
 
 #     my $type;
-#     $if =~ /(^gif\d+)/ && $type = 'ipip';
-#     $if =~ /(^gre\d+)/ && $type = 'gre';
-#     my $interface = $1;
+#     $if =~ /^(gif)(\d+)/ && $type = 'ipip';
+#     $if =~ /^(gre)(\d+)/ && $type = 'gre';
+#     my $interface = $2;
+#     my $ifname = "$1$2";    
 #     defined $type or return undef;
 
 #     my ($local_endpoint, $remote_endpoint) = $if =~ /tunnel inet (\d+\.\d+\.\d+\.\d+) --> (\d+\.\d+\.\d+\.\d+)/;
@@ -107,6 +108,7 @@ sub new_from_ifconfig {
 # 	local_endpoint => $local_endpoint,
 # 	remote_endpoint => $remote_endpoint,
 # 	type => $type,
+#       ifname => $ifname,
 # 	source => 'host',
 #       proto => '4',
 #     );

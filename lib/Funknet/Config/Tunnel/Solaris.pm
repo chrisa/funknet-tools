@@ -88,8 +88,9 @@ sub new_from_ifconfig {
     my ($class, $if) = @_;
 
     my $type;
-    $if =~ /^(ip.tun\d+)/ and $type = 'ipip';
-    my $interface = $1;
+    $if =~ /^(ip.tun)(\d+)/ and $type = 'ipip';
+    my $interface = $2;
+    my $ifname = "$1$2";
     defined $type or return undef;
 
     my ($local_endpoint, $remote_endpoint) 
@@ -105,6 +106,7 @@ sub new_from_ifconfig {
 	remote_endpoint => $remote_endpoint,
 	type => $type,
 	source => 'host',
+	ifname => $ifname,
 	proto => '4',
     );
 }
