@@ -32,6 +32,33 @@
 package Funknet::Tools::Traceroute;
 use strict;
 
+=head1 DESCRIPTION
+
+A wrapper for 'traceroute', to do Cisco-style BGP-aware traceroute.
+
+Call traceroute with at least the address, which must be an IPv4
+dotted-quad. Anything else gets undef back.
+
+Lines of response are scanned for the ip address, which is looked up
+in the local Funknet router's BGP table. If it's found, an [AS nnnn]
+tag is inserted. This uses Funknet::Config::CLI's get_as method, which
+relies on configured funknet-tools. XXX FIXME: the path to munky's
+funknet.conf is embedded in here. We should pick that up from
+somewhere else. If we're being used in a webserver, it might be best
+to take that from the webserver config, and pass it in here directly,
+or through a constructor/object arrangement. Whatever. There's also a
+hardcoded path to traceroute, which is right for Solaris. 
+
+If you also pass an object which ->can('print') then fxor each line of
+output from the ping tool, this method will be called. That object
+might be an Apache response object, say.
+
+Whatever, the entire output (traceroute's stdout) is returned. stderr
+is thrown away. We die if traceroute exits non-zero. XXX that might
+not be such a great idea.
+
+=cut
+
 use Funknet::Config::ConfigFile;
 use Funknet::Config::CLI;
 use Funknet::Config::Validate qw/ is_ipv4 /;

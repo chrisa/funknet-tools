@@ -32,6 +32,27 @@
 package Funknet::Tools::Ping;
 use strict;
 
+=head1 NAME
+
+Funknet::Tools::Ping
+
+=head1 DESCRIPTION
+
+A wrapper for 'nping', to do Cisco-style pings. 
+
+Call ping with at least the address, which must be an IPv4
+dotted-quad. Anything else gets undef back. 
+
+If you also pass an object which ->can('print') then for each line of
+output from the ping tool, this method will be called. That object
+might be an Apache response object, say.
+
+Whatever, the entire output (nping's stdout) is returned. stderr is
+thrown away. The exit status is ignored, as 100% packet loss gives a
+non-zero status, which isn't really what you want. 
+
+=cut
+
 use Funknet::Config::Validate qw/ is_ipv4 /;
 
 # use 'nikhef ping' for cisco style
