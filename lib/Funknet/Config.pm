@@ -74,7 +74,7 @@ sub new {
     my $self = bless {}, $class;
     $self->{_error} = [];
     $self->{_warn} = [];
-    $self->{_config} = Funknet::Config::ConfigFile->new( $args{configfile} )
+    $self->{_config} = Funknet::Config::ConfigFile->new( $args{configfile}, $args{interactive} )
 	or die "Couldn't load config file";
     return $self;
 }
