@@ -33,7 +33,6 @@
 package Funknet::Config::RCFile;
 use strict;
 
-use Data::Dumper;
 =head1 NAME
 
 Funknet::Config::RCFile;
@@ -51,7 +50,6 @@ sub new {
     my $self = bless {}, $class;
     $self->{_rcfile} = Funknet::Config::ConfigFile->rcfile;
     $self->{_root} = Funknet::Config::Root->new;
-print STDERR Dumper $self;
     return $self;
 }
 
