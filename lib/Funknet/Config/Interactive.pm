@@ -35,7 +35,7 @@
 package Funknet::Config::Interactive;
 use strict;
 use Term::Interact;
-use Funknet::Config::Validate qw/ is_ipv4 /;
+use Funknet::Config::Validate qw/ is_ipv4 is_valid_as is_valid_router is_valid_os /;
 
 sub new {
     my ($class,%args) = @_;
@@ -48,11 +48,14 @@ sub get_config {
     my $ti = Term::Interact->new();
     
     my $config;
+    
+    # STDOUT always? hmm. 
+    print STDOUT "\nNo config file found. Entering interactive configuration...\n";
 
     $config->{local_as} = $ti->get(
 				   msg        =>  'Enter your local AS number as \'ASxxxxx\'',
 				   check      =>  [
-						   qr/^AS\d{1,5}$/,
+						   sub{ is_valid_as(shift) },
 						   '%s is not in the format ASxxxxx'
 						   ],
 				   );
@@ -60,7 +63,7 @@ sub get_config {
     $config->{local_os} = $ti->get(
 				   msg        =>  'Enter your OS (ios|bsd|linux|solaris)',
 				   check      =>  [
-						   qr/^(ios|bsd|linux|solaris)$/,
+						   sub{ is_valid_os(shift) },
 						   '%s is not one of ios|bsd|linux|solaris'
 						   ],
 				   );
@@ -68,7 +71,7 @@ sub get_config {
     $config->{local_router} = $ti->get(
 				       msg        =>  'Enter your router (ios|zebra)',
 				       check      =>  [
-						       qr/^(ios|zebra)$/,
+						       sub { is_valid_router(shift) },
 						       '%s is not one of ios|zebra'
 						       ],
 				       );
@@ -98,6 +101,11 @@ sub get_config {
 							'%s is not a valid path to an RtConfig binary'
 							],
 					);
+
+    $config->{password} = $ti->get(
+				   msg        =>  'Enter your router password',
+				  );
+    
     return $config;
 }
 
