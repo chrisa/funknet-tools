@@ -228,8 +228,6 @@ sub sessions {
     my $w = $self->{_net_whois_ripe};
     my $l = Funknet::ConfigFile::Tools->local;
     
-    print STDERR Dumper $l;
-
     $w->type('route');
     $w->inverse_lookup('origin');
 
