@@ -49,8 +49,11 @@ sub load {
     
     open DATA, "$file"
       or die "can't open $file: $!";
+
+    $self->{_objects} = {};
     
     my $currobj;
+    my $num;
     while (my $line = <DATA>) {
 	chomp $line;
 
@@ -80,6 +83,8 @@ sub load {
 	    }
 	    
 	} else {
+	    
+	    $num++;
 
 	    $self->{_objects}->{$currobj->{type}}->{$currobj->{name}} = $currobj->{text};
 
@@ -93,24 +98,25 @@ sub load {
     }
     close DATA;
 
-    my $num = scalar keys %{ $self->{_objects} };
     return $num;
 }
 
-sub go {
+sub start {
     my ($self, $address, $port) = @_;
-    my $lh;
     
     if (defined($address))
     {
-	$lh = Net::TCP::Server->new($address, $port) 
+	$self->{_lh} = Net::TCP::Server->new($address, $port) 
 	  or die "can't bind tcp/$port: $!";
     } else {
-	$lh = Net::TCP::Server->new($port) 
+	$self->{_lh} = Net::TCP::Server->new($port) 
 	  or die "can't bind tcp/$port: $!";
     }
-    
-    while (my $sh = $lh->accept) {
+}
+
+sub go {
+    my ($self) = @_;
+    while (my $sh = $self->{_lh}->accept) {
         defined (my $pid = fork) or die "fork: $!\n";
 	
         if ($pid) {
@@ -120,7 +126,7 @@ sub go {
         }
 	
 	# child
-        $lh->stopio;
+        $self->{_lh}->stopio;
 
       QUERY:
 	my $query = <$sh>;

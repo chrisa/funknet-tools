@@ -4,6 +4,8 @@ use Getopt::Std;
 use Funknet::Whois::Server;
 use Funknet::ConfigFile::Whois;
 
+use vars qw/ $s /;
+
 my %opt;
 getopts('f:', \%opt);
 
@@ -17,7 +19,19 @@ unless (-f $opt{f}) {
 }
 
 my $config = new Funknet::ConfigFile::Whois($opt{f});
-my $s = new Funknet::Whois::Server($config->whois_source,1);
+
+$s = new Funknet::Whois::Server($config->whois_source,1);
 my $num = $s->load($config->objects_file);
-$s->go($config->listen_address(), $config->listen_port());
+print STDERR "loaded $num objects from ".($config->objects_file)."\n";
+
+$SIG{HUP} = \&reload;
+sub reload {
+	my $num = $s->load($config->objects_file);
+	print STDERR "reloaded $num objects\n";
+	$SIG{HUP} = \&reload;
+	$s->go();
+}	
+
+$s->start($config->listen_address(), $config->listen_port());
+$s->go();
 
