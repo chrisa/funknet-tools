@@ -123,9 +123,8 @@ sub create {
     my ($self, $inter) = @_;
     return (
 	"ifconfig ip.tun$inter inet plumb",
-	"ifconfig ip.tun$inter tsrc $self->{_local_endpoint} tdst $self->{_remote_endpoint}",
-	"ifconfig ip.tun$inter $self->{_local_address} $self->{_remote_address}",
-	"ifconfig ip.tun$inter netmask 255.255.255.252" );
+	"ifconfig ip.tun$inter inet tsrc $self->{_local_endpoint} tdst $self->{_remote_endpoint}",
+	"ifconfig ip.tun$inter inet $self->{_local_address} $self->{_remote_address} netmask 255.255.255.252 up" );
 }
 
 sub ifsym {
