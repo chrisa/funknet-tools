@@ -52,7 +52,7 @@ Implement the auto-inaddr@funknet.org reverse delegation robot.
 
 use Funknet::RevUpdate::Robot;
 use Funknet::RevUpdate        qw/ do_update check_delegate /;
-use Funknet::Whois            qw/ parse_object check_auth /;
+use Funknet::Whois            qw/ parse_object check_auth object_exists /;
 use PGP::Mail;
 
 my $testing = 0; # getopt
@@ -92,6 +92,12 @@ unless ($pgp = $robot->check_sig($data)) {
 my $object;
 unless ($object = parse_object($pgp->data)) {
     $robot->fatalerror("couldn't convert the signed message into a Net::WHOIS::RIPE::Object");
+}
+
+# check the object we've been sent matches the object in whois. 
+
+unless (object_exists($object)) {
+    $robot->error("submitted object does not exist in the whois database");
 }
 
 # check authorisation against whois.
