@@ -109,7 +109,7 @@ cp funknet.conf-KATGATE funknet.conf
 # see zero-lemon-ports/meta/natd-firewall-tarball/files/crontab-FUNKNET
 crontab -u root -e
 # funknet
-0 * * * * /bin/sh /etc/tunnelup.sh >/var/log/tunnelup 2>&1 &
+0,10,20,30,40,50 * * * * /bin/sh /etc/tunnelup.sh >/var/log/tunnelup 2>&1 &
 :wq
 
 # bounce test

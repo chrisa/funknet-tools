@@ -194,10 +194,10 @@ cat - >> /usr/local/etc/rc.d/local.sh << EOF
 
 /usr/local/sbin/zebra -d
 /usr/local/sbin/bgpd -d
-/usr/local/sbin/racoon -l /var/log/racoon.log
-sleep 60
 # ensure firewall runs when tunnelup.sh does
 echo "" > /etc/tunnels.last
+# pid doesnt get removed sometimes so:
+rm /var/run/tunnelup.pid
 sh /etc/tunnelup.sh ${oip} >/var/log/tunnelup 2>&1 &
 
 EOF
@@ -228,7 +228,7 @@ REAL_IP SECRET
 # see zero-lemon-ports/meta/natd-firewall-tarball/files/crontab-FUNKNET
 crontab -u root -e
 # funknet
-0 * * * * /bin/sh /etc/tunnelup.sh >/var/log/tunnelup 2>&1 &
+0,10,20,30,40,50 * * * * /bin/sh /etc/tunnelup.sh >/var/log/tunnelup 2>&1 &
 :wq
 
 # youre done, skin up.
