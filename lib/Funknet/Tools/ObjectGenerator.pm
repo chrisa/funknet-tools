@@ -61,7 +61,7 @@ sub person {
 	error( "didn't get a phone number" );
     }
 
-    if (error()) {
+    if (scalar @errors > 0) {
 	return undef;
     }
     
@@ -92,7 +92,7 @@ sub key_cert {
 	error( "didn't get the key material" );
     }
 
-    if (error()) {
+    if (scalar @errors > 0) {
 	return undef;
     }
     
@@ -128,7 +128,7 @@ sub mntner {
 	error( "didn't get an email address" );
     }
 
-    if (error()) {
+    if (scalar @errors > 0) {
 	return undef;
     }
 
@@ -168,7 +168,7 @@ sub node_set {
 	error( "didn't get an endpoint" );
     }
 
-    if (error()) {
+    if (scalar @errors > 0) {
 	return undef;
     }
     
