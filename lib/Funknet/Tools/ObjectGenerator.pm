@@ -187,7 +187,8 @@ sub node_set {
     for my $peer (@{$args{peers}}) {
 	$peers->{$peer} = get_object('aut-num', $peer);
 	unless (defined $peers->{$peer}) {
-	    error( "peer $peer doesn't exist" );
+	    error( "peer $peer doesn't exist in whois" );
+	    return undef;
 	}
     }
     
