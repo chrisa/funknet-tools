@@ -87,14 +87,16 @@ sub config {
 sub new_from_ifconfig {
     my ($class, $if) = @_;
 
-    my $type;
-    $if =~ /^(ip.tun)(\d+)/ and $type = 'ipip';
-    my $interface = $2;
-    my $ifname = "$1$2";
+    my ($type, $interface, $ifname);
+    if ($if =~ /^(ip.tun)(\d+)/) {
+	$type = 'ipip';
+	$interface = $2;
+	$ifname = "$1$2";
+    }
     defined $type or return undef;
 
     my ($local_endpoint, $remote_endpoint) 
-	= $if =~ /inet tunnel src (\d+\.\d+\.\d+\.\d+) +tunnel dst (\d+\.\d+\.\d+\.\d+)/;
+	= $if =~ /inet tunnel src (\d+\.\d+\.\d+\.\d+)\s+tunnel dst (\d+\.\d+\.\d+\.\d+)/;
     my ($local_address, $remote_address)
 	= $if =~ /inet (\d+\.\d+\.\d+\.\d+) --> (\d+\.\d+\.\d+\.\d+)/;
 
@@ -104,6 +106,7 @@ sub new_from_ifconfig {
 	remote_address => $remote_address,
 	local_endpoint => $local_endpoint,
 	remote_endpoint => $remote_endpoint,
+	interface => $interface,
 	type => $type,
 	source => 'host',
 	ifname => $ifname,
@@ -125,6 +128,8 @@ sub create {
 	"ifconfig ip.tun$inter netmask 255.255.255.252" );
 }
 
-
+sub ifsym {
+    return 'ip.tun';
+}
 
 1;
