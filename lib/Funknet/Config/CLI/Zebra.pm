@@ -180,12 +180,12 @@ sub get_access_list {
     }
 
     my $acl;
-    if ($args{dir} eq 'import') {
+    if ($args{dir} eq 'import' && defined $acl_in) {
 	@output = $t->cmd("sho ip prefix-list $acl_in");
 	$acl->{_name} = $acl_in;
 	$acl->{_acl_text} = _to_text(@output);
     }
-    if ($args{dir} eq 'export') {
+    if ($args{dir} eq 'export' && defined $acl_out) {
 	@output = $t->cmd("sho ip prefix-list $acl_out");
 	$acl->{_name} = $acl_out;
 	$acl->{_acl_text} = _to_text(@output);
