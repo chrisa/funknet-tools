@@ -60,8 +60,9 @@ sub new_from_ifconfig {
 # this needs writing for linux - this code was pinched from BSD.pm
 
 #     my $type;
-#     $if =~ /^gif/ && $type = 'ipip';
-#     $if =~ /^gre/ && $type = 'gre';
+#     $if =~ /(^gif\d+)/ && $type = 'ipip';
+#     $if =~ /(^gre\d+)/ && $type = 'gre';
+#     my $interface = $1;
 #     defined $type or return undef;
 
 #     my ($local_endpoint, $remote_endpoint) = $if =~ /tunnel inet (\d+\.\d+\.\d+\.\d+) --> (\d+\.\d+\.\d+\.\d+)/;
