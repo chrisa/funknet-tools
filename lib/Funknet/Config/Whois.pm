@@ -121,7 +121,8 @@ sub tunnels {
 	    }
 	}
     }
-    return Funknet::Config::TunnelSet->new( tunnels => \@local_tun );
+    return Funknet::Config::TunnelSet->new( tunnels => \@local_tun,
+					    source => 'whois' );
 }
 
 sub sessions {

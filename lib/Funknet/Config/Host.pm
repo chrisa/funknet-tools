@@ -132,7 +132,8 @@ sub tunnels {
 	}
     }
 
-    return Funknet::Config::TunnelSet->new( tunnels => \@local_tun );
+    return Funknet::Config::TunnelSet->new( tunnels => \@local_tun,
+					    source => 'host' );
 }
 
 sub sessions {

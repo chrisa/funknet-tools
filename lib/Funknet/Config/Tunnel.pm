@@ -58,7 +58,14 @@ sub new {
 	    }
 	}
     }
-
+    if ($self->{_source} eq 'host') {
+	if (defined $args{interface}) {
+	    $self->{_interface} = $args{interface};
+	} else {
+	    warn "missing interface for host tunnel";
+	}
+    }
+	    
     # rebless if we have a specific OS to target 
     # for this tunnel endpoint.
 
@@ -83,6 +90,15 @@ sub as_string {
 	"$self->{_local_address} -> $self->{_remote_address}\n";
 }
 
+sub as_hashkey {
+    my ($self) = @_;
+    
+    return 
+	"$self->{_type}-" .
+	"$self->{_local_endpoint}-$self->{_remote_endpoint}-" . 
+	"$self->{_local_address}-$self->{_remote_address}";
+}
+
 sub new_from_ifconfig {
     my ($class, $if, $local_os) = @_;
     
@@ -98,5 +114,9 @@ sub new_from_ifconfig {
     return undef;
 }
 
+sub interface {
+    my ($self) = @_;
+    return $self->{_interface};
+}
 
 1;

@@ -217,8 +217,9 @@ sub get_interfaces {
     my $tunnels;
     my $current;
     foreach my $line (@output) {
-	if ($line =~ /^(Tunnel\d+)/) {
-	    $current = $1;
+	if ($line =~ /^(Tunnel)(\d+)/) {
+	    $current = "$1$2";
+	    $tunnels->{$current}->{interface} = $2;
 	}
 	if ($line =~ /^\s+Internet address is (\d+\.\d+\.\d+)\.(\d+)/ && $current) {
 	    my $addr = $1;
@@ -246,17 +247,21 @@ sub get_interfaces {
     }
     
     for my $tun (keys %$tunnels) {
-	push @local_tun,
-	Funknet::Config::Tunnel->new(
-	    name => $tunnels->{$tun}->{description},
-	    local_address => $tunnels->{$tun}->{local_address},
-	    remote_address => $tunnels->{$tun}->{remote_address},
-	    local_endpoint => $tunnels->{$tun}->{local_endpoint},
-	    remote_endpoint => $tunnels->{$tun}->{remote_endpoint},
-	    type => $tunnels->{$tun}->{type},
-	    local_os => 'ios',
-	    source => 'host',
-	);
+	my $new_tun = 
+	    Funknet::Config::Tunnel->new(
+		name => $tunnels->{$tun}->{description},
+		local_address => $tunnels->{$tun}->{local_address},
+		remote_address => $tunnels->{$tun}->{remote_address},
+		local_endpoint => $tunnels->{$tun}->{local_endpoint},
+		remote_endpoint => $tunnels->{$tun}->{remote_endpoint},
+		type => $tunnels->{$tun}->{type},
+		interface => $tunnels->{$tun}->{interface},
+		local_os => 'ios',
+		source => 'host',
+	    );
+	if (defined $new_tun) {
+	    push @local_tun, $new_tun;
+	}
     }
     return @local_tun;
 }
