@@ -45,7 +45,7 @@ A reverse-dns update robot, after 'Marvin', the RIPE robot.
 
 use Net::DNS;
 use vars qw/ @EXPORT_OK @ISA /;
-@EXPORT_OK = qw/ do_update /;
+@EXPORT_OK = qw/ do_update check_delegate /;
 @ISA = qw/ Exporter /;
 use Exporter; 
 
@@ -70,7 +70,7 @@ sub check_delegate {
 	
 	my @results;
 	if ($query) {
-	    foreach $rr (grep { $_->type eq 'NS' } $query->answer) {
+	    foreach my $rr (grep { $_->type eq 'NS' } $query->answer) {
 		push @results, $rr->nsdname;
 	    }
 	} else {
@@ -80,6 +80,7 @@ sub check_delegate {
 	# the list @results should be the same as @ns. 
 
 	print Dumper { ns => \@ns, results => \@results };
+    }
 	
 }
 
