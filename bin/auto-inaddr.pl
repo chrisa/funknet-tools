@@ -47,10 +47,11 @@ use Funknet::RevUpdate qw/ do_update check_delegate /;
 
 my ($zone, @ns) = @ARGV;
 
-check_delegate($zone, @ns);
+if (check_delegate($zone, @ns) ) {
 
-print "updating zone $zone to nameservers: ", join ',',@ns;
-print "\n";
-
-do_update($zone, @ns);
+    print "updating zone $zone to nameservers: ", join ',',@ns;
+    print "\n";
+    
+    do_update($zone, @ns);
+}
 

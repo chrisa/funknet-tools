@@ -64,6 +64,7 @@ sub check_delegate {
 
     my $res = Net::DNS::Resolver->new;
 
+    my $ok;
     for my $ns (@ns) {
 	$res->nameservers($ns);
 	my $query = $res->query($rev_zone, 'NS');
@@ -78,10 +79,21 @@ sub check_delegate {
 	} 
 
 	# the list @results should be the same as @ns. 
-
-	print Dumper { ns => \@ns, results => \@results };
-    }
+	    
+	print STDERR Dumper { ns => \@ns, results => \@results };	
 	
+	if ((join /-/,sort @ns) eq (join /-/,sort @results)) {
+	    print STDERR "match for $ns\n";
+	    $ok++;
+	}
+    }
+    if ($ok == scalar @ns) {
+	print STDERR "returning ok";
+	return 1;
+    } else {
+	print STDERR "returning not ok";
+	return undef;
+    }
 }
 
 =head2 do_update
