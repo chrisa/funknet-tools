@@ -205,9 +205,17 @@ sub node_set {
 	my $t_inetnum = $gen->inetnum_assign( 'name' => $n,
 					      'peer' => $peer );
 	
+	my $rtr = get_object('inet-rtr', 'local-as', $peer);
+	unless (defined $rtr) {
+	    error( "inet-rtr for $peer doesn't exist" );
+	    return undef;
+	}
+	my $ifaddr = $rtr->ifaddr;
+	$ifaddr =~ s/ MASKLEN.*$//;
+	
 	my $t = $gen->tunnel( 'name'    =>  $args{nodename}.'-'.$peers->{$peer}->as_name,
 			      'as'      => [$peers->{$peer}->aut_num,$ns->{as}->aut_num],
-			      'endpoint'      => [$args{endpoint},''],
+			      'endpoint'      => [$args{endpoint},$ifaddr],
 			      'address'    => ['',''],
 			      'type'    => 'ipip',
 			    );
