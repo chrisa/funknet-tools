@@ -98,11 +98,17 @@ sub load {
 }
 
 sub go {
-    my ($self) = @_;
-    my $port = 4343;
+    my ($self, $address, $port) = @_;
+    my $lh;
     
-    my $lh = Net::TCP::Server->new($port) 
-      or die "can't bind tcp/$port: $!";
+    if (defined($address))
+    {
+	$lh = Net::TCP::Server->new($address, $port) 
+	  or die "can't bind tcp/$port: $!";
+    } else {
+	$lh = Net::TCP::Server->new($port) 
+	  or die "can't bind tcp/$port: $!";
+    }
     
     while (my $sh = $lh->accept) {
         defined (my $pid = fork) or die "fork: $!\n";
