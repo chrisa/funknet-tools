@@ -42,6 +42,8 @@ print $host_bgp->config;
 print Dumper $whois_bgp;
 print Dumper $host_bgp;
 
+print "================================================\n";
+
 my @diff_cmds = $whois_bgp->diff($host_bgp);
 print join "\n", @diff_cmds;
 print "\n";

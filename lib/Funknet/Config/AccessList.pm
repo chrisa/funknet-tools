@@ -1,6 +1,5 @@
 package Funknet::Config::AccessList;
 use strict;
-
 =head1 NAME
 
 Funknet::Config::AccessList
@@ -94,7 +93,6 @@ sub new {
     
     if ($args{source} eq 'whois') {
 	my $self = _get_whois(%args);
-
 	if (defined $self) {
 	    return bless $self, $class;
 	} else {
@@ -109,6 +107,7 @@ sub new {
 	my $self = $cli->get_access_list( remote_addr => $args{peer_addr},
 					  dir => $args{dir} );
 	if (defined $self) {
+	    $self->{_source} = 'host';
 	    return bless $self, $class;
 	} else {
 	    return undef;
@@ -143,6 +142,7 @@ sub _get_whois {
     if (length $acl_text) {
 	$acl->{_acl_text} = $acl_text;
 	$acl->{_name} = $acl_name;
+	$acl->{_source} = 'whois';
 	return $acl;
     } else {
 	return undef;
@@ -154,6 +154,16 @@ sub name {
     return $self->{_name};
 }
 
+sub text {
+    my ($self) = @_;
+    return $self->{_acl_text};
+}
+
+sub source {
+    my ($self) = @_;
+    return $self->{_source};
+}
+
 sub config {
     my ($self) = @_;
     my $config = $self->{_acl_text}."!\n";
@@ -163,7 +173,37 @@ sub config {
 
 sub diff {
     my ($whois, $host) = @_;
-    return "acl diff here";
+    my @cmds;
+
+    # XXX 
+    # this is really simplistic - we don't attempt to see if
+    # we can just modify the access-list and use soft-reconfig
+
+    # first check we have the objects the right way around.
+    unless ($whois->source eq 'whois' && $host->source eq 'host') {
+	warn "diff passed objects backwards";
+	return undef;
+    }    
+
+    # if the access-lists have different names, then just remove 
+    # the old one and replace it.
+
+    if ($whois->name ne $host->name) {
+	push @cmds, "no route-map ".$host->name;
+	push @cmds, "no ip prefix-list ".$host->name;
+	push @cmds, $whois->config;
+	return @cmds;
+    }
+
+    # if the access-lists are different, remove and replace.
+
+    if ($whois->text ne $host->text) {
+	push @cmds, "no route-map ".$host->name;
+	push @cmds, "no ip prefix-list ".$host->name;
+	push @cmds, $whois->config;
+	return @cmds;
+    }
+
 }
 
 1;
