@@ -53,22 +53,22 @@ sub tmpl {
     my ($type) = @_;
     return $t->{$type};
 }
+ 
+$t->{person} = '
+person:
+address:
+phone:
+fax-no:
+e-mail:
+nic-hdl:
+remarks:
+notify:
+mnt-by:
+changed:
+source:
+';
 
-$t->{person} = q/
-person:  _TMPL_
-address: _TMPL_
-phone:   _TMPL_
-fax-no:  _TMPL_
-e-mail:  _TMPL_
-nic-hdl: _TMPL_
-remarks: _TMPL_
-notify:  _TMPL_
-mnt-by:  _TMPL_
-changed: _TMPL_
-source:  _TMPL_
-/;
-
-$t->{mntner} = q/
+$t->{mntner} = '
 mntner:
 descr:
 admin-c:
@@ -82,7 +82,7 @@ mnt-by:
 referral-by:
 changed:
 source:
-/;
+';
 
 
 
