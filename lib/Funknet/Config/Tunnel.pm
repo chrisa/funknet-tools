@@ -148,4 +148,13 @@ sub interface {
     return $self->{_interface};
 }
 
+sub type {
+    my ($self) = @_;
+    return $self->{_type};
+}
+
+sub local_os {
+    my ($self) = @_;
+    return $self->{_local_os};
+}
 1;
