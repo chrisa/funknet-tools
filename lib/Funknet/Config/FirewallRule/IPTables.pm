@@ -42,39 +42,20 @@ Funknet::Config::FirewallRule::IPTables
 
 =head1 DESCRIPTION
 
-This class contains methods for parsing, creating and deleting tunnel
-interfaces on Linux.
+This class contains methods for creating and deleting rules in IPTables
 
 =head1 METHODS
 
-=head2 config
-
-Returns the configuration of the Tunnel object as text. This should be
-in roughly the format used by the host. TODO: make this be
-so. Currently we just dump the information in an arbitrary format.
-
-=head2 new_from_ifconfig
-
-Reads a host interface description taken from ifconfig and parses the
-useful information from it. IPIP and GRE interfaces are supported for
-Linux; other interface types cause this method to return
-undef. Interface naming under Linux: interfaces need to be numbered,
-and the create, delete and new_from_ifconfig methods need to agree on
-the names.
-
 =head2 create
 
-Returns a list of strings containing commands to configure a tunnel
-interface on Linux. The interface details are passed in as part of
-$self, and the new interface number is passed in as $inter. The
-commands should assume that no interface with that number currently
-exists.
+Returns a list of strings containing commands to configure a single
+IPTables rule, in a chain with the same as the whois_source name.
+The required rule details are passed in as part of $self.
 
 =head2 delete
 
-Returns a list of strings containing commands to unconfigure a tunnel
-interface on Linux. The interface should be removed, not just put into
-the 'down' state.
+Returns a list of strings containing commands to delete an IPTables
+rule from the chain named the same as the whois_source name.
 
 =cut
 
