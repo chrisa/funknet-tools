@@ -130,7 +130,7 @@ sub diff {
 	}
     }
 
-    my @ignore_if = (Funknet::Config::ConfigFile->ignore_if, map {$_->ifname} $host->tunnels);
+    my @ignore_if = (Funknet::ConfigFile::Tools->ignore_if, map {$_->ifname} $host->tunnels);
 
     for my $w ($whois->tunnels) {
 	unless ($host_tuns->{$w->as_hashkey}) {

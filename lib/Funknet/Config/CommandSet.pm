@@ -93,7 +93,6 @@ use base qw/ Funknet::Config::CommandSet /;
 
 sub as_text {
     my ($self) = @_;
-    my $l = Funknet::Config::ConfigFile->local;
     if (scalar @{ $self->{_cmds} }) {
 	my $text = join "\n", @{ $self->{_cmds} };
 	$text .= "\n";

@@ -56,7 +56,7 @@ Host.pm
 
 sub host_init {
     my ($self, $tun) = @_;
-    my $e = Funknet::Config::ConfigFile->encryption();
+    my $e = Funknet::ConfigFile::Tools->encryption();
 
     # pick up params from system
 
@@ -269,7 +269,7 @@ sub host_init {
 
 sub apply {
     my ($self) = @_;
-    my $e = Funknet::Config::ConfigFile->encryption();
+    my $e = Funknet::ConfigFile::Tools->encryption();
 
     # get cert/key
     my $cert = $self->{_certfile};

@@ -94,8 +94,8 @@ sub copy {
 
 sub local_firewall_rules {
 
-    my $l = Funknet::Config::ConfigFile->local;
-    my $chain = Funknet::Config::ConfigFile->whois_source || 'FUNKNET';
+    my $l = Funknet::ConfigFile::Tools->local;
+    my $chain = Funknet::ConfigFile::Tools->whois_source || 'FUNKNET';
     debug("arrived in IPFW.pm local_firewall_rules");
 
     my $whole_set = `ipfw list` ;
@@ -182,7 +182,7 @@ sub add {
     my ($self, $rule) = @_;
     debug("arrived in FirewallRuleSet::IPFW add");
 
-    my $l = Funknet::Config::ConfigFile->new;
+    my $l = Funknet::ConfigFile::Tools->new;
     my @rules = $self->firewall;
     my $free;
     my $next_rule_num;
@@ -227,7 +227,7 @@ sub remove {
 sub config {
     my ($self) = @_;
 
-    my $l = Funknet::Config::ConfigFile->local;
+    my $l = Funknet::ConfigFile::Tools->local;
     my $rule_num = $l->{min_ipfw_rule};
 
     my @cmds;

@@ -33,7 +33,7 @@
 package Funknet::Config::FirewallRule::IPFW;
 use strict;
 use base qw/ Funknet::Config::FirewallRule /;
-use Funknet::Config::ConfigFile;
+use Funknet::ConfigFile::Tools;
 use Funknet::Debug;
 
 =head1 NAME
@@ -63,7 +63,7 @@ from the ruleset.
 sub delete {
     my ($self) = @_;
 
-    my $whois_source = Funknet::Config::ConfigFile->whois_source || 'FUNKNET';
+    my $whois_source = Funknet::ConfigFile::Tools->whois_source || 'FUNKNET';
 
     return ("ipfw del $self->{_rule_num}");
 }
@@ -73,7 +73,7 @@ sub create {
     my ($self, $rule_num) = @_;
 
     my $proto = $self->{_proto};
-    my $whois_source = Funknet::Config::ConfigFile->whois_source || 'FUNKNET';
+    my $whois_source = Funknet::ConfigFile::Tools->whois_source || 'FUNKNET';
 
     return ("ipfw add $rule_num allow $proto from $self->{_source_address} to $self->{_destination_address}");
 }

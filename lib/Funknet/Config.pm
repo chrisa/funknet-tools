@@ -42,7 +42,7 @@ use Funknet::Config::Whois;
 use Funknet::Config::Host;
 use Funknet::Config::CommandSet;
 use Funknet::Config::SystemFileSet;
-use Funknet::Config::ConfigFile;
+use Funknet::ConfigFile;
 use Data::Dumper;
 
 =head1 NAME
@@ -83,7 +83,7 @@ sub new {
     my $self = bless {}, $class;
     $self->{_error} = [];
     $self->{_warn} = [];
-    $self->{_config} = Funknet::Config::ConfigFile->new( $args{configfile}, $args{interactive} )
+    $self->{_config} = Funknet::ConfigFile::Tools->new( $args{configfile}, $args{interactive} )
 	or die "Couldn't load config file";
     return $self;
 }
@@ -93,7 +93,7 @@ sub warn {
     my ($self, $errstr) = @_;
     if (defined $errstr) {
 	push @warnings, $errstr;
-	if (Funknet::Config::ConfigFile->warnings) {
+	if (Funknet::ConfigFile::Tools->warnings) {
 	    print STDERR "WARNING: $errstr\n";
 	}
 	return 1;
@@ -110,7 +110,7 @@ sub error {
     my ($self, $errstr) = @_;
     if (defined $errstr) {
 	push @errors, $errstr;
-	if (Funknet::Config::ConfigFile->halt) {
+	if (Funknet::ConfigFile::Tools->halt) {
 	    die "STOP: $errstr";
 	}
 	return 1;
@@ -142,7 +142,7 @@ sub bgp_diff {
 
 sub tun_diff {
     my ($self) = @_;
-    my $l = Funknet::Config::ConfigFile->local;
+    my $l = Funknet::ConfigFile::Tools->local;
     
     my $whois = Funknet::Config::Whois->new();
     my $host = Funknet::Config::Host->new();
@@ -165,7 +165,7 @@ sub tun_diff {
 sub fwall_diff {
     my ($self, $tun_set) = @_;
     debug("arrived in Config.pm  fwall_diff");
-    my $l = Funknet::Config::ConfigFile->local;
+    my $l = Funknet::ConfigFile::Tools->local;
     
     my $whois = Funknet::Config::Whois->new();
     my $host = Funknet::Config::Host->new();
@@ -188,7 +188,7 @@ sub fwall_diff {
 
 sub enc_diff {
     my ($self, $whois_tun, $host_tun) = @_;
-    my $l = Funknet::Config::ConfigFile->local;
+    my $l = Funknet::ConfigFile::Tools->local;
     
     my $whois = Funknet::Config::Whois->new();
     my $host = Funknet::Config::Host->new();
@@ -222,7 +222,7 @@ sub bgp_config {
 
 sub tun_config {
     my ($self) = @_;
-    my $l = Funknet::Config::ConfigFile->local;
+    my $l = Funknet::ConfigFile::Tools->local;
 
     my $whois = Funknet::Config::Whois->new();
     my $whois_tun = $whois->tunnels;
@@ -244,7 +244,7 @@ sub fwall_config {
     debug("arrived in Config.pm fwall_config");
     my ($self, $tun_set) = @_;
 
-    my $l = Funknet::Config::ConfigFile->local;
+    my $l = Funknet::ConfigFile::Tools->local;
     my $whois = Funknet::Config::Whois->new();
     my $whois_fwall = $whois->firewall( $tun_set );
 
@@ -264,7 +264,7 @@ sub fwall_config {
 
 sub enc_config {
     my ($self, $tun_set) = @_;
-    my $l = Funknet::Config::ConfigFile->local;
+    my $l = Funknet::ConfigFile::Tools->local;
 
     my $whois = Funknet::Config::Whois->new();
     my $whois_enc = $whois->encryption( $tun_set );

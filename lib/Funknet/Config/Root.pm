@@ -58,7 +58,7 @@ sub new {
     my ($class) = @_;
     my $self = bless {}, $class;
 
-    my $root_method = Funknet::Config::ConfigFile->root;
+    my $root_method = Funknet::ConfigFile::Tools->root;
 
     if ($root_method eq 'sudo') {
 	

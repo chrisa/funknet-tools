@@ -33,7 +33,7 @@
 package Funknet::Config::FirewallRule::IPTables;
 use strict;
 use base qw/ Funknet::Config::FirewallRule /;
-use Funknet::Config::ConfigFile;
+use Funknet::ConfigFile::Tools;
 use Funknet::Debug;
 
 =head1 NAME
@@ -62,7 +62,7 @@ rule from the chain named the same as the whois_source name.
 sub delete {
     my ($self) = @_;
 
-    my $whois_source = Funknet::Config::ConfigFile->whois_source || 'FUNKNET';
+    my $whois_source = Funknet::ConfigFile::Tools->whois_source || 'FUNKNET';
 
     return ("iptables -D $whois_source -t filter -p $self->{_proto} " .
 	    "-s $self->{_source_address} -d $self->{_destination_address} -j ACCEPT");
@@ -72,7 +72,7 @@ sub create {
     my ($self) = @_;
 
     my $proto = $self->{_proto};
-    my $whois_source = Funknet::Config::ConfigFile->whois_source || 'FUNKNET';
+    my $whois_source = Funknet::ConfigFile::Tools->whois_source || 'FUNKNET';
 
     return ("iptables -A $whois_source -t filter -p $proto -s $self->{_source_address} " .
 	    "-d $self->{_destination_address} -j ACCEPT");

@@ -34,7 +34,7 @@ use strict;
 use Funknet::Config::CLI::Secrets;
 use Funknet::Config::CLI::Zebra;
 use Funknet::Config::CLI::IOS;
-use Funknet::Config::ConfigFile;
+use Funknet::ConfigFile::Tools;
 
 =head1 NAME
 
@@ -111,7 +111,7 @@ some sort to make sure it's still awake?
 sub new {
     my ($class, %args) = @_;
     my $self = bless {}, $class;
-    my $l = Funknet::Config::ConfigFile->local;
+    my $l = Funknet::ConfigFile::Tools->local;
 
     $self->{_username} = Funknet::Config::CLI::Secrets->username( $l->{host} );
 

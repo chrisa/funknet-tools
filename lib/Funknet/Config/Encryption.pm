@@ -60,7 +60,7 @@ Takes the following args:
 sub new {
     my ($class, %args) = @_;
     my $self = bless {}, $class;
-    my $l = Funknet::Config::ConfigFile->local;
+    my $l = Funknet::ConfigFile::Tools->local;
 
     # Check basic params.
 
@@ -119,7 +119,7 @@ Decide here which type of encryption to try and find.
 sub _host_init {
     my ($self) = @_;
     my $tun = $self->{_tun};
-    my $l = Funknet::Config::ConfigFile->local;
+    my $l = Funknet::ConfigFile::Tools->local;
 
     if (defined $l->{ipsec} && $tun->type ne 'openvpn') {
 

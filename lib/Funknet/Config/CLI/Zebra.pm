@@ -33,7 +33,7 @@ package Funknet::Config::CLI::Zebra;
 use strict;
 use base qw/ Funknet::Config::CLI /;
 use Net::IPv4Addr qw/ ipv4_network /;
-use Funknet::Config::ConfigFile;
+use Funknet::ConfigFile::Tools;
 use Funknet::Config::CLI::Zebra::Telnet;
 use Funknet::Config::CLI::Zebra::Vtysh;
 
@@ -163,7 +163,7 @@ sub get_bgp {
   SESSION: for my $peer (keys %$neighbors) {
 
 	# ignore_neighbor
-	my @ign = Funknet::Config::ConfigFile->ignore_neighbor();
+	my @ign = Funknet::ConfigFile::Tools->ignore_neighbor();
 	
 	for my $ign (@ign) {
 	    next SESSION if ($ign eq $neighbors->{$peer}->{remote_addr});	    

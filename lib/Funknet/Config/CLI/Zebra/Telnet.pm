@@ -35,7 +35,7 @@ use strict;
 use base qw/ Funknet::Config::CLI::Zebra /;
 
 use Net::Telnet;
-use Funknet::Config::ConfigFile;
+use Funknet::ConfigFile::Tools;
 
 =head1 NAME
 
@@ -97,7 +97,7 @@ sub exec_enable {
 
 sub login {
     my ($self) = @_;
-    my $l = Funknet::Config::ConfigFile->local;
+    my $l = Funknet::ConfigFile::Tools->local;
 
     unless (defined $self->{t}) {
 	$self->{t} = new Net::Telnet ( Timeout => 10,

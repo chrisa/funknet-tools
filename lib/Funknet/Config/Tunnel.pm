@@ -68,7 +68,7 @@ Funknet::Config::Validate.pm. Implement specific methods in NewOS.pm.
 sub new {
     my ($class, %args) = @_;
     my $self = bless {}, $class;
-    my $l = Funknet::Config::ConfigFile->local;
+    my $l = Funknet::ConfigFile::Tools->local;
 
     unless (defined $args{source} && ($args{source} eq 'whois' || $args{source} eq 'host')) {
 	$self->warn("tunnel: missing or invalid source");
@@ -80,7 +80,7 @@ sub new {
     if ($self->{_source} eq 'host') {
 
 	# is this an interface we should be ignoring?
-	my @ignore_if = Funknet::Config::ConfigFile->ignore_if;
+	my @ignore_if = Funknet::ConfigFile::Tools->ignore_if;
 	if (defined $args{ifname} && (grep /$args{ifname}/, @ignore_if)) {
 	    $self->warn("ignoring $args{ifname}");
 	    return undef;
@@ -232,7 +232,7 @@ sub as_hashkey {
 
 sub new_from_ifconfig {
     my ($class, $if) = @_;
-    my $l = Funknet::Config::ConfigFile->local;
+    my $l = Funknet::ConfigFile::Tools->local;
     
     if ($l->{os} eq 'bsd') {
 	return Funknet::Config::Tunnel::BSD->new_from_ifconfig( $if );

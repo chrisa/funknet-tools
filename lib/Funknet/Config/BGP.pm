@@ -74,7 +74,7 @@ use base qw/ Funknet::Config /;
 sub new {
     my ($class, %args) = @_;
     my $self = bless {}, $class;
-    my $l = Funknet::Config::ConfigFile->local;
+    my $l = Funknet::ConfigFile::Tools->local;
 
     unless (defined $args{source} && ($args{source} eq 'whois' || $args{source} eq 'host')) {
 	$self->warn("missing or invalid source");

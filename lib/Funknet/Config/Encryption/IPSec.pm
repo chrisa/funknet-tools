@@ -56,8 +56,8 @@ calling the generic Encryption class constructor.
 
 sub whois_init {
     my ($self, $tun, $param) = @_;
-    my $e = Funknet::Config::ConfigFile->encryption;
-    my $k = Funknet::Config::ConfigFile->keystash;
+    my $e = Funknet::ConfigFile::Tools->encryption;
+    my $k = Funknet::ConfigFile::Tools->keystash;
     my $ks = Funknet::KeyStash::Client->new(%$k);
     unless (defined $ks) {
 	$self->warn("Couldn't get a KeyStash::Client");
@@ -158,7 +158,7 @@ sub whois_init {
 
 sub init {
     my ($self, %args) = @_;
-    my $l = Funknet::Config::ConfigFile->local;
+    my $l = Funknet::ConfigFile::Tools->local;
 
     unless (defined $args{source} && ($args{source} eq 'whois' || $args{source} eq 'host')) {
 	$self->warn("encryption-ipsec: missing or invalid source");

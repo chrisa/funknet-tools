@@ -111,13 +111,13 @@ sub new {
     my ($class, %args) = @_;
     my $self = bless {}, $class;
     debug("Creating a Net::Whois::RIPE object");
-    my $host = Funknet::Config::ConfigFile->whois_host || 'whois.funknet.org';
-    my $port = Funknet::Config::ConfigFile->whois_port || 43;
+    my $host = Funknet::ConfigFile::Tools->whois_host || 'whois.funknet.org';
+    my $port = Funknet::ConfigFile::Tools->whois_port || 43;
     $self->{_net_whois_ripe} = Net::Whois::RIPE->new($host,Timeout=>10,Port=>$port);
     unless (defined $self->{_net_whois_ripe}) {
 	die "couldn't get a Net::Whois::RIPE object";
     }
-    $self->{_net_whois_ripe}->source(Funknet::Config::ConfigFile->whois_source || 'FUNKNET');
+    $self->{_net_whois_ripe}->source(Funknet::ConfigFile::Tools->whois_source || 'FUNKNET');
     debug("Done creating a Net::Whois::RIPE object");
     return $self;
 }
@@ -125,7 +125,7 @@ sub new {
 sub my_tunnels {
     my ($self) = @_;
     my $w = $self->{_net_whois_ripe};
-    my $l = Funknet::Config::ConfigFile->local;
+    my $l = Funknet::ConfigFile::Tools->local;
     $w->type('aut-num');
     my $as = $w->query($l->{as});
     
@@ -143,7 +143,7 @@ sub my_tunnels {
 sub tunnels {
     my ($self) = @_;
     my $w = $self->{_net_whois_ripe};
-    my $l = Funknet::Config::ConfigFile->local;
+    my $l = Funknet::ConfigFile::Tools->local;
     $w->type('aut-num');
     my $as = $w->query($l->{as});
     
@@ -204,7 +204,7 @@ sub firewall {
     debug("Creating Firewall config from Whois data");
 
     my $w = $self->{_net_whois_ripe};
-    my $l = Funknet::Config::ConfigFile->local;
+    my $l = Funknet::ConfigFile::Tools->local;
     $w->type('aut-num');
     my $as = $w->query($l->{as});
     
@@ -226,8 +226,10 @@ sub firewall {
 sub sessions {
     my ($self) = @_;
     my $w = $self->{_net_whois_ripe};
-    my $l = Funknet::Config::ConfigFile->local;
+    my $l = Funknet::ConfigFile::Tools->local;
     
+    print STDERR Dumper $l;
+
     $w->type('route');
     $w->inverse_lookup('origin');
 
@@ -297,7 +299,7 @@ sub sessions {
 sub encryption {
     my ($self, $tun_set) = @_;
     my $w = $self->{_net_whois_ripe};
-    my $l = Funknet::Config::ConfigFile->local;
+    my $l = Funknet::ConfigFile::Tools->local;
     $w->type('tunnel');
     my @local_enc;
 

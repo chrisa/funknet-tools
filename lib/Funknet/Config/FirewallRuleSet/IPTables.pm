@@ -71,8 +71,8 @@ sub new {
 
 sub local_firewall_rules {
 
-    my $l = Funknet::Config::ConfigFile->local;
-    my $chain = Funknet::Config::ConfigFile->whois_source || 'FUNKNET';
+    my $l = Funknet::ConfigFile::Tools->local;
+    my $chain = Funknet::ConfigFile::Tools->whois_source || 'FUNKNET';
     debug("arrived in IPTables.pm local_firewall_rules whois_src is $chain");
 
     if(my $whole_set = `iptables -n -L $chain`) {
@@ -113,10 +113,10 @@ sub local_firewall_rules {
 sub config {
     my ($self) = @_;
 
-    my $l = Funknet::Config::ConfigFile->local;
+    my $l = Funknet::ConfigFile::Tools->local;
 
     my @cmds;
-    my $whois_source = Funknet::Config::ConfigFile->whois_source;
+    my $whois_source = Funknet::ConfigFile::Tools->whois_source;
     debug("whois source is $whois_source\n");
     my $first_rule = Funknet::Config::FirewallRule::IPTables->create_chain($whois_source);
     debug("first rule is $first_rule\n");

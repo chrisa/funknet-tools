@@ -36,7 +36,7 @@ use base qw/ Funknet::Config::BGP /;
 
 sub config {
     my ($self) = @_;
-    my $l = Funknet::Config::ConfigFile->local;
+    my $l = Funknet::ConfigFile::Tools->local;
     $l->{as} =~ s/^AS//;
     
     my @cmds;
@@ -70,7 +70,7 @@ sub config {
 
 sub diff {
     my ($whois, $host) = @_;
-    my $l = Funknet::Config::ConfigFile->local;
+    my $l = Funknet::ConfigFile::Tools->local;
     $l->{as} =~ s/^AS//;
 
     my ($bounce_req, $bounce_req_soft, $bounce_all, $bgp_req);

@@ -33,7 +33,6 @@
 package Funknet::Config::EncryptionSet;
 use strict;
 use base qw/ Funknet::Config /;
-use Funknet::Config::ConfigFile;
 use Data::Dumper;
 
 =head1 NAME

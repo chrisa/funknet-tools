@@ -62,15 +62,15 @@ want to access a router on '127.0.0.1'.
 
 sub username {
     my ($class) = @_;
-    return Funknet::Config::ConfigFile->username;
+    return Funknet::ConfigFile::Tools->username;
 }
 sub password {
     my ($class) = @_;
-    return Funknet::Config::ConfigFile->password;
+    return Funknet::ConfigFile::Tools->password;
 }
 sub enable {
     my ($class) = @_;
-    return Funknet::Config::ConfigFile->enable;
+    return Funknet::ConfigFile::Tools->enable;
 }
 
 

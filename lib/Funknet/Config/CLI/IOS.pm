@@ -38,7 +38,7 @@ use base qw/ Funknet::Config::CLI /;
 use Net::Telnet;
 use Net::IPv4Addr qw/ ipv4_network /;
 
-use Funknet::Config::ConfigFile;
+use Funknet::ConfigFile::Tools;
 
 =head1 NAME
 
@@ -72,7 +72,7 @@ not needed.
 
 sub get_bgp { 
     my ($self) = @_;
-    my $l = Funknet::Config::ConfigFile->local;
+    my $l = Funknet::ConfigFile::Tools->local;
 
     $self->login;
     my @output = $self->{t}->cmd('show ip bgp');
@@ -156,7 +156,7 @@ sub get_bgp {
   SESSION: for my $peer (keys %$neighbors) {
 	
 	# ignore_neighbor
-	my @ign = Funknet::Config::ConfigFile->ignore_neighbor();
+	my @ign = Funknet::ConfigFile::Tools->ignore_neighbor();
 	
 	for my $ign (@ign) {
 	    next SESSION if ($ign eq $neighbors->{$peer}->{remote_addr});	    
@@ -194,7 +194,7 @@ sub get_bgp {
 
 sub get_access_list {
     my ($self, %args) = @_;
-    my $l = Funknet::Config::ConfigFile->local;
+    my $l = Funknet::ConfigFile::Tools->local;
     
     $self->login;
     my @output = $self->{t}->cmd("show ip bgp neighbor $args{remote_addr}");
@@ -244,7 +244,7 @@ sub _to_text {
 	
 sub get_interfaces {
     my ($self) = @_;
-    my $l = Funknet::Config::ConfigFile->local;
+    my $l = Funknet::ConfigFile::Tools->local;
 
     my @local_tun;
 
@@ -314,7 +314,7 @@ Get the current ipsec configuration for all tunnels.
 
 sub get_ipsec {
     my ($self) = @_;
-    my $l = Funknet::Config::ConfigFile->local;
+    my $l = Funknet::ConfigFile::Tools->local;
 
     my @local_ipsec;
 
@@ -330,7 +330,7 @@ sub get_ipsec {
 
 sub check_login {
     my ($self) = @_;
-    my $l = Funknet::Config::ConfigFile->local;
+    my $l = Funknet::ConfigFile::Tools->local;
 
     return 1;
    
@@ -399,7 +399,7 @@ sub exec_enable {
 
 sub login {
     my ($self) = @_;
-    my $l = Funknet::Config::ConfigFile->local;
+    my $l = Funknet::ConfigFile::Tools->local;
     
     unless (defined $self->{t}) {
 	$self->{t} = new Net::Telnet ( Timeout => 10,

@@ -33,7 +33,7 @@ package Funknet::Config::SystemFileSet;
 use strict;
 use base qw/ Funknet::Config /;
 use Funknet::Config::Root;
-use Funknet::Config::ConfigFile;
+use Funknet::ConfigFile::Tools;
 use Data::Dumper;
 
 =head1 NAME
@@ -90,7 +90,7 @@ sub files {
 sub as_text {
     my ($self) = @_;
     defined $self->{_files} or return undef;
-    my $l = Funknet::Config::ConfigFile->local;
+    my $l = Funknet::ConfigFile::Tools->local;
     my $text = '';
     if (scalar @{ $self->{_files} }) {
 	for my $file (@{ $self->{_files} }) {

@@ -48,7 +48,7 @@ commands for Unix will be saved through this module.
 sub new {
     my ($class) = @_;
     my $self = bless {}, $class;
-    $self->{_rcfile} = Funknet::Config::ConfigFile->rcfile;
+    $self->{_rcfile} = Funknet::ConfigFile::Tools->rcfile;
     $self->{_root} = Funknet::Config::Root->new;
     return $self;
 }

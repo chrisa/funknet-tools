@@ -66,7 +66,7 @@ sub new
     debug("arrived in FirewallRuleSet new");
     my ($class, %args) = @_;
     my $self = bless {}, $class;
-    my $l = Funknet::Config::ConfigFile->local;
+    my $l = Funknet::ConfigFile::Tools->local;
 
     $self->{_firewall} = $args{firewall};
     $self->{_source}   = $args{source};
@@ -121,8 +121,8 @@ sub diff {
     debug("arrived in FirewallRuleSet.pm diff");
     my (@cmds);
 
-    my $l = Funknet::Config::ConfigFile->local;
-    my $whois_source = Funknet::Config::ConfigFile->whois_source;
+    my $l = Funknet::ConfigFile::Tools->local;
+    my $whois_source = Funknet::ConfigFile::Tools->whois_source;
 
     if(! defined($host)) {
 	@cmds = $whois->config();

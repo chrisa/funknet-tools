@@ -67,7 +67,7 @@ sub new {
     debug("arrived in Config/FirewallRule.pm new");
     my ($class, %args) = @_;
     my $self = bless {}, $class;
-    my $l = Funknet::Config::ConfigFile->local;
+    my $l = Funknet::ConfigFile::Tools->local;
 
     unless (defined $args{source} && 
 	    ($args{source} eq 'whois' || $args{source} eq 'host')) {

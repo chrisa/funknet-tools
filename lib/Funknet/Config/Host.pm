@@ -127,7 +127,7 @@ sub new {
 sub tunnels {
     my ($self) = @_;
     my @local_tun;
-    my $l = Funknet::Config::ConfigFile->local;
+    my $l = Funknet::ConfigFile::Tools->local;
 
     # special case of cisco needing CLI module
     if ($l->{os} eq 'ios') {
@@ -170,7 +170,7 @@ sub firewall {
     my @local_fwall;
     my $fwall_obj;
     my $fwall_set;
-    my $l = Funknet::Config::ConfigFile->local;
+    my $l = Funknet::ConfigFile::Tools->local;
 
     # special case of cisco needing CLI module
     if ($l->{os} eq 'ios') {
