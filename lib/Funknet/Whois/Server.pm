@@ -62,9 +62,6 @@ sub load {
 	if ($line =~ /^(.*):\s+(.*)$/) {
 	    my ($key, $value) = ($1, $2);
 
-#	    $key =~ s/ //g;
-#	    $value =~ s/ //g;
-
 	    if ($key eq 'source' && $value ne $self->{_source}) {
 		undef $currobj;
 		next;
@@ -100,7 +97,7 @@ sub load {
 
     for my $type (keys %{ $self->{_objects} }) {
         for my $name (keys %{ $self->{_objects}->{$type} }) {
-	    print STDERR "$type: $name\n";
+	    $self->_log("$type: $name\n");
 	}
     }
 
