@@ -13,11 +13,7 @@ Funknet::Config
 
 =head1 SYNOPSIS
 
-    my $conf = new Funknet::Config( local_as => 'AS65000',
-                                    local_router => 'zebra',
-			       	    local_os => 'bsd',
-				    local_host => '127.0.0.1' 
-    );
+    my $conf = new Funknet::Config( configfile => '/full/path/to/configfile' );
 
 =head1 DESCRIPTION
 
