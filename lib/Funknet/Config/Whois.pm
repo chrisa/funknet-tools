@@ -231,9 +231,10 @@ sub sessions {
     $w->type('route');
     $w->inverse_lookup('origin');
 
-    my $routes = $w->query_iterator($l->{as});
+    my @route_objects = $w->query($l->{as});
+
     my @routes;
-    while (my $obj = $routes->next) {
+    for my $obj (@route_objects) {
         if (my $route = $obj->route) {
             push @routes, $route;
         }
