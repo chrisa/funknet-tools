@@ -37,7 +37,8 @@ use vars qw/ @EXPORT_OK /;
 use Network::IPv4Addr qw/ ipv4_parse /;
 
 @EXPORT_OK = qw/ is_ipv4 is_ipv6 is_valid_type is_valid_as 
-                 is_valid_os is_valid_router is_valid_proto /;
+                 is_valid_os is_valid_router is_valid_proto 
+                 is_valid_ifname /;
 
 sub is_ipv4 {
     my ($addr) = @_;
@@ -106,6 +107,16 @@ sub is_valid_proto {
     my ($proto) = @_;
     
     if ($proto =~ /^[46]$/) {
+	return 1;
+    } else {
+	return 0;
+    }
+}
+
+sub is_valid_ifname {
+    my ($ifname) = @_;
+    
+    if ($ifname =~ /^[a-zA-Z]+\d+$/) {
 	return 1;
     } else {
 	return 0;
