@@ -43,6 +43,9 @@ Routines for creating new objects for the whois db.
 Uses Funknet::Config::Whois::Policy.pm to decide how to assign new
 addresses.  
 
+We check for already existing objects, but we do not check for the
+existence of referenced objects.
+
 =head1 SYNOPSIS
 
   my $gen = Funknet::Whois::ObjectGenerator->new( 'mntner' => 'MY-MUNTER' );
@@ -70,20 +73,35 @@ addresses.
                               'tuns' => [ 'FOO-CENTRAL1', 'FOO-CENTRAL2' ]
                             );
 
-  
-                        
-      
+  my $tun = $gen->tunnel( 'name'    => 'FOO-CENTRAL1',
+                          'as'      => ['AS65000','AS65001'],
+                          'ep'      => ['1.2.3.4', '5.6.7.8'],
+                          'addr'    => ['10.2.2.1', '10.2.2.2'],
+                        );
+
+  my $inetnum = $gen->inetnum( 'start' => '10.2.2.0',
+                               'end'   => '10.2.2.3'
+                             );
+
+  my $range = $gen->inetnum( 'network' => '10.2.2.0/30' );
+
+  my $route = $gen->route( 'name'    => 'FOOTUNNELS',
+                           'origin'  => 'AS65000',
+                           'network' => '10.2.0.0/24' );
 
 =head1 METHODS
 
-=head2 new($mntner, $admin_c, $tech_c)
+=head2 new( mntner =>  $mntner )
+
+=head2 new( mntner => $mntner, admin_c => $person, tech_c => $person )
 
 This returns a ObjectGenerator object. If you already have a
 maintainer object, or person objects for the contacts, you can provide
 them, but if not, the ObjectGenerator will only generate mntners or
 persons.
 
-=head2 aut_num($name, $as, @tuns)
+=head2 aut_num( name => $name, as => $as, 
+                tuns => [ $tun1, $tun2 ] )
 
 This method generates aut-num objects. 
 
@@ -94,9 +112,9 @@ allocate one according to the policy in Funknet::Whois::Policy.
 Given a list of tunnel objects it will add those names as tun:
 attributes.
 
-=head2 inetnum ($start, $end)
+=head2 inetnum ( name => $name, start => $start, end => $end )
 
-=head2 inetnum_net ($net)
+=head2 inetnum ( name => $name, network => $cidr_net )
 
 These methods generate inetnum objects. 
 
@@ -108,7 +126,7 @@ These methods will check that the inetnum object to be generated
 does not exist in the database. They will *not* check for overlapping
 ranges.
 
-=head2 inetnum_assign ($block_name, $size)
+=head2 inetnum_assign ( name => $name, from => $range, size => $size)
 
 This method will attempt to assign an new inetnum from an
 already-existing inetnum range. The name specified must exist as an
@@ -119,15 +137,17 @@ account IP subnet rules. It also takes into account the policy from
 Funknet::Whois::Policy, which may limit the sizes of networks which
 can be assigned in any particular range.
 
-=head2 tunnel ($name, $as1, $as2, $ep1, $ep2, $inetnum)
+=head2 tunnel ( name => $name, as => [ $as1, $as2 ], 
+                ep => [ $ep1, $ep2 ], addr => [ $ad1, $ad2 ] )
 
 This method generates tunnel objects. 
 
-The AS numbers and endpoints are taken directly from the parameters
-passed in; the addresses are inferred from the inetnum (which may be
-specified as $start - $end or $cidr as for the inetnum method).
+The AS numbers, addresses and endpoints are taken directly from the
+parameters passed in.
 
-=head2 route
+=head2 route ( name => $name, origin => $as, network => $network );
+
+This method generates route objects. 
 
 =head2 node_setup
 
@@ -151,3 +171,67 @@ aut-num objects.
 
 =cut
 
+use Funknet::Config::Validate qw/ is_ipv4 is_valid_as / ;
+
+sub new {
+    my ($class, %args) = @_;
+    my $self = bless {}, $class;
+
+    if defined ($args{mntner}) {
+	$self->{mntner} = $args{mntner};
+    }
+    
+    if defined ($args{admin_c}) {
+	$self->{admin_c} = $args{admin_c};
+    }
+    if defined ($args{tech_c}) {
+	$self->{tech_c} = $args{tech_c};
+    }
+
+    return $self;
+}
+
+sub mntner {
+    my ($self, %args) = @_;
+
+}
+
+sub person {
+    my ($self, %args) = @_;
+
+    unless (defined $self->{mntner}) {
+	return undef;
+    }
+    
+    
+}
+
+sub aut_num {
+    my ($self, %args) = @_;
+
+}
+
+sub inetnum {
+    my ($self, %args) = @_;
+
+}
+
+sub inetnum_assign {
+    my ($self, %args) = @_;
+
+}
+
+sub tunnel {
+    my ($self, %args) = @_;
+
+}
+
+sub route {
+    my ($self, %args) = @_;
+
+}
+
+sub node_setup {
+    my ($self, %args) = @_;
+
+}
