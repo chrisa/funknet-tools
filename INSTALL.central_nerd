@@ -27,11 +27,11 @@ vi zero-lemon-ports/meta/server-tarball/Makefile
 # targets for natd-firewall-tarball arent needed in this case.
 # only the DEPENDS are, hence the need to be run as root...
 
-cd zero-lemon-ports/natd-firewall-tarball
+cd zero-lemon-ports/meta/natd-firewall-tarball
 
 # edit Makefile so FUNKNET_ENABLE is enabled,
 # and SPEEDTOUCH_ENABLE and FUNKNET_GPGKEY arent...
-# (you really should not host a central-nerd on a dyn-ip modem connection)
+o (you really should not host a central-nerd on a dyn-ip modem connection)
 vi Makefile
 rootdo make
 
