@@ -147,7 +147,7 @@ sub go {
 	$query =~ s/\r//g;
 	
 	# sanitize query
-	if ($query =~ /^([A-Za-z0-9-. ]+)$/) {
+	if ($query =~ /^([A-Za-z0-9-,=. ]+)$/) {
 	    $query = " $1"; # space so we can see it's an option, below... 
 	    $self->_log("query: $query\n");
 	} else {
@@ -193,7 +193,8 @@ sub go {
 
 	# trim query of spaces, now it has no options
 	# all spaces? or just at start/end?
-	$query =~ s/ //g;
+	$query =~ s/^ //g;
+	$query =~ s/ $//g;
 
 	#print STDERR Dumper { opts => $opts, query => $query };
 
