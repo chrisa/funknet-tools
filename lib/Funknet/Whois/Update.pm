@@ -94,8 +94,8 @@ sub update {
     my $robot = Funknet::Whois::Update::Robot->new( fromname => 'auto-dbm robot', 
 						    envfrom  => 'auto-dbm@funknet.org',
 						    from     => 'auto-dbm@funknet.org',
-						    pubring  => '/home/chris/.gnupg/pubring.gpg',
-						    secring  => '/home/chris/.gnupg/secring.gpg',
+						    pubring  => '/home/dunc/.gnupg/pubring.gpg',
+						    secring  => '/home/dunc/.gnupg/secring.gpg',
 						    testing  => $self->{_testing},
 						  );
     if (!$robot) {
