@@ -102,17 +102,24 @@ unless (is_valid_as($local_as))
 foreach my $tunnel_object (@tunnel_objects)
 {
 	my $old_ip;
+	my $enc;
         my @endpoints = $tunnel_object->endpoint;
+        my @encryptions = $tunnel_object->encryption;
         my @ass = $tunnel_object->as;
         my ($as1,$as2) = @ass;
         if ($as1 eq $local_as)
         {
-                 $old_ip = shift(@endpoints);
+                $old_ip = shift(@endpoints);
+                my $tmp = shift(@endpoints);
+                $enc = shift(@encryptions);
+                print "ENDPOINT: $tmp\nSECURE: $enc\n";
         }
         elsif ($as2 eq $local_as)
         {
                 my $tmp = shift(@endpoints);
                 $old_ip = shift(@endpoints);
+                $enc = shift(@encryptions);
+                print "ENDPOINT: $tmp\nSECURE: $enc\n";
         }
 	else
 	{
