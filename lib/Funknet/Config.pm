@@ -37,6 +37,8 @@ use Funknet::Config::Host;
 use Funknet::Config::CommandSet;
 use Funknet::Config::ConfigFile;
 
+use Data::Dumper;
+
 =head1 NAME
 
 Funknet::Config
@@ -55,6 +57,8 @@ Funknet::Config
 
 =cut
 
+my (@warnings, @errors);
+
 sub new {
     my ($class,%args) = @_;
     my $self = bless {}, $class;
@@ -65,32 +69,35 @@ sub new {
     return $self;
 }
 
-sub error {
+
+sub warn {
     my ($self, $errstr) = @_;
     if (defined $errstr) {
-	push @{ $self->{_error} }, $errstr;
+	push @warnings, $errstr;
+	if (Funknet::Config::ConfigFile->warnings) {
+	    print STDERR "WARNING: $errstr\n";
+	}
 	return 1;
     } else {
-	if (scalar @{ $self->{_error} }) {
-	    return wantarray?@{ $self->{_error} }:join "\n", @{ $self->{_error} };
+	if (scalar @warnings) {
+	    return wantarray?@warnings:join "\n", @warnings;
 	} else {
 	    return undef;
 	}
     }
 }
 
-sub warn {
+sub error {
     my ($self, $errstr) = @_;
-
     if (defined $errstr) {
-	push @{ $self->{_warn} }, $errstr;
-	if ($self->{_config}->{warnings}) {
-	    print STDERR "$errstr\n";
+	push @errors, $errstr;
+	if (Funknet::Config::ConfigFile->halt) {
+	    die "STOP: $errstr";
 	}
 	return 1;
     } else {
-	if (scalar @{ $self->{_warn} }) {
-	    return wantarray?@{ $self->{_warn} }:join "\n", @{ $self->{_warn} };
+	if (scalar @errors) {
+	    return wantarray?@errors:join "\n", @errors;
 	} else {
 	    return undef;
 	}
