@@ -19,11 +19,11 @@ sub config {
     $config .= "!\n";
 
     foreach my $neighbor (@{ $self->{_neighbors} }) {
-	if (defined $neighbor->{acl_in}) {
-	    $config .= $neighbor->{acl_in}->config;
+	if (defined $neighbor->{_acl_in}) {
+	    $config .= $neighbor->{_acl_in}->config;
 	}
-	if (defined $neighbor->{acl_out}) {
-	    $config .= $neighbor->{acl_out}->config;
+	if (defined $neighbor->{_acl_out}) {
+	    $config .= $neighbor->{_acl_out}->config;
 	}
     }
     return $config;

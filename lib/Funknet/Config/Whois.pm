@@ -103,7 +103,6 @@ sub sessions {
 							       peer_addr   => $ad[1-$i],
 							       dir         => 'import',
 							       source      => 'whois',
-							       local_host  => $self->{_local_host},
 							     );
 		
 		my $acl_out = Funknet::Config::AccessList->new( source_as   => $as[$i],
@@ -112,7 +111,6 @@ sub sessions {
 								peer_addr   => $ad[1-$i],
 								dir         => 'export',
 								source      => 'whois',
-								local_host  => $self->{_local_host},
 							      );
 		
 		$bgp->add_session(
