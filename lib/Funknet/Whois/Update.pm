@@ -166,7 +166,7 @@ sub update {
     while (my $line = <DATA>) {
 	chomp $line;
 	next if $line =~ /^#/;
-	if ($line =~ /^(.*): (.*)$/) {
+	if ($line =~ /^(.*): ?(.*)$/) {
 
 	    my ($key, $value) = ($1, $2);
 	    $key =~ s/ //g;
