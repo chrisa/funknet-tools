@@ -363,10 +363,8 @@ sub _login {
     my $l = Funknet::Config::ConfigFile->local;
 
     $t->open($l->{host});
-    eval {
-	$t->cmd(String  => $self->{_username},
-	        Timeout => 2);
-    };
+    $t->print($self->{_username});
+    my $r = $t->getline;
     $t->cmd($self->{_password});
     $t->cmd('terminal length 0');
 }
