@@ -70,7 +70,8 @@ while(read(STDIN, $line, 8192)) {
 
 my $robot = Funknet::RevUpdate::Robot->new( envfrom => 'auto-inaddr@funknet.org',
 					    from    => 'auto-inaddr@funknet.org',
-					    keyring => '/home/funknet/.gnupg/keyring',
+					    pubring => '/home/funknet/.gnupg/pubring.gpg',
+					    secring => '/home/funknet/.gnupg/secring.gpg
 					    testing => $testing,
 					  );
 

@@ -62,8 +62,13 @@ sub new {
     # keyring path
     # testing 
 
-    if (defined $args{keyring} && -f $args{keyring}) {
-	$self->{_keyring} = $args{keyring};
+    if (defined $args{pubring} && -f $args{pubring}) {
+	$self->{_pubring} = $args{pubring};
+    } else {
+	return undef;
+    }
+    if (defined $args{secring} && -f $args{secring}) {
+	$self->{_secring} = $args{secring};
     } else {
 	return undef;
     }
