@@ -100,6 +100,8 @@ local_os flag passed to the constructor.
 
 =cut
 
+use Data::Dumper;
+
 sub new {
     my ($class, %args) = @_;
     my $self = bless {}, $class;
@@ -286,7 +288,7 @@ sub sessions {
 	routes  => \@routes,
 	source => 'whois');
     
-    for my $tun_name ($as->tun) {
+  SESSION: for my $tun_name ($as->tun) {
 	
 	$w->type('tunnel');
 	my $tun = $w->query($tun_name);
@@ -294,8 +296,13 @@ sub sessions {
 	for my $i ( 0..1 ) {
 	    my @as = $tun->as;
 	    my @ad = $tun->address;
-	    
+	    my @ep = $tun->endpoint;
+	
 	    if ($as[$i] eq $l->{as}) {
+
+		# check this is a session for our router 
+		# by comparing endpoint.
+		next SESSION unless ($l->{endpoint} eq $ep[$i]);
 		
 		my $acl_in = Funknet::Config::AccessList->new( source_as   => $as[$i],
 							       peer_as     => $as[1-$i],
