@@ -1,7 +1,6 @@
 package Funknet::Config::CLI::IOS;
 use strict;
 use Net::Telnet;
-use Data::Dumper;
 
 sub get_bgp {
     my ($self) = @_;
@@ -67,17 +66,77 @@ sub get_bgp {
 	}
     }
     for my $peer (keys %$neighbors) {
+
+	my $acl_in = Funknet::Config::AccessList->new( source_as   => $bgp->{_local_as},
+						       peer_as     => $neighbors->{$peer}->{remote_as},
+						       source_addr => $neighbors->{$peer}->{local_addr},
+						       peer_addr   => $neighbors->{$peer}->{remote_addr},
+						       dir         => 'import',
+						       source      => 'host',
+						       local_router => 'ios',
+						       local_host  => $self->{_local_host},
+						     );
+
+	my $acl_out = Funknet::Config::AccessList->new( source_as   => $bgp->{_local_as},
+							peer_as     => $neighbors->{$peer}->{remote_as},
+							source_addr => $neighbors->{$peer}->{local_addr},
+							peer_addr   => $neighbors->{$peer}->{remote_addr},
+							dir         => 'export',
+							source      => 'host',
+							local_router => 'ios',
+							local_host  => $self->{_local_host},
+						      );
+
 	$bgp->add_session(
 	    description => $neighbors->{$peer}->{description},
 	    remote_as => $neighbors->{$peer}->{remote_as},
 	    local_addr => $neighbors->{$peer}->{local_addr},
 	    remote_addr => $neighbors->{$peer}->{remote_addr},
-	    source => 'host',
-	    local_router => 'ios',
+	    acl_in => $acl_in, 
+	    acl_out => $acl_out,
 	);
     }
     return $bgp;
 }
+
+sub get_access_list {
+    my ($self, %args) = @_;
+
+    my $t = new Net::Telnet ( Timeout => 10,
+			      Prompt  => '/[\>\#]$/',
+			      Port    => 23,
+			    );
+    
+    $t->open($self->{_local_host});
+    $t->cmd($self->{_password});
+    $t->cmd('terminal length 0');
+
+    my @output = $t->cmd("show ip bgp neighbor $args{remote_addr}");
+    
+    my ($acl_in, $acl_out);
+    foreach my $line (@output) {
+	if ($line =~ /Route map for incoming advertisements is ([a-zA-Z0-9-]+)/) {
+	    $acl_in = $1;
+	}
+	if ($line =~ /Route map for outgoing advertisements is ([a-zA-Z0-9-]+)/) {
+	    $acl_out = $1;
+	}
+    }
+
+    my $acl;
+    if ($args{dir} eq 'import' && $acl_in) {
+	@output = $t->cmd("sho ip prefix-list $acl_in");
+	$acl->{_name} = $acl_in;
+	$acl->{_acl_text} = join "\n",@output;
+    }
+    if ($args{dir} eq 'export' && $acl_out) {
+	@output = $t->cmd("sho ip prefix-list $acl_out");
+	$acl->{_name} = $acl_out;
+	$acl->{_acl_text} = join "\n",@output;
+    }
+    return $acl;
+}
+
 
 sub get_interfaces {
     my ($self) = @_;

@@ -45,39 +45,13 @@ sub add_session {
     my ($self, %args) = @_;
 
     $args{remote_as} =~ s/^AS//;
-    my $acl_in = Funknet::Config::AccessList->new( source_as   => $self->{_local_as},
-						   peer_as     => $args{remote_as},
-						   source_addr => $args{local_addr},
-						   peer_addr   => $args{remote_addr},
-						   dir         => 'import',
-						   source      => $args{source},
-						   local_router => $self->{_local_router},
-						 );
 
-    my $acl_out = Funknet::Config::AccessList->new( source_as   => $self->{_local_as},
-						    peer_as     => $args{remote_as},
-						    source_addr => $args{local_addr},
-						    peer_addr   => $args{remote_addr},
-						    dir         => 'export',
-						    source      => $args{source},
-						    local_router => $self->{_local_router},
-						  );
-    my ($acl_in_name, $acl_out_name);
-    if (defined $acl_in) {
-	push @{$self->{_acls}}, $acl_in;
-	$acl_in_name = $acl_in->name;
-    }
-    if (defined $acl_out) {
-	push @{$self->{_acls}}, $acl_out;
-	$acl_out_name = $acl_out->name;
-    }
-	
     my $session = Funknet::Config::Neighbor->new( remote_as   => $args{remote_as},
 						  remote_addr => $args{remote_addr},
 						  description => $args{description},
 						  source      => $self->{_source},
-						  acl_in      => $acl_in_name,
-						  acl_out     => $acl_out_name,
+						  acl_in      => $args{acl_in},
+						  acl_out     => $args{acl_out},
 						);
     if (defined $session) {
 	push @{$self->{_neighbors}}, $session;

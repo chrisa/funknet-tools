@@ -18,8 +18,13 @@ sub config {
     }
     $config .= "!\n";
 
-    foreach my $acl (@{ $self->{_acls} }) {
-	$config .= $acl->config;
+    foreach my $neighbor (@{ $self->{_neighbors} }) {
+	if (defined $neighbor->{acl_in}) {
+	    $config .= $neighbor->{acl_in}->config;
+	}
+	if (defined $neighbor->{acl_out}) {
+	    $config .= $neighbor->{acl_out}->config;
+	}
     }
     return $config;
 }

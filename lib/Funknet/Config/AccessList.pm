@@ -1,11 +1,8 @@
 package Funknet::Config::AccessList;
-use Funknet::Config::AccessList::IOS;
-use Funknet::Config::AccessList::Zebra;
 use strict;
 
 sub new {
     my ($class, %args) = @_;
-    my $self = bless {}, $class;
 
     $args{source_as} =~ /^\d+$/ or return undef;
     $args{peer_as}   =~ /^\d+$/ or return undef;
@@ -14,18 +11,22 @@ sub new {
     $args{dir}      =~ /^(import|export)$/ or return undef;
     
     if ($args{source} eq 'whois') {
+	my $self = bless {}, $class;
 	$self->_get_whois(%args);
 	return $self;
     }
-    if ($args{source} eq 'host' && $args{local_router} eq 'ios') {
-	bless $self, $class.'::IOS';
-	$self->_get_host(%args);
-	return $self;
-    }
-    if ($args{source} eq 'host' && $args{local_router} eq 'zebra') {
-	bless $self, $class.'::Zebra';
-	$self->_get_host(%args);
-	return $self;
+    if ($args{source} eq 'host') {
+	my $cli = Funknet::Config::CLI->new( local_as => $args{source_as},
+					     local_host => $args{local_host},
+					     local_router => $args{local_router}, 
+					   );
+	my $self = $cli->get_access_list( remote_addr => $args{peer_addr},
+					  dir => $args{dir} );
+	if (defined $self) {
+	    return bless $self, $class;
+	} else {
+	    return undef;
+	}
     }
     return undef;
 }

@@ -53,10 +53,10 @@ sub config {
         $config .= " neighbor $self->{_remote_addr} description $self->{_description}\n";
     }
     if (defined $self->{_acl_in}) {
-	$config .= " neighbor $self->{_remote_addr} route-map $self->{_acl_in} in\n";
+	$config .= " neighbor $self->{_remote_addr} route-map ".($self->{_acl_in}->name)." in\n";
     }
     if (defined $self->{_acl_out}) {
-	$config .= " neighbor $self->{_remote_addr} route-map $self->{_acl_out} out\n";
+	$config .= " neighbor $self->{_remote_addr} route-map ".($self->{_acl_out}->name)." out\n";
     }
     return $config;
 }
