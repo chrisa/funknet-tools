@@ -190,7 +190,11 @@ sub get_access_list {
 	$acl->{_name} = $acl_out;
 	$acl->{_acl_text} = _to_text(@output);
     }
-    return $acl;
+    if (defined $acl->{_name} && defined $acl->{_acl_text}) {
+	return $acl;
+    } else {
+	return undef;
+    }
 
 }
 
