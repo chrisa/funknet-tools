@@ -40,4 +40,5 @@ use strict;
 use base qw/ Funknet::Config::Encryption /;
 
 
+
 1;

@@ -66,7 +66,7 @@ MAILTEXT
 	$text .= "Update OK: [".($object->type)."] ".($object->name)."\n";
     }
 
-    $text .= << "MAILTEXT"
+    $text .= << "MAILTEXT";
 
 ==== END PGP SIGNED PART ====
 
@@ -78,18 +78,17 @@ MAILTEXT
 }
 
 sub failure_text {
-    my ($self, $zone, @ns) = @_;
-    my $ns_list = join "\n", @ns;
+    my ($self, $keyid, $header, @objects) = @_;
     my $errorlist = join "\n", $self->error();
     
-    return << "MAILTEXT";
+    my $text = << "MAILTEXT";
 
 Part of your update FAILED.
 
 $header
 
 For help see <http://www.funknet.org/db/> or
-send a message to auto-dbm@funknet.org
+send a message to auto-dbm\@funknet.org
  with 'help' in the subject line
 
 Objects without errors have been processed.
@@ -104,13 +103,15 @@ MAILTEXT
 	$text .= "\n";
     }
 
-    $text .= << "MAILTEXT"
+    $text .= << "MAILTEXT";
 
 ==== END PGP SIGNED PART ====
 
 FUNKNET Database Maintenance Department (Perl Section)
 
 MAILTEXT
+
+      return $text;
 
 }
 
@@ -120,9 +121,6 @@ sub fatalerror_text {
 
 An error occurred processing your update request.
 $error_text
-
-Regards,
-Dennis
 
 MAILTEXT
 

@@ -44,7 +44,7 @@ Use Email::Robot to implement a pureperl whois-by-email updater.
 package Funknet::Whois::Updater;
 use strict;
 
-use Funknet::Whois;
+use Funknet::Whois qw/ parse_object /;
 use Funknet::Whois::Update::Robot;
 use IO::File::flock qw/ :flock /;
 
@@ -93,7 +93,6 @@ sub update {
 						    from    => 'auto-dbm@funknet.org',
 						    pubring => '/home/funknet/.gnupg/pubring.gpg',
 						    secring => '/home/funknet/.gnupg/secring.gpg',
-						    testing => $testing,
 						  );
 
     unless ($robot->process_header($data)) {
@@ -129,7 +128,7 @@ sub update {
 	    next;
 	}
 	if (check_auth($object->domain, $pgp->keyid)) {
-	    push @auth, $object;
+	    push @ok, $object;
 	} else {
 	    $robot->error("hierarchical authorisation failed for object ".$object->object);
 	    push @noauth, $object;
@@ -189,7 +188,7 @@ sub update {
 
     my @failed = (@noauth, @nosource);
 
-    if (scalar (@failed) {
+    if (scalar (@failed)) {
 	my $mail_text = $robot->failure_text($pgp->keyid, $robot->header, @objects);
 	unless (my $res = $robot->reply_mail( $mail_text, subject => 'Reverse Delegation results' )) {
 	    errorlog("error sending mail: $res");
@@ -197,7 +196,7 @@ sub update {
 	}
     }
 
-    if (scalar (@ok) {
+    if (scalar (@ok)) {
 	my $mail_text = $robot->success_text($pgp->keyid, $robot->header, @objects);
 	unless (my $res = $robot->reply_mail( $mail_text, subject => 'Reverse Delegation results' )) {
 	    errorlog("error sending mail: $res");
@@ -212,3 +211,5 @@ sub errorlog {
     print STDERR $log_text;
 }
 
+
+1;
