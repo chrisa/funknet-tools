@@ -512,8 +512,6 @@ sub tunnel {
 	return undef;
     }
     
-    print STDERR Dumper {args => \%args};
-
     if (defined $args{name} &&
 	defined $args{type} &&
 	defined $args{as} &&
@@ -521,8 +519,6 @@ sub tunnel {
 	defined $args{endpoint}) {
 	
 	my $m = parse_object(tmpl('tunnel'));
-
-	print STDERR "name: $args{name}\n";
 
 	$m->xtunnel($args{name});
 	$m->type($args{type});
@@ -536,8 +532,6 @@ sub tunnel {
 	$m->mnt_by($self->{mntner});
 	$m->admin_c($self->{person});
 	$m->tech_c($self->{person});
-
-	print STDERR Dumper { m => $m };
 
 	return $m;
 

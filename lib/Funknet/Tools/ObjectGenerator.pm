@@ -253,9 +253,6 @@ sub node_set {
 			      'type'     => 'ipip',
 			    );
 	if (defined $t) {
-
-	    print STDERR Dumper $t;
-
 	    push @{$ns->{tun_objs}}, $t;
 	    push @{$ns->{tun_inums}}, $t_inetnum;
 	    push @tun_names, $n;

@@ -173,6 +173,19 @@ sub assign_tunnel_inetnum {
     }
 }
 
+=head2 assign_localnet_inetnum
+
+Assigns a local network address of the specified size from the RFC1918
+blocks in the whois.
+
+=cut
+
+sub assign_localnet_inetnum {
+    my ($masklen) = @_;
+
+    # find the RFC1918 blocks
+}
+
 sub reset_inums {
     %assigned_inums = ();
 }
