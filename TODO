@@ -31,6 +31,11 @@
 
 * this persistent tunnel config malarkey
 
+* BGP neighbor config doesn't notice when the tunnel is for another
+  router in the same AS, whereas tunnel config does (by comparing
+  endpoint addresses). Neighbor config needs to use the same logic
+  here as tunnels do.
+
 === Reverse Update robot
 
 * should check for existence of the domain object it gets sent. 
