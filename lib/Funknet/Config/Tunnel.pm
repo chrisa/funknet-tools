@@ -33,7 +33,8 @@
 package Funknet::Config::Tunnel;
 use strict;
 
-use Funknet::Config::Validate qw/ is_ipv4 is_ipv6 is_valid_type is_valid_proto /;
+use Funknet::Config::Validate qw/ is_ipv4 is_ipv6 is_valid_type 
+                                  is_valid_proto is_valid_ifname /;
 use Funknet::Config::Tunnel::BSD;
 use Funknet::Config::Tunnel::IOS;
 use Funknet::Config::Tunnel::Linux;
@@ -67,20 +68,31 @@ sub new {
     my $self = bless {}, $class;
     my $l = Funknet::Config::ConfigFile->local;
 
-    # is this an interface we should be ignoring?
-
-    my @ignore_if = Funknet::Config::ConfigFile->ignore_if;
-    if (defined $args{ifname} && (grep /$args{ifname}/, @ignore_if)) {
-	$self->warn("ignoring $args{ifname}");
-	return undef;
-    }
-    
     unless (defined $args{source} && ($args{source} eq 'whois' || $args{source} eq 'host')) {
 	$self->warn("$args{ifname}: missing or invalid source address");
 	return undef;
     } else {
 	$self->{_source} = $args{source};
     }
+
+    if ($self->{_source} eq 'host') {
+	
+	if (defined $args{interface}) {
+	    $self->{_interface} = $args{interface};
+	} else {
+	    $self->warn("$args{ifname}: missing interface for host tunnel");
+	}
+	unless (defined $args{ifname} && is_valid_ifname($args{ifname})) {
+	    $self->warn("missing or invalid ifname: $args{ifname}");
+	    return undef;
+	}
+	# is this an interface we should be ignoring?
+	my @ignore_if = Funknet::Config::ConfigFile->ignore_if;
+	if (defined $args{ifname} && (grep /$args{ifname}/, @ignore_if)) {
+	    $self->warn("ignoring $args{ifname}");
+	    return undef;
+	}
+    }    
 
     unless (defined $args{type} && is_valid_type($args{type})) {
 	$self->warn("$args{ifname}: missing or invalid type");
@@ -124,11 +136,6 @@ sub new {
 	}
     }
     if ($self->{_source} eq 'host') {
-	if (defined $args{interface}) {
-	    $self->{_interface} = $args{interface};
-	} else {
-	    $self->warn("$args{ifname}: missing interface for host tunnel");
-	}
     }
 	    
     # rebless if we have a specific OS to target 
