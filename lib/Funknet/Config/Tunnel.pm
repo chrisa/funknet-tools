@@ -264,7 +264,10 @@ sub local_os {
 }
 
 sub ifname {
-    my ($self) = @_;
+    my ($self, $ifname) = @_;
+    if (defined $ifname) {
+	$self->{_ifname} = $ifname;
+    }
     return $self->{_ifname};
 }
 
@@ -281,6 +284,23 @@ sub remote_endpoint {
 sub local_endpoint {
     my ($self) = @_;
     return $self->{_local_endpoint};
+}
+
+sub firewall_rules {
+    my ($self) = @_;
+    my @rules_out;
+    
+    push (@rules_out, 
+	  Funknet::Config::FirewallRule->new(
+					     in_interface  => $self->{_ifname},
+					     source        => $self->{_source},));
+    
+    push (@rules_out, 
+	  Funknet::Config::FirewallRule->new(
+					     out_interface => $self->{_ifname},
+					     source        => $self->{_source},));
+
+    return @rules_out;
 }
 
 1;

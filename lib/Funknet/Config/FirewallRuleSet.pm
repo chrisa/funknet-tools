@@ -133,10 +133,10 @@ sub diff {
     # create hashes
     my ($whois_fwall, $host_fwall);
     for my $fwall ($whois->firewall) {
-	$whois_fwall->{$fwall->as_hashkey} = 1;
+	$whois_fwall->{$fwall->as_hashkey}++;
     }
     for my $fwall ($host->firewall) {
-	$host_fwall->{$fwall->as_hashkey} = 1;
+	$host_fwall->{$fwall->as_hashkey}++;
     }
     
     for my $h ($host->firewall) {

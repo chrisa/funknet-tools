@@ -63,20 +63,26 @@ sub delete {
     my ($self) = @_;
 
     my $whois_source = Funknet::ConfigFile::Tools->whois_source || 'FUNKNET';
-    my $port_str = _ports($self);
+    my $port_str     = _ports($self);
+    my $src_str      = _src($self);
+    my $dst_str      = _dst($self);
+    my $proto_str    = _proto($self);
+    my $inter_str    = _inter($self);
 
-    return ("iptables -D $whois_source -t filter -p $self->{_proto} -s $self->{_source_address} " .
-	    "-d $self->{_destination_address}".$port_str."-j ACCEPT");
+    return ("iptables -D $whois_source -t filter".$inter_str.$proto_str.$src_str.$dst_str.$port_str."-j ACCEPT");
 }
 
 sub create {
     my ($self) = @_;
 
     my $whois_source = Funknet::ConfigFile::Tools->whois_source || 'FUNKNET';
-    my $port_str = _ports($self);
+    my $port_str     = _ports($self);
+    my $src_str      = _src($self);
+    my $dst_str      = _dst($self);
+    my $proto_str    = _proto($self);
+    my $inter_str    = _inter($self);
 
-    return ("iptables -A $whois_source -t filter -p $self->{_proto} -s $self->{_source_address} " .
-	    "-d $self->{_destination_address}".$port_str."-j ACCEPT");
+    return ("iptables -A $whois_source -t filter".$inter_str.$proto_str.$src_str.$dst_str.$port_str."-j ACCEPT");
 }
 
 sub create_chain {
@@ -96,6 +102,49 @@ sub _ports {
 	$port_str .= "--dport $self->{_destination_port} ";
     }
     return $port_str;
+}
+
+sub _src {
+    my ($self) = @_;
+    
+    my $src_str = " ";
+    if (defined $self->{_source_address}) {
+	$src_str .= "-s $self->{_source_address} ";
+    }
+    return $src_str;
+}
+
+sub _dst {
+    my ($self) = @_;
+    
+    my $dst_str = " ";
+    if (defined $self->{_destination_address}) {
+	$dst_str .= "-s $self->{_destination_address} ";
+    }
+    return $dst_str;
+}
+
+sub _proto {
+    my ($self) = @_;
+    
+    my $proto_str = " ";
+    if (defined $self->{_proto}) {
+	$proto_str .= "-p $self->{_proto} ";
+    }
+    return $proto_str;
+}
+
+sub _inter {
+    my ($self) = @_;
+    
+    my $inter_str = " ";
+    if (defined $self->{_in_interface}) {
+	$inter_str .= "-i $self->{_in_interface} ";
+    }
+    if (defined $self->{_out_interface}) {
+	$inter_str .= "-o $self->{_out_interface} ";
+    }
+    return $inter_str;
 }
 
 1;

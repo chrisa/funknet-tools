@@ -79,10 +79,10 @@ sub local_firewall_rules {
 
 	my @rules = split ('\n', $whole_set);
 	my @rules_out;
-
-    foreach my $rule (@rules) {
-
-	    my ($src, $dest, $proto, $policy, $src_port, $dst_port);
+	
+	foreach my $rule (@rules) {
+	    
+	    my ($src, $dest, $proto, $policy, $src_port, $dst_port, $in_if, $out_if);
 	    my ($first_half, $second_half);
 
 	    chomp($rule);
@@ -93,10 +93,10 @@ sub local_firewall_rules {
 	    ($first_half, $second_half) = split ('--', $rule);
 
 	    $first_half =~ s/^\s+\d+\s+\d+\s+(\w+)\s+(\w+).*/$1,$2/;
-	    $second_half =~ s/^\s+\S+\s+\S+\s+(\d+\.\d+\.\d+\.\d+)\s+(\d+\.\d+\.\d+\.\d+).*/$1,$2/;
+	    $second_half =~ s/^\s+([a-z0-9]+|\*)\s+([a-z0-9]+|\*)\s+(\d+\.\d+\.\d+\.\d+)(?:\/\d+)?\s+(\d+\.\d+\.\d+\.\d+)(?:\/\d+)?.*/$1,$2,$3,$4/;
 
 	    ($policy, $proto) = split(',',$first_half);
-	    ($src, $dest) = split(',',$second_half);
+	    ($in_if, $out_if, $src, $dest) = split(',',$second_half);
 
 	    if($proto == 4) { $proto = 'ipencap'; }
 
@@ -114,14 +114,25 @@ sub local_firewall_rules {
 		$dst_port = undef;
 	    }
 
+	    debug("in_if: $in_if out_if: $out_if");
+
+	    # interfaces - iptables says "*" when it means
+	    # "no interface". set to undef if it does. 
+	    if ($in_if eq "*")  { $in_if  = undef };
+	    if ($out_if eq "*") { $out_if = undef };
+
 	    debug("proto is $proto");
-	    my $new_rule_object = Funknet::Config::FirewallRule->new(
-						  source => 'host',
-						  source_address => $src,
-						  source_port => $src_port,
-						  destination_address => $dest,
-						  destination_port => $dst_port,
-						  proto => $proto );
+	    my $new_rule_object = 
+	      Funknet::Config::FirewallRule->new(
+						 source              => 'host',
+						 source_address      => $src,
+						 source_port         => $src_port,
+						 destination_address => $dest,
+						 destination_port    => $dst_port,
+						 proto               => $proto,
+						 in_interface        => $in_if,
+						 out_interface       => $out_if,
+						);
 	    debug("new_rule_object");
 	    push (@rules_out, $new_rule_object);
 	}

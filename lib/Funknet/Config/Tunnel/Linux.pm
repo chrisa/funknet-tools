@@ -150,6 +150,10 @@ sub create {
 		"ip addr add $self->{_local_address}/30 peer $self->{_remote_address} dev tunl$inter",
 		"ip link set tunl$inter up" );
     
+    # stash the interface name this will get in the object
+    # (firewall rule gen needs this later)
+    $self->{_ifname} = "tunl$inter";
+
     return Funknet::Config::CommandSet->new( cmds => \@cmds,
 					     target => 'host',
 					   );
@@ -170,6 +174,8 @@ sub firewall_rules {
     my ($self) = @_;
     my @rules_out;
 
+    @rules_out = $self->SUPER::firewall_rules();
+  
     my $proto;
     if ($self->{_type} eq 'ipip') { $proto = 'ipencap' };
     if ($self->{_type} eq 'gre')  { $proto = 'gre' };

@@ -141,6 +141,10 @@ sub delete {
 sub create {
     my ($self, $inter) = @_;
 
+    # stash the interface name this will get in the object
+    # (firewall rule gen needs this later)
+    $self->{_ifname} = "ip.tun$inter";
+
     my @cmds = (
 		"ifconfig ip.tun$inter inet plumb",
 		"ifconfig ip.tun$inter inet tsrc $self->{_local_endpoint} tdst $self->{_remote_endpoint}",
@@ -165,6 +169,8 @@ sub firewall_rules {
     my ($self) = @_;
     my @rules_out;
 
+    @rules_out = $self->SUPER::firewall_rules();
+    
     my $proto;
     if ($self->{_type} eq 'ipip') { $proto = '4' };
     if ($self->{_type} eq 'gre')  { $proto = 'gre' };

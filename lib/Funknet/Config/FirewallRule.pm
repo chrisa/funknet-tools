@@ -75,11 +75,13 @@ sub new {
 	return undef;
     } else {
 	$self->{_source}              = $args{source};
-	$self->{_source_address}      = $args{source_address};
-	$self->{_destination_address} = $args{destination_address};
+	$self->{_source_address}      = $args{source_address}      || '0.0.0.0'; 
+	$self->{_destination_address} = $args{destination_address} || '0.0.0.0';
 	$self->{_source_port}         = $args{source_port};
 	$self->{_destination_port}    = $args{destination_port};
-	$self->{_proto}               = $args{proto};
+	$self->{_proto}               = $args{proto}               || 'all';
+	$self->{_in_interface}        = $args{in_interface};
+	$self->{_out_interface}       = $args{out_interface};
 
 	if(defined($args{rule_num})) {
 	    $self->{_rule_num} = $args{rule_num};
@@ -116,6 +118,7 @@ sub as_hashkey {
     
     my $hash =  "$self->{_proto}-" .
 		"$self->{_source_address}-$self->{_source_port}-" .
+		"$self->{_in_interface}-$self->{_out_interface}-" .  
 		"$self->{_destination_address}-$self->{_destination_port}";
     return $hash;
 }

@@ -162,7 +162,11 @@ sub create {
 	if    (/ipip/) {$tun_type = 'gif';}
 	elsif (/gre/) {$tun_type = 'gre';}
     }
-     
+
+    # stash the interface name this will get in the object
+    # (firewall rule gen needs this later)
+    $self->{_ifname} = "$tun_type$inter";
+    
     my @cmds = 	( "ifconfig $tun_type$inter create mtu 1480",
 		  "ifconfig $tun_type$inter tunnel $self->{_local_endpoint} $self->{_remote_endpoint}",
 		  "ifconfig $tun_type$inter inet $self->{_local_address} $self->{_remote_address} netmask 255.255.255.252"
@@ -188,6 +192,8 @@ sub firewall_rules {
     my ($self) = @_;
     my @rules_out;
 
+    @rules_out = $self->SUPER::firewall_rules();
+    
     my $proto;
     if ($self->{_type} eq 'ipip') { $proto = 'ipencap' };
     if ($self->{_type} eq 'gre')  { $proto = 'gre' };

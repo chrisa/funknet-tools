@@ -231,7 +231,7 @@ sub firewall {
 	
 	my $tun_name = $tun->name;
 	my (@fwall_objs);
-
+	
 	@fwall_objs = $tun->firewall_rules;
 
 	if (defined @fwall_objs) {push @local_fwallrule, @fwall_objs};

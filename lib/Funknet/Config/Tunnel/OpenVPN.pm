@@ -163,6 +163,10 @@ sub create {
 	$self->{_ovpn_type} = 'tun';
     #}
     
+    # stash the interface number this will get in the object
+    # (firewall rule gen needs this later)
+    $self->{_ifname} = "$self->{_ovpn_type}$inter";
+
     # decide if we're going to be client or server.
     # (ignoring NAT/dynamic issues here)
     # 
@@ -211,6 +215,8 @@ sub firewall_rules {
     my ($self) = @_;
     my @rules_out;
 
+    @rules_out = $self->SUPER::firewall_rules();
+    
     push (@rules_out, 
 	  Funknet::Config::FirewallRule->new(
 					     proto               => 'udp',
