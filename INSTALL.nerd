@@ -24,7 +24,7 @@ vi zero-lemon-ports/common/lemon.port.mk
 vi zero-lemon-ports/meta/server-tarball/Makefile
 
 # then:
-cd zero-lemon-ports/natd-firewall-tarball
+cd zero-lemon-ports/meta/natd-firewall-tarball
 
 # edit Makefile so FUNKNET_ENABLE is enabled,
 # and SPEEDTOUCH_ENABLE if you have that modem, well any that use tun device,
