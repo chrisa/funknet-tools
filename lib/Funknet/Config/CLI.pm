@@ -1,6 +1,6 @@
 package Funknet::Config::CLI;
 use strict;
-use Funknet::Config::Secrets;
+use Funknet::Config::CLI::Secrets;
 use Net::Telnet;
 
 my $prompts = { 
@@ -17,7 +17,7 @@ my $bgp_ports = {
 };
 
 sub new {
-    my ($class) = @_;
+    my ($class, %args) = @_;
     my $self = bless {}, $class;
 
     if (defined $args{local_router}) {

@@ -3,6 +3,7 @@ use strict;
 use lib './lib';
 use Data::Dumper;
 use Funknet::Config::Whois;
+use Funknet::Config::Host;
 
 unless (scalar @ARGV == 1) {
     print STDERR "usage: $0 local_as\n";
