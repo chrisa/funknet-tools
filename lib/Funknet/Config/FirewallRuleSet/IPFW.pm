@@ -37,43 +37,37 @@ use Funknet::Debug;
 
 =head1 NAME
 
-Funknet::Config::Tunnel::Linux
+Funknet::Config::FirewallRuleSet::IPFW
 
 =head1 DESCRIPTION
 
-This class contains methods for parsing, creating and deleting tunnel
-interfaces on Linux.
+Provides a collection object for FirewallRule::IPFW objects.
+
+In order to acheive poking holes into the ruleset without re-running
+the firewall script, these tools only pay attention to rules within
+the range min_ipfw_rule and max_ipfw_rule as specified in the config
+file. Arrange for the rest of your ruleset to be placed around these
+accordingly.
 
 =head1 METHODS
 
 =head2 config
 
-Returns the configuration of the Tunnel object as text. This should be
-in roughly the format used by the host. TODO: make this be
+Returns the configuration of the FirewallRule objects as text. This
+should be in roughly the format used by the host. TODO: make this be
 so. Currently we just dump the information in an arbitrary format.
 
-=head2 new_from_ifconfig
+=head2 local_firewall_rules
 
-Reads a host interface description taken from ifconfig and parses the
-useful information from it. IPIP and GRE interfaces are supported for
-Linux; other interface types cause this method to return
-undef. Interface naming under Linux: interfaces need to be numbered,
-and the create, delete and new_from_ifconfig methods need to agree on
-the names.
+Returns a FirewallRuleSet::IPFW object representing the current 
+configuration if the host
 
-=head2 create
+=head2 diff($hostobj)
 
-Returns a list of strings containing commands to configure a tunnel
-interface on Linux. The interface details are passed in as part of
-$self, and the new interface number is passed in as $inter. The
-commands should assume that no interface with that number currently
-exists.
-
-=head2 delete
-
-Returns a list of strings containing commands to unconfigure a tunnel
-interface on Linux. The interface should be removed, not just put into
-the 'down' state.
+IPFW specific diff, overrides the generic one in FirewallRuleSet.pm
+Called on a FirewallRuleSet object of source whois and passed one of
+source host, returns the commands required to update the host's
+firewall config to that in the whois
 
 =cut
 
