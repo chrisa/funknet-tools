@@ -56,6 +56,8 @@ sub exec_root {
     my ($self, $cmdset) = @_;
 
     for my $cmd ($cmdset->cmds) {
-	&{ $self->{_exec} } $cmd;
+	&{ $self->{_exec} }($cmd);
     }
 }
+
+1;
