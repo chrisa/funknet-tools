@@ -4,6 +4,67 @@ use Net::Whois::RIPE;
 use Funknet::Config::Tunnel;
 use Funknet::Config::BGP;
 
+=head1 NAME
+
+Funknet::Config::Whois
+
+=head1 SYNOPSIS
+
+my $whois = Funknet::Config::Whois->new( local_as => 'AS65002',
+					 local_os => 'ios',
+					 local_router => 'ios',
+					 local_host => '10.1.45.1',
+				       );
+my $whois_tun = $whois->tunnels;
+my $whois_bgp = $whois->sessions;
+
+=head1 DESCRIPTION
+
+This module contains methods to retrieve configurations from the
+objects in the whois database, and create a representation of it using
+Funknet::Config objects. The module needs to know what operating
+system it is supposed to work with - both in terms of the networking
+(local_os) and routing software (local_router). It also needs to know
+which Autonomous System the host is in, and an address where the
+router interface may be found.
+
+These parameters are passed to the constructor. Valid values for
+local_os are 'bsd', 'solaris', 'linux' and 'ios'. Valid values for
+local_router are 'ios' and 'zebra'.
+
+The parameter local_as expects and 'AS' prefix on the
+string. local_host expects an IPv4 address as a dotted-decimal string
+(though a hostname may also work, this is asking for trouble).
+
+=head1 METHODS
+
+=head2 sessions
+
+This method retrieves the BGP configuration for the router using the
+objects in the whois database. A session is set up for every tunnel,
+using the tunnel addresses themselves rather than the endpoint
+addresses. 'network' statements are inferred from the route objects in
+the local AS by an inverse lookup on the whois database.
+
+The data structure is returned as a hashref. The top level data
+structure is Funknet::Config::BGP, which contains the routes
+advertised (network statements) for this BGP router. (todo: add other
+BGP configuration statements to this object - ebgp multihop etc.)
+
+The BGP object contains a list of Neighbor objects, which represent
+the currently configured sessions. 
+
+=head2 tunnels
+
+This method retrieves the tunnel configuration for the router, based
+on the tun: attributes of the relevant aut-num object. 
+
+The data structure returned is a reference to an array of
+Funknet::Config::Tunnel::$os objects where $os is as indicated by the
+local_os flag passed to the constructor.
+
+=cut
+
 sub new {
     my ($class, %args) = @_;
     my $self = bless {}, $class;

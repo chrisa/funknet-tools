@@ -2,6 +2,32 @@ package Funknet::Config::CLI::Zebra;
 use strict;
 use Net::Telnet;
 
+=head1 NAME
+
+Funknet::Config::CLI::Zebra;
+
+=head1 SYNOPSIS
+
+    my $cli = Funknet::Config::CLI->new( local_as => 'AS65000',
+					 local_host => '127.0.0.1',
+					 local_router => 'zebra',
+				       );
+    my $bgp = $cli->get_bgp;
+
+=head1 DESCRIPTION
+
+This module provides Zebra-specific methods for interacting with the
+router's command line. Objects are instantiated through the
+constructor in CLI.pm which returns an object blessed into this class
+if the 'local_router' argument is 'ios'.
+
+=head1 METHODS
+
+See the documentation in CLI.pm for methods which are available in
+IOS.pm and Zebra.pm (get_bgp and get_access_list). 
+
+=cut
+
 sub get_bgp {
     my ($self) = @_;
 
@@ -132,5 +158,28 @@ sub get_access_list {
     return $acl;
 
 }
+
+sub check_login {
+    my ($self) = @_;
+
+    return 1;
+    
+    my $t = new Net::Telnet ( Timeout => 10,
+			      Prompt  => '/[\>\#]$/',
+			      Port    => 2605,
+			    );
+    $t->open($self->{_local_host});
+    $t->cmd($self->{_password});
+    $t->getline;
+    $t->cmd('enable');
+    $t->cmd($self->{_enable});
+    my $p = $t->getline;
+    if ($p =~ /#/) {
+	return 1;
+    } else {
+	return undef;
+    }
+}
+
 
 1;

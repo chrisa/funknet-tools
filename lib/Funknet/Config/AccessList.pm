@@ -1,6 +1,85 @@
 package Funknet::Config::AccessList;
 use strict;
 
+=head1 NAME
+
+Funknet::Config::AccessList
+
+=head1 SYNOPSIS
+    
+    my $acl_in = Funknet::Config::AccessList->new( source_as   => 'AS65000',
+                                                   peer_as     => 'AS65002',
+                                                   source_addr => '10.2.0.37'
+                                                   peer_addr   => '10.2.0.38'
+                                                   dir         => 'import',
+                                                   source      => 'whois',
+						 );
+
+    -- or --
+    
+    my $acl_in = Funknet::Config::AccessList->new( source_as   => 'AS65000',
+                                                   peer_as     => 'AS65002',
+                                                   source_addr => '10.2.0.37',
+                                                   peer_addr   => '10.2.0.38',
+					           dir         => 'import',
+					           source      => 'host',
+					           local_router => 'ios',
+					           local_host  => '213.210.34.174',
+						 );
+
+
+    my $acl_in_name = $acl_in->name;
+    my $configtext = $acl_in->config;
+
+=head1 DESCRIPTION
+
+This module encapsulates both IP prefix-lists and the related
+route-maps for BGP neighbors. There is a 1-1 relationship between
+route-maps, prefix-lists and neighbors. The generic term 'Access List'
+is used because it is intended to expand this module to cover IP
+packet-filtering access lists.
+
+Tne access lists are not broken down into a detailed representation as
+objects, just the 'text' of the list is stored, and the name. The
+module can create access-list objects from both the whois database and
+the running host. Because enable mode is avoided we cannot just copy
+the access list text as the router stores it but must translate the
+'sho ip prefix-list' output into the 'configuration commands'
+representation. (todo: this)
+
+Our diff method is called when the Neighbor code detects that both the
+Host and Whois configuration have an route-map set. In this case, the
+text of the access-list is compared and if different, replaced by the
+Whois version. 
+
+=head1 METHODS
+
+=head2 new
+
+This method takes the details required to call the IRRToolSet RtConfig
+program, or the details required to extract the same information from
+the host, as well as the 'source' argument. 
+
+If 'source' is 'whois', the private method _get_whois is called, which
+is the wrapper around RtConfig. If 'source' is 'host' the appropriate
+router-specific method is called via the CLI module.
+
+=head2 config
+
+Returns the configuration required to add the access-list and
+route-map to the router's configuration. Assumes these do not already
+exist.
+
+=head2 diff
+
+Called on an AccessList object with a source of 'whois' and an
+argument of an AccessList object with a source of 'host', this method
+returns the configuration commands required to remove and replace (or
+amend, maybe) the access-list and route-map referenced by the Host
+with the one in the Whois object.
+
+=cut
+
 sub new {
     my ($class, %args) = @_;
 

@@ -87,6 +87,10 @@ sub diff {
 	}
     }
 
+    # we're done with bgp, get back to configuration mode
+    
+    push @cmds, 'exit';
+
     # iterate acls, do add/remove/change
 
     for my $n ( $whois->neighbors ) {
@@ -130,9 +134,18 @@ sub diff {
 	    push @bounce_req, $n->remote_addr;
 	}
     }
-
-    push @cmds, map { "clear ip bgp $_" } @bounce_req;
-    $bounce_all and push @cmds, 'clear ip bgp *';
+    
+    # we're done in configuration mode, get back to enable.
+    
+    push @cmds, 'exit';
+    
+    # bounce the relevant bgp sessions (i.e. changed route-maps)
+    
+    if ( $bounce_all ) {
+	push @cmds, 'clear ip bgp *';
+    } else {
+	push @cmds, map { "clear ip bgp $_" } @bounce_req;
+    }
 
     return @cmds;
 }
