@@ -59,11 +59,11 @@ sub load {
 
 	next if $line =~ /^#/;
 
-	if ($line =~ /^(.*):\s(.*)$/) {
+	if ($line =~ /^(.*):\s+(.*)$/) {
 	    my ($key, $value) = ($1, $2);
 
-	    $key =~ s/ //g;
-	    $value =~ s/ //g;
+#	    $key =~ s/ //g;
+#	    $value =~ s/ //g;
 
 	    if ($key eq 'source' && $value ne $self->{_source}) {
 		undef $currobj;
@@ -97,6 +97,12 @@ sub load {
 	}
     }
     close DATA;
+
+    for my $type (keys %{ $self->{_objects} }) {
+        for my $name (keys %{ $self->{_objects}->{$type} }) {
+	    print STDERR "$type: $name\n";
+	}
+    }
 
     return $num;
 }
@@ -202,10 +208,12 @@ sub go {
 	    
 	} elsif (defined $opts->{inverse} && $opts->{inverse} eq 'origin' && defined $self->{_index}->{origin}->{$query}) {
 	    
-	    for my $object (@{ $self->{_index}->{origin}->{$query} }) {
-		print $sh $object, "\n\n";
+	    for my $object (sort { _dq_to_int(_route($a)) <=> _dq_to_int(_route($b)) } 
+	                        @{ $self->{_index}->{origin}->{$query} }) {
+		print $sh $object, "\n";
 		$self->_log("object found via inverse lookup\n");
 	    }
+	    print $sh "\n";
 	    
 	} else {
 
@@ -227,6 +235,22 @@ sub _log {
     if ($self->{_verbose}) {
 	print STDERR "whoisd: $msg";
     }
+}
+
+sub _dq_to_int {
+    my ($dq) = @_;
+    my @octets = $dq =~ /^(\d+)\.(\d+)\.(\d+)\.(\d+)/;
+    my $int = (($octets[0] << 24) + 
+               ($octets[1] << 16) +
+	       ($octets[2] << 8)  +
+	       $octets[3]);
+    return $int;
+}
+
+sub _route {
+    my ($route) = @_;
+    my ($dq) = $route =~ /route:\s+(\d+\.\d+\.\d+\.\d+)/;
+    return $dq;
 }
 
 1;
