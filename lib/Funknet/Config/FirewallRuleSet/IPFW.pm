@@ -175,7 +175,12 @@ sub diff {
 	    push @cmds, $w->create($new_rule_num);
         }
     }
-    return @cmds;
+
+    my $cmdset = Funknet::Config::CommandSet->new( cmds => \@cmds,
+						   target => 'cli',
+						 );
+    
+    return Funknet::Config::ConfigSet->new( cmds => [ $cmdset ] );
 }
 
 sub add {
