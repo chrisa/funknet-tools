@@ -71,11 +71,20 @@ sub load {
 		$currobj->{text} = "$line\n";
 	    } else {
 		$currobj->{text} .= "$line\n";
+
+		if ($key eq 'origin') {
+		    $currobj->{origin} = $value;
+		}
 	    }
 	    
 	} else {
 
 	    $self->{_objects}->{$currobj->{name}} = $currobj->{text};
+
+	    if ($currobj->{type} eq 'route') {
+		push @{ $self->{_index}->{origin}->{$currobj->{origin}} }, $currobj->{text};
+	    }
+
 	    undef $currobj;
 
 	}
@@ -117,7 +126,7 @@ sub go {
 	chop $query;
 	
 	# sanitize query
-	if ($query =~ /^([A-Za-z0-9-]+)$/) {
+	if ($query =~ /^([A-Za-z0-9- ]+)$/) {
 	    $query = $1;
 	} else {
 	    warn "evil query";
@@ -125,10 +134,20 @@ sub go {
 	}
 
 	if (defined $self->{_objects}->{$query}) {
+
 	    print $sh $self->{_objects}->{$query};
 	    print $sh "\n";
+	    
+	} elsif ($query =~ s/^-i origin // && defined $self->{_index}->{origin}->{$query}) {
+	    
+	    for my $object (@{ $self->{_index}->{origin}->{$query} }) {
+		print $sh $object, "\n";
+	    }
+	    
 	} else {
+
 	    print $sh "% No entries found in the selected source\n\n";
+
 	}
 	
         exit;
