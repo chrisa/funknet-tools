@@ -60,7 +60,7 @@ unless ($opt{f} && $opt{i}) {
     exit(1);
 }
 
-my $config = Funknet::Config::ConfigFile->new( $opt{f} );
+my $config = Funknet::ConfigFile->new( $opt{f} );
 my $nic = new Net::Interface($opt{i}) or die "whoopsy creating interface object";
 
 my $addr= $nic->address;

@@ -144,7 +144,9 @@ sub local_firewall_rules {
 	    $dest = $second_half;
 	}
 
+	if ($proto eq 'ip') { $proto = 'all';}
 	debug("proto is $proto");
+
 	my $new_rule_object =
 	  Funknet::Config::FirewallRule->new(
 					source               => 'host',
@@ -285,6 +287,5 @@ sub config {
     
     return Funknet::Config::ConfigSet->new( cmds => [ $cmdset ] );
 }
-
 
 1;
