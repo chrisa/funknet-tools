@@ -103,7 +103,7 @@ unless (check_auth($object->domain, $pgp->keyid)) {
 # extract zone, nameservers from object.
 
 my $zone = $object->domain;
-my @ns = $object->rev_srv;
+my @ns = $object->nserver;
 
 # check delegation
 
