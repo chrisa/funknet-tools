@@ -68,7 +68,7 @@ Turn on copious debugging information
 =cut
 
 my %opt;
-getopts('aqdf:', \%opt);
+getopts('waqdf:', \%opt);
 
 unless ($opt{f}) {
     print STDERR "usage: $0 -f path_to_config_file\n";
@@ -115,4 +115,10 @@ if ($opt{a}) {
     $bgp->apply;
     debug("Generating Tunnel config");
     $tun->apply;
+}
+
+# Write the tunnel config out to the rcfile
+if ($opt{w}) {
+	debug("Writing tunnel config");
+	$tun->writeout;
 }
