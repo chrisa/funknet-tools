@@ -99,6 +99,8 @@ sub host_tunnels {
 	next unless $filename =~ /\.conf$/;
 	$filename = OPENVPN_CONF_DIR . '/' . $filename;
 
+	print STDERR "reading $filename\n";
+
 	my $tun = Funknet::Config::Tunnel::OpenVPN->new_from_ovpn_conf( $filename );
 	if (defined $tun) {
 	    push @local_tun, $tun;
@@ -121,6 +123,11 @@ sub new_from_ovpn_conf {
 
     my $conf = _parse_openvpn_conf($text);
 
+    print STDERR "$filename:\n$text\n\n";
+
+    use Data::Dumper;
+    print STDERR Dumper $conf;
+    
     my ($local_address, $remote_address) = $conf->{ifconfig} =~ /(.*) (.*)/;
     my ($iftype, $ifnum) = $conf->{dev} =~ /^([a-z]+)(\d+)$/;
 
@@ -137,24 +144,36 @@ sub new_from_ovpn_conf {
 	$local_endpoint  = $conf->{fn_local_endpoint};
     }
 
-    return Funknet::Config::Tunnel->new(
-					name            => 'none',
-					local_address   => $local_address,
-					remote_address  => $remote_address,
-					local_endpoint  => $local_endpoint,
-					remote_endpoint => $remote_endpoint,
-					interface       => $ifnum,
-					type            => $iftype,
-					ifname          => $conf->{dev},
-					source          => 'host',
-					proto           => '4',
-				       );
+    my $tunnel = Funknet::Config::Tunnel->new(
+					      local_address   => $local_address,
+					      remote_address  => $remote_address,
+					      local_endpoint  => $local_endpoint,
+					      remote_endpoint => $remote_endpoint,
+					      interface       => $ifnum,
+					      type            => $iftype,
+					      ifname          => $conf->{dev},
+					      source          => 'host',
+					      proto           => '4',
+					     );
+
+    # stash some extra bits in here that various things need
+    $tunnel->{_ovpn_port}    = $conf->{port};
+    $tunnel->{_ovpn_file}    = $filename;
+    $tunnel->{_ovpn_pidfile} = $conf->{writepid};
+
+    # name is a whois-only param (for now)
+    $tunnel->{_name} = $conf->{fn_name};
+
+    use Data::Dumper;
+    print STDERR Dumper $tunnel;
+
+    return $tunnel;
 }
 
 sub delete {
     my ($self) = @_;
 
-    # generate a filename for our config file (from the whois)
+    # generate a filename for our config file 
     $self->{_ovpn_file} = OPENVPN_CONF_DIR . '/' . $self->{_name} . '.conf';
 
     # create a SystemFile object on that path
@@ -205,7 +224,7 @@ sub create {
  
     my $ovpn_file = Funknet::Config::SystemFile->new( text => $ovpn_conf,
 						      path => $self->{_ovpn_file} );
-						      
+					      
     return $ovpn_file;
 }
 
@@ -213,6 +232,7 @@ sub enc_data {
     my ($self, $enc_data) = @_;
     $self->{_ovpn_cert} = $enc_data->{certfile_path};
     $self->{_ovpn_key}  = $enc_data->{keyfile_path};
+    $self->{_ovpn_ca}   = $enc_data->{cafile_path};
 }
 
 sub ifsym {
@@ -354,6 +374,11 @@ sub _parse_openvpn_conf {
     my ($local_endpoint, $remote_endpoint) = $text =~ /from (.+) to (.+)/;
     $config->{fn_local_endpoint}  = $local_endpoint;
     $config->{fn_remote_endpoint} = $remote_endpoint;
+
+    # we also need the name of the tunnel
+    
+    my ($tunnel) = $text =~ /tunnel (.+)/;
+    $config->{fn_name} = $tunnel;
 
     return $config;
 }

@@ -149,6 +149,7 @@ sub tun_data {
 	return {
 		keyfile_path  => $self->{_keyfile}->path(),
 		certfile_path => $self->{_certfile}->path(),
+		cafile_path   => '/etc/openvpn/ca.pem', # XXX fix this
 	       };
     }
     return undef;

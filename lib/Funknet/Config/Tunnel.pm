@@ -141,16 +141,16 @@ sub new {
 	    }
 	}
     }
+    
     if ($self->{_source} eq 'whois') {
-
 	unless (defined $args{name}) {
 	    $self->warn("$args{ifname}: missing or invalid tunnel name");
 	    return undef;
-	} else {
-	    $self->{_name} = $args{name};
 	}
+    } else {
+	$self->{_name} = $args{name};
     }
-	 
+
     # support the 'local_source' parameter. if it exists, and is a valid
     # ipv4 address, then replace $self->{_local_endpoint} with it, and 
     # move existing value to $self->{_local_public_endpoint}
