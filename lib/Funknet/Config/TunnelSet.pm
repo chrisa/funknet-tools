@@ -98,6 +98,13 @@ sub config {
 	if ($create_obj->isa('Funknet::Config::CommandSet')) {
 	    push @cmds, $create_obj;
 	} 
+
+	# also add a "start" command, careful not to push an undef. 
+	my $start = $tun->start_cmd();
+	if (defined $start) {
+	    push @cmds, $start;
+	}
+
 	$i++;
     }
 
@@ -145,6 +152,12 @@ sub diff {
     for my $h ($host->tunnels) {
 	unless ($whois_tuns->{$h->as_hashkey}) {
 	    push @cmds, $h->delete;
+
+	    # also add a "stop" command, careful not to push an undef. 
+	    my $stop = $h->stop_cmd();
+	    if (defined $stop) {
+		push @cmds, $stop;
+	    }
 	}
     }
 
@@ -165,6 +178,12 @@ sub diff {
 	    if ($create_obj->isa('Funknet::Config::CommandSet')) {
 		push @cmds, $create_obj;
 	    } 
+
+	    # also add a "start" command, careful not to push an undef. 
+	    my $start = $w->start_cmd();
+	    if (defined $start) {
+		push @cmds, $start;
+	    }
 
 	    $if_num++;
 

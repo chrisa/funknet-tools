@@ -303,4 +303,7 @@ sub firewall_rules {
     return @rules_out;
 }
 
+sub start_cmd {}
+sub stop_cmd {}
+
 1;

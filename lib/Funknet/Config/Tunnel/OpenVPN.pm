@@ -181,6 +181,9 @@ sub create {
     # allocate a port
     # here we use 5000+ifindex
     $self->{_ovpn_port} = 5000 + $self->{_ovpn_inter};
+
+    # generate a filename for our pidfile
+    $self->{_ovpn_pidfile} = '/var/run/openvpn.pid.'.$self->{_ovpn_port};
     
     # generate a filename for our config file (from the whois)
     $self->{_ovpn_file} = '/etc/openvpn/' . $self->{_name} . '.conf';    
@@ -209,6 +212,20 @@ sub valid_type {
     $type eq 'tun' && return 1;
     $type eq 'tap' && return 1;
     return 0;
+}
+
+sub start_cmd {
+    my ($self) = @_;
+    return Funknet::Config::CommandSet->new( cmds => [ '/usr/sbin/openvpn -f '.$self->{_ovpn_file} ],
+					     target => 'host',
+					   );
+}
+
+sub stop_cmd {
+    my ($self) = @_;
+    return Funknet::Config::CommandSet->new( cmds => [ 'kill -TERM `cat '.$self->{_ovpn_pidfile}.'`' ],
+					     target => 'host',
+					   );
 }
 
 sub firewall_rules {
@@ -270,7 +287,7 @@ cert           $self->{_ovpn_cert}
 key            $self->{_ovpn_key}
 ping           15
 verb           5
-writepid       /var/run/openvpn.pid.$self->{_ovpn_port}
+writepid       $self->{_ovpn_pidfile}
 CLIENTCONFIG
     
     } elsif ($self->{_ovpn_server}) {
@@ -297,7 +314,7 @@ cert           $self->{_ovpn_cert}
 key            $self->{_ovpn_key}
 ping           15
 verb           5
-writepid       /var/run/openvpn.pid.$self->{_ovpn_port}
+writepid       $self->{_ovpn_pidfile}
 SERVERCONFIG
     }
     return $config;
