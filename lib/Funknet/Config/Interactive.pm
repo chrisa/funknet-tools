@@ -36,6 +36,24 @@ package Funknet::Config::Interactive;
 use strict;
 use Term::Interact;
 use Funknet::Config::Validate qw/ is_ipv4 is_valid_as is_valid_router is_valid_os /;
+use base qw/ Funknet::Config /;
+
+=head1 NAME
+
+Funknet::Config::Interactive
+
+=head1 SYNOPSIS
+
+  my $fci = new Funknet::Config::Interactive;
+  my $config = $fci->get_config;
+
+=head1 METHODS
+
+=head2 new
+
+Just a constructor. Might do slightly more at some point. 
+
+=cut
 
 sub new {
     my ($class,%args) = @_;
@@ -43,12 +61,25 @@ sub new {
     return $self;
 }
 
+=head2 get_config
+
+Call this at a point when STDOUT is a terminal, prompt the user for
+config information, returns a hash suitable for use in a
+F::C::ConfigFile object.
+
+=cut
+
 sub get_config {
     my ($self) = @_;
     my $ti = Term::Interact->new();
     
     my $config;
     
+    unless (-t STDOUT && -t STDIN) {
+	$self->error('interactive config requested but stdin/out are not a tty.');
+	return undef;
+    }
+
     # STDOUT always? hmm. 
     print STDOUT "\nNo config file found. Entering interactive configuration...\n";
 
