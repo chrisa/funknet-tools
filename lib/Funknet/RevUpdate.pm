@@ -79,7 +79,7 @@ sub check_delegate {
 	} 
 
 	# the list @results should be the same as @ns. 
-	    
+
 	print STDERR Dumper { ns => \@ns, results => \@results };	
 	
 	if ((join /-/,sort @ns) eq (join /-/,sort @results)) {
@@ -88,10 +88,10 @@ sub check_delegate {
 	}
     }
     if ($ok == scalar @ns) {
-	print STDERR "returning ok";
+	print STDERR "returning ok\n";
 	return 1;
     } else {
-	print STDERR "returning not ok";
+	print STDERR "returning not ok\n";
 	return undef;
     }
 }
@@ -120,15 +120,24 @@ sub do_update {
     unless (defined $auth) {
 	return undef;
     }
+
+    # create the key object
     
+    my $keyfile  = "etc/revupdate.key"; 
+    open KEY, $keyfile
+	or die "can't open keyfile: $!";
+    my $key_name = <KEY>; chomp $key_name;
+    my $key      = <KEY>; chomp $key;
+    my $tsig = Net::DNS::RR->new("$key_name TSIG $key");
+
     my $update = Net::DNS::Update->new($auth);
-    
-    # Prerequisite is that no A records exist for the name.
-    #$update->push("pre", nxrrset("foo.example.com. A"));
     
     for my $ns (@ns) {
 	$update->push("update", rr_add("$rev_zone 86400 NS $ns"));
     }
+
+    # add the key
+    $update->push("additional", $tsig); 
     
     # Send the update to the zone's primary master.
     my $res = Net::DNS::Resolver->new;
