@@ -225,6 +225,8 @@ use Net::Whois::RIPE;
 use Net::IPv4Addr qw/ ipv4_network ipv4_broadcast /;
 use Data::Dumper;
 
+our @errors;
+
 sub new {
     my ($class, %args) = @_;
     my $self = bless {}, $class;
@@ -232,6 +234,7 @@ sub new {
     if (defined $args{source}) {
 	$self->{source} = $args{source};
     } else {
+	error("no source specified"); 
 	return undef;
     }
 
@@ -254,6 +257,7 @@ sub new {
 sub mntner {
     my ($self, %args) = @_;
     unless (defined $self->{person}) {
+	error("didn't get a person");
 	return undef;
     }
 
@@ -276,7 +280,7 @@ sub mntner {
 	return $m;
 
     } else {
-	
+	error("didn't get name/auth/descr/e_mail for a mntner object");
 	return undef;
     }
 }
@@ -308,14 +312,17 @@ sub key_cert {
 	# go and get the old object and modify the 
 	# maintainer. if it doesn't exist, return undef.
 
-	my $k = get_object('key-cert', $args{name})
-	  or return undef;
+	my $k = get_object('key-cert', $args{name});
+	unless (defined $k) {
+	    error("failed to get key-cert object $args{name}");
+	    return undef;
+	}
 
 	$k->mnt_by($args{mntner});
 	return $k;
 	
     } else {
-	
+	error("didn't get name and key material for a key-cert");
 	return undef;
     }
 }
@@ -352,14 +359,17 @@ sub person {
 	# go and get the old object and modify the 
 	# maintainer. if it doesn't exist, return undef.
 
-	my $p = get_object('person', $args{name})
-	  or return undef;
+	my $p = get_object('person', $args{name});
+	unless (defined $p) {
+	    error("couldn't get person object $args{name}");
+	    return undef;
+	}
 
 	$p->mnt_by($args{mntner});
 	return $p;
 	
     } else {
-	
+	error("didn't get name/address/e_mail/phone for person object");
 	return undef;
     }
 }
@@ -367,6 +377,7 @@ sub person {
 sub aut_num {
     my ($self, %args) = @_;
     unless (defined $self->{mntner} && defined $self->{person}) {
+	error("didn't get mntner and person for aut_num");
 	return undef;
     }
 
@@ -395,7 +406,7 @@ sub aut_num {
 	return $m;
 
     } else {
-	
+	error("didn't get name/tuns/aut_num/import/export for aut_num object");
 	return undef;
     }
 
@@ -404,22 +415,32 @@ sub aut_num {
 sub aut_num_assign {
     my ($self, %args) = @_;
     unless (defined $self->{mntner} && defined $self->{person}) {
+	error("didn't get mntner and person for assigning aut_num");
 	return undef;
     }
 
     my $as = assign_as();
+    unless (defined $as) {
+	error("assign_as failed");
+	return undef;
+    }
 
-    return $self->aut_num( 'name' => $args{name},
-			   'tuns' => $args{tuns},
-			   'import' => $args{import},
-			   'export' => $args{export},
-			   'aut_num'   => $as,
-			 );
+    my $aut_num = $self->aut_num( 'name' => $args{name},
+				  'tuns' => $args{tuns},
+				  'import' => $args{import},
+				  'export' => $args{export},
+				  'aut_num'   => $as,
+				);
+    unless (defined $aut_num) {
+	error("aut_num construct failed");
+	return undef;
+    }
 }
 
 sub inetnum {
     my ($self, %args) = @_;
     unless (defined $self->{mntner} && defined $self->{person}) {
+	error("didn't get a mntner and person for an inetnum");
 	return undef;
     }
 
@@ -444,7 +465,7 @@ sub inetnum {
 	return $m;
 
     } else {
-	
+	error("didn't get inetnum data");
 	return undef;
     }
 }
@@ -452,20 +473,31 @@ sub inetnum {
 sub inetnum_assign {
     my ($self, %args) = @_;
     unless (defined $self->{mntner} && defined $self->{person}) {
+	error("didn't get mntner and person for inetnum_assign");
 	return undef;
     }
 
     my $inetnum = assign_tunnel_inetnum($args{peer});
+    unless (defined $inetnum) {
+	error("assign_tunnel_inetnum failed");
+	return undef;
+    }
 
     my $inetnum = $self->inetnum( 'name' => $args{name},
 				  'network' => $inetnum );
-    $inetnum->tunnel();
-    return $inetnum;
+    if (defined $inetnum) {
+	$inetnum->tunnel();
+	return $inetnum;
+    } else {
+	error("inetnum construct failed");
+	return undef;
+    }
 }
 
 sub tunnel {
     my ($self, %args) = @_;
     unless (defined $self->{mntner} && defined $self->{person}) {
+	error("didn't get a mntner and person for tunnel");
 	return undef;
     }
     
@@ -493,7 +525,7 @@ sub tunnel {
 	return $m;
 
     } else {
-	
+	error("didn't get name/type/as/address/endpoint for a tunnel");
 	return undef;
     }
 }
@@ -501,6 +533,7 @@ sub tunnel {
 sub route {
     my ($self, %args) = @_;
     unless (defined $self->{mntner} && defined $self->{person}) {
+	error("didn't get a mntner and person for a route object");
 	return undef;
     }
 
@@ -521,7 +554,7 @@ sub route {
 	return $m;
 
     } else {
-	
+	error("didn't get descr/route/origin for a route");
 	return undef;
     }
 }
@@ -533,6 +566,21 @@ sub cidr_to_inetnum {
     my ($hi) = ipv4_broadcast($cidr);
 
     return "$lo - $hi";
+}
+
+
+sub error {
+    my ($self, $err) = @_;
+    if (defined $self && !ref $self) {
+	$err = $self;
+    }
+    if (defined $err) {
+	push @errors, "Whois::OG: $err";
+    } else {
+	my @this = @errors;
+	@errors = ();
+	return wantarray ? @this : join "\n", @this;
+    }
 }
 
 1;

@@ -71,7 +71,12 @@ sub person {
 			   'e_mail'  => $args{e_mail},
 			   'phone'   => $args{phone},
 			 );
-    return $me;
+    unless (defined $me) {
+	error("creating person object: ".$gen->error);
+	return undef;
+    } else {
+	return $me;
+    }
 }
 
 sub key_cert {
@@ -96,7 +101,12 @@ sub key_cert {
 			      'e_mail'  => $args{changed},
 			      'certif'  => $args{certif},
 			    );
-    return $key;
+    unless (defined $key) {
+	error("creating key-cert: ".$gen->error);
+	return undef;
+    } else {
+	return $key;
+    }
 }
 
 sub mntner {
@@ -129,8 +139,12 @@ sub mntner {
 			   'auth'   => $args{auth},
 			   'descr'  => $args{descr}, 
 			   'e_mail' => $args{e_mail} );
-    
-    return $me;
+    unless (defined $me) {
+	error("generating mntner: ".$gen->error);
+	return undef;
+    } else {
+	return $me;
+    }
 }
 
 sub node_set {
@@ -196,6 +210,11 @@ sub node_set {
 				      'import' => [ ],
 				      'export' => [ ],
 				    );
+    unless (defined $ns->{as}) {
+	error("generating as: ".$gen->error);
+	return undef;
+    }
+
     # generate tunnels
     
     my (@tun_names, @tun_inums, @tun_objs, @tun_as);
@@ -204,6 +223,10 @@ sub node_set {
 	
 	my $t_inetnum = $gen->inetnum_assign( 'name' => $n,
 					      'peer' => $peer );
+	unless (defined $t_inetnum) {
+	    error("generating tunnel inetnum: ".$gen->error);
+	    return undef;
+	}
 	
 	my $rtr = get_object_inverse('inet-rtr', 'local-as', $peer);
 	unless (defined $rtr) {
@@ -224,7 +247,10 @@ sub node_set {
 	    push @{$ns->{tun_inums}}, $t_inetnum;
 	    push @tun_names, $n;
 	    push @tun_as, $peers->{$peer}->aut_num;
-	} 
+	} else {
+	    error("generating tunnel: ".$gen->error);
+	    return undef;
+	}
     }
     
     $ns->{as}->tun(\@tun_names);
@@ -241,22 +267,35 @@ sub node_set {
     
     $ns->{range} = $gen->inetnum('name' => $args{nodename}.'-LAN',
 				 'network' => $args{network} );
+    unless (defined $ns->{range}) {
+	error("generating local net inetnum: ".$gen->error);
+	return undef;
+    }
     
     $ns->{route} = $gen->route( 'descr'    => $args{nodename},
 				'origin'   => $ns->{as}->aut_num,
 				'route'    => $args{network},
 			      );
+    unless(defined $ns->{route}) {
+	error("generating local net route: ".$gen->error);
+	return undef;
+    }
     return $ns;
     
 }
 
 sub error {
-    my ($err) = @_;
+    my ($self, $err) = @_;
+    if (defined $self && !ref $self) {
+	$err = $self;
+    }
 
     if (defined $err) {
-	push @errors, $err;
+	push @errors, "Tools::OG: $err";
     } else {
-	return wantarray ? @errors : join "\n", @errors;
+	my @this = @errors;
+	@errors = ();
+	return wantarray ? @this : join "\n", @this;
     }
 }
 
