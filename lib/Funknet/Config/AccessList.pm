@@ -229,6 +229,12 @@ sub diff {
     # if the access-lists have different names, then just remove 
     # the old one and replace it.
 
+    print STDERR "about to compare acl names:\nwhois:\n";
+    print STDERR $whois->name;
+    print STDERR "\nhost:\n";
+    print STDERR $host->name;
+    print STDERR "\n\n";
+
     if ($whois->name ne $host->name) {
 	push @cmds, "no route-map ".$host->name;
 	push @cmds, "no ip prefix-list ".$host->name;
@@ -238,6 +244,12 @@ sub diff {
     }
 
     # if the access-lists are different, remove and replace.
+
+    print STDERR "about to compare acls:\nwhois:\n";
+    print STDERR $whois->text;
+    print STDERR "\nhost:\n";
+    print STDERR $host->text;
+    print STDERR "\n\n";
 
     if ($whois->text ne $host->text) {
 	push @cmds, "no route-map ".$host->name;

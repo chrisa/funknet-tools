@@ -114,6 +114,7 @@ sub new {
     my $l = Funknet::Config::ConfigFile->local;
 
     $self->{_username} = Funknet::Config::CLI::Secrets->username( $l->{host} );
+
     $self->{_password} = Funknet::Config::CLI::Secrets->password( $l->{host} );
     $self->{_enable}   = Funknet::Config::CLI::Secrets->enable(   $l->{host} );
     
@@ -133,11 +134,18 @@ sub new {
     }
 
     # rebless into relevant class
+    # if we're Zebra, and host is localhost, then use vtysh (AF_UNIX)
+    # else use Zebra (AF_INET). 
 
     $l->{router} eq 'ios' and 
 	bless $self, 'Funknet::Config::CLI::IOS';
-    $l->{router} eq 'zebra' and 
-	bless $self, 'Funknet::Config::CLI::Zebra';
+    if (defined $l->{bgpd_vty} && $l->{host} eq "127.0.0.1") {
+	$l->{router} eq 'zebra' and 
+	  bless $self, 'Funknet::Config::CLI::Zebra::Vtysh';
+    } else {
+	$l->{router} eq 'zebra' and 
+	  bless $self, 'Funknet::Config::CLI::Zebra::Zebra';
+    }
 
     # check we have the correct details or don't return the object.
     

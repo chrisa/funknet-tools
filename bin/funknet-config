@@ -158,8 +158,10 @@ if ($opt{a}) {
     $bgp->apply;
     debug("Generating Tunnel config");
     $tun->apply;
-    debug("Generating Encryption config");
-    $enc->apply;
+    if ($opt{e}) {
+	debug("Generating Encryption config");
+	$enc->apply;
+    }
 }
 
 # Write the tunnel config out to the rcfile

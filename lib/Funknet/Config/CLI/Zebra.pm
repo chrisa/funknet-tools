@@ -29,17 +29,13 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 # SUCH DAMAGE.
 
-
 package Funknet::Config::CLI::Zebra;
 use strict;
-
 use base qw/ Funknet::Config::CLI /;
-
-use Net::Telnet;
 use Net::IPv4Addr qw/ ipv4_network /;
-
 use Funknet::Config::ConfigFile;
-
+use Funknet::Config::CLI::Zebra::Telnet;
+use Funknet::Config::CLI::Zebra::Vtysh;
 
 =head1 NAME
 
@@ -68,7 +64,7 @@ sub get_bgp {
     my ($self) = @_;
     
     $self->login;
-    my @output = $self->_cmd('show ip bgp');
+    my @output = $self->cmd('show ip bgp');
 
     my @networks;
     my ($current,$go,$index);
@@ -103,7 +99,7 @@ sub get_bgp {
 
 	    # check if it's local
 
-	    my @output = $self->_cmd("show ip bgp $prefix");
+	    my @output = $self->cmd("show ip bgp $prefix");
 	    
 	    for my $line (@output) {
 		if ($line =~ /Local/) {
@@ -118,7 +114,7 @@ sub get_bgp {
 	}
     }
 
-    @output = $self->_cmd('show ip bgp sum');
+    @output = $self->cmd('show ip bgp sum');
 
     my $local_as;
     foreach my $line (@output) {
@@ -140,7 +136,7 @@ sub get_bgp {
 					 routes  => \@networks,
 					 source => 'host');
 
-    @output = $self->_cmd('show ip bgp neighbors');
+    @output = $self->cmd('show ip bgp neighbors');
     
     my ($neighbors, $current_neighbor);
     foreach my $line (@output) {
@@ -203,23 +199,11 @@ sub get_bgp {
     return $bgp;
 }
 
-sub _cmd {
-    my ($self, $cmd) = @_;
-    return undef unless defined $self->{t};
-    $self->{t}->print($cmd);
-    my @output;
-    while( my $line = $self->{t}->getline( Timeout => 1) ) {
-        last if $line =~ />$/;
-        push @output, $line;
-    }
-    return @output;
-}
-
 sub get_access_list {
     my ($self, %args) = @_;
     
     $self->login;
-    my @output = $self->{t}->cmd("show ip bgp neighbor $args{remote_addr}");
+    my @output = $self->cmd("show ip bgp neighbor $args{remote_addr}");
     
     my ($acl_in, $acl_out);
     foreach my $line (@output) {
@@ -233,12 +217,12 @@ sub get_access_list {
 
     my $acl;
     if ($args{dir} eq 'import' && defined $acl_in) {
-	@output = $self->{t}->cmd("sho ip prefix-list $acl_in");
+	@output = $self->cmd("sho ip prefix-list $acl_in");
 	$acl->{_name} = $acl_in;
 	$acl->{_acl_text} = _to_text(@output);
     }
     if ($args{dir} eq 'export' && defined $acl_out) {
-	@output = $self->{t}->cmd("sho ip prefix-list $acl_out");
+	@output = $self->cmd("sho ip prefix-list $acl_out");
 	$acl->{_name} = $acl_out;
 	$acl->{_acl_text} = _to_text(@output);
     }
@@ -267,23 +251,6 @@ sub _to_text {
     return $text;
 }
 
-sub check_login {
-    my ($self) = @_;
-
-    return 1;
-
-    $self->login;
-    $self->{t}->cmd('enable');
-    $self->{t}->cmd($self->{_enable});
-    my $p = $self->{t}->getline;
-    $self->logout;
-    if ($p =~ /#/) {
-	return 1;
-    } else {
-	return undef;
-    }
-}
-
 =head2 get_as
 
 Get the asn for an ip address from our local funknet router. Inspired
@@ -295,7 +262,7 @@ sub get_as {
     my ($self, $address) = @_;
     defined ($self->{t}) or return undef;
 
-    my @output = $self->{t}->cmd("sho ip bgp $address");
+    my @output = $self->cmd("sho ip bgp $address");
 
     for my $line (@output) {
 	chomp $line;
@@ -307,55 +274,5 @@ sub get_as {
     }
     return undef;
 }
-
-# another way of doing this would be to apply these config changes directly 
-# to the config in /etc/zebra/bgpd.conf or wherever, but we would have to 
-# do the 'merge' ourselves, probably, if Zebra doesn't support 
-# copy startup-config running-config in a sane fashion. 
-
-sub exec_enable {
-    my ($self, $cmdset) = @_;
-
-    $self->login;
-    $self->{t}->input_log(\*STDOUT);
-    $self->{t}->cmd('enable');
-    $self->{t}->cmd($self->{_enable});
-    for my $cmd ($cmdset->cmds) {
-        for my $cmd_line (split /\n/, $cmd) {
-            $self->{t}->cmd($cmd_line);
-            select(undef,undef,undef,0.2);
-        }
-    }
-    $self->{t}->cmd('write file');
-    $self->{t}->cmd('disable');
-    $self->logout;
-}
-
-
-sub login {
-    my ($self) = @_;
-    my $l = Funknet::Config::ConfigFile->local;
-
-    unless (defined $self->{t}) {
-	$self->{t} = new Net::Telnet ( Timeout => 10,
-				       Prompt  => '/[ \>\#]$/',
-				       Port    => 2605,
-                                       Errmode => 'return',
-				     );
-	
-	$self->{t}->open($l->{host});
-	$self->{t}->cmd($self->{_password});
-	$self->{t}->cmd('terminal length 0');
-    } 
-}
-
-sub logout {
-    my ($self) = @_;
-    if (defined $self->{t}) {
-	$self->{t}->close;
-	$self->{t} = undef;
-    }
-}
-
 
 1;

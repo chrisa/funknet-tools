@@ -235,14 +235,15 @@ sub local {
 	$config = $self->{config};
     }
     
-    return { as     => $config->{local_as},
-	     os     => $config->{local_os},
-	     host   => $config->{local_host},
-	     router => $config->{local_router},
-	     endpoint => $config->{local_endpoint},
-	     source => $config->{local_source},
+    return { as              => $config->{local_as},
+	     os              => $config->{local_os},
+	     host            => $config->{local_host},
+	     router          => $config->{local_router},
+	     endpoint        => $config->{local_endpoint},
+	     source          => $config->{local_source},
              public_endpoint => $config->{local_public_endpoint},
-	     ipsec => $config->{local_ipsec},
+	     ipsec           => $config->{local_ipsec},
+	     bgpd_vty        => $config->{local_bgpd_vty},
 	   };
 }
 
