@@ -96,7 +96,11 @@ sub check_auth {
     elsif 
 	($zone =~ /(\d+).(\d+).in-addr.arpa/) {
 	    $inetnum = "$2.$1.0.0";
-	}
+    }
+    elsif 
+	($zone =~ /(\d+).in-addr.arpa/) {
+           $inetnum = "$1.0.0.0";
+    }
 
     my $w = Net::Whois::RIPE->new( 'whois.funknet.org' );
     $w->type('inetnum');
