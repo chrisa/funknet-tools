@@ -44,7 +44,6 @@ Use Email::Robot to implement a pureperl whois-by-email updater.
 package Funknet::Whois::Update;
 use strict;
 
-use Funknet::Whois qw/ parse_object /;
 use Funknet::Whois::Client;
 use Funknet::Whois::Update::Robot;
 use Fcntl qw/ :DEFAULT :flock :seek /;
@@ -147,7 +146,7 @@ sub update {
 
     my @objects;
     for my $text (split /\n\n/, $pgp->data) {
-	if (my $object = parse_object($text)) {
+	if (my $object = Funknet::Whois::Object->new($text)) {
 	    push @objects, $object;
 	}
     }
