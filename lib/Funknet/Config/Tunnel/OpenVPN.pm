@@ -76,6 +76,8 @@ the 'down' state.
 
 =cut
 
+use constant OPENVPN_CONF_DIR => '/etc/openvpn';
+
 sub config {
     my ($self) = @_;
 
@@ -90,60 +92,70 @@ sub host_tunnels {
     my ($class) = @_;
     my @local_tun;
     
-    my $c = `/sbin/ifconfig -a`;
-    my @if = split /(?=^[a-z])/m,$c;
-    
-    for my $if (@if) {
-	chomp $if;
-	my $tun = Funknet::Config::Tunnel::OpenVPN->new_from_ifconfig( $if );
+    opendir CONF, OPENVPN_CONF_DIR
+      or die "can't open ".(OPENVPN_CONF_DIR).": $!";
+    for my $filename (readdir CONF) {
+
+	next unless $filename =~ /\.conf$/;
+	$filename = OPENVPN_CONF_DIR . '/' . $filename;
+
+	my $tun = Funknet::Config::Tunnel::OpenVPN->new_from_ovpn_conf( $filename );
 	if (defined $tun) {
 	    push @local_tun, $tun;
 	}
     }
+    closedir CONF;
     return @local_tun;
 }
 
-sub new_from_ifconfig {
-    my ($class, $if) = @_;
+sub new_from_ovpn_conf {
+    my ($class, $filename) = @_;
 
-    my ($type, $interface, $ifname);
-    if ( $if =~ /^(tun)(\d+)/)
+    open CONF, $filename or die "can't open $filename: $!";
+    my $text;
     {
-	$type = 'tun';
-	$interface = $2;
-	$ifname = "$1$2";
+	local $/ = undef;
+	$text = <CONF>;
     }
-    if ( $if =~ /^(tap)(\d+)/)
-    {
-	$type = 'tap';
-	$interface = $2;
-	$ifname = "$1$2";
-    }
-	
-    defined $type or return undef;
+    close CONF;
 
-    my ($local_endpoint, $remote_endpoint) = $if =~ /tunnel inet (\d+\.\d+\.\d+\.\d+) --> (\d+\.\d+\.\d+\.\d+)/;
-    my ($local_address, $remote_address)   = $if =~ /inet (\d+\.\d+\.\d+\.\d+) -+> (\d+\.\d+\.\d+\.\d+) netmask/;
+    my $conf = _parse_openvpn_conf($text);
+
+    my ($local_address, $remote_address) = $conf->{ifconfig} =~ /(.*) (.*)/;
+    my ($iftype, $ifnum) = $conf->{dev} =~ /^([a-z]+)(\d+)$/;
+
+    my ($local_endpoint, $remote_endpoint);
+    if (exists $conf->{'tls-server'}) {
+	$local_endpoint  = $conf->{local};
+	$remote_endpoint = $conf->{fn_remote_endpoint};
+    } elsif (exists $conf->{'tls-client'}) {
+	$remote_endpoint = $conf->{remote};
+	$local_endpoint  = $conf->{fn_local_endpoint};
+    } else {
+	# not sure what good this does us.
+	$remote_endpoint = $conf->{fn_remote_endpoint};
+	$local_endpoint  = $conf->{fn_local_endpoint};
+    }
 
     return Funknet::Config::Tunnel->new(
-	name => 'none',
-	local_address => $local_address,
-	remote_address => $remote_address,
-	local_endpoint => $local_endpoint,
-	remote_endpoint => $remote_endpoint,
-	interface => $interface,
-	type => $type,
-	ifname => $ifname,
-	source => 'host',
-	proto => '4',
-    );
+					name            => 'none',
+					local_address   => $local_address,
+					remote_address  => $remote_address,
+					local_endpoint  => $local_endpoint,
+					remote_endpoint => $remote_endpoint,
+					interface       => $ifnum,
+					type            => $iftype,
+					ifname          => $conf->{dev},
+					source          => 'host',
+					proto           => '4',
+				       );
 }
 
 sub delete {
     my ($self) = @_;
 
     # generate a filename for our config file (from the whois)
-    $self->{_ovpn_file} = '/etc/openvpn/' . $self->{_name} . '.conf';
+    $self->{_ovpn_file} = OPENVPN_CONF_DIR . '/' . $self->{_name} . '.conf';
 
     # create a SystemFile object on that path
     my $ovpn_file = Funknet::Config::SystemFile->new( text => undef,
@@ -336,6 +348,13 @@ sub _parse_openvpn_conf {
 	$config->{$key} = $val;
     }
     
+    # hacktastic: we need both endpoints, but openvpn.conf
+    # doesn't... we parse out our "from blah to blah" comment...
+
+    my ($local_endpoint, $remote_endpoint) = $text =~ /from (.+) to (.+)/;
+    $config->{fn_local_endpoint}  = $local_endpoint;
+    $config->{fn_remote_endpoint} = $remote_endpoint;
+
     return $config;
 }
 

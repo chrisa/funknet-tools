@@ -224,25 +224,6 @@ sub as_hashkey {
 	"$self->{_local_address}-$self->{_remote_address}";
 }
 
-sub new_from_ifconfig {
-    my ($class, $if) = @_;
-    my $l = Funknet::ConfigFile::Tools->local;
-    
-    if ($l->{os} eq 'bsd') {
-	return Funknet::Config::Tunnel::BSD->new_from_ifconfig( $if );
-    }
-    if ($l->{os} eq 'linux') {
-	return Funknet::Config::Tunnel::Linux->new_from_ifconfig( $if );
-    }
-    if ($l->{os} eq 'solaris') {
-	return Funknet::Config::Tunnel::Solaris->new_from_ifconfig( $if );
-    }
-    if ($l->{os} eq 'openvpn') {
-	return Funknet::Config::Tunnel::OpenVPN->new_from_ifconfig( $if );
-    }
-    return undef;
-}
-
 sub interface {
     my ($self) = @_;
     return $self->{_interface};
