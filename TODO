@@ -2,26 +2,14 @@ Known bugs:
 
 * diffing access-lists isn't done yet. this might turn out to be hard,
   or we might just replace the existing one with the whois one...
-     -- done. we just blow away the old one if the whois has one. 
-        bit sucky but it'll work. 
-
-* the names of access-lists read off the router are lost - just a bug,
-  it should work.
-
-* the formatting of access-lists read off the router isn't dealt with
-  at all yet, just captured and saved, so it's wrong. this might not
-  matter, depending on what we do in the diff routine as we'll never
-  need to send it back to the router.
-    -- we only need this in the diff routine, which we aren't using
-       just yet
+    -- changed - we now at least look to see if the access list
+       is the same. doing more will require building a data
+       structure for access lists, rather than just capturing text
 
 * there are no tunnel commands in there yet, so ->config on a tunnel
   just prints the relevant details - but this is already split into
   OS-specific packages, so it's just a case of adding print
   statements.
-
-* the commands don't actually work - it forgets to come out of router
-  bgp mode, for instance.
 
 * Secrets.pm needs work. I don't know how to deal with this yet, but
   I'm thinking in terms of a local config file.
@@ -36,10 +24,10 @@ Known bugs:
   to put arbitrary extra commands in there, as well as things like
   iBGP sessions.
 
-* Clearing of sessions should probably be more intelligent. Often it
-  will decide to clear a bunch of sessions then all of them at once...
-
 * Linux ifconfig-reading is stubbed out at the moment. 
 
 * the IP address validation subs are stubbed out so far because all
   the CPAN modules for doing this are broken in some way.
+
+* some network statements in the BGP configs aren't visible in 
+  'sho ip bgp', so we miss them. 

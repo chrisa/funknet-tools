@@ -97,7 +97,17 @@ sub diff {
 	push @cmds, 'exit';
     }
 
-    # iterate acls, do add/remove/change
+    # iterate acls, do add/remove/change - but deletes first.
+
+    for my $n ( $host->neighbors ) {
+	unless ($whois->neighbor_set($n) ) {
+	    # not there; delete.
+	    defined $n->{_acl_in} && push @cmds, "no route-map ".$n->{_acl_in}->name;
+	    defined $n->{_acl_in} && push @cmds, "no ip prefix-list ".$n->{_acl_in}->name;
+	    defined $n->{_acl_out} && push @cmds, "no route-map ".$n->{_acl_out}->name;
+	    defined $n->{_acl_out} && push @cmds, "no ip prefix-list ".$n->{_acl_out}->name;
+	}
+    }
 
     for my $n ( $whois->neighbors ) {
 	unless ($host->neighbor_set($n) ) {
@@ -107,16 +117,6 @@ sub diff {
 	} else {
 	    # there already; make a diff.
 	    my $h_n = $host->neighbor($n);
-	    if (defined $n->{_acl_in} && !defined $h_n->{_acl_in}) {
-		push @cmds, $n->{_acl_in}->config;
-		push @cmds, 'exit';
-		push @bounce_req, $n->remote_addr;
-	    }
-	    if (defined $n->{_acl_out} && !defined $h_n->{_acl_out}) {
-		push @cmds, $n->{_acl_out}->config;
-		push @cmds, 'exit';
-		push @bounce_req, $n->remote_addr;
-	    }
 	    if (defined $h_n->{_acl_in} && !defined $n->{_acl_in}) {
 		push @cmds, "no route-map ".$h_n->{_acl_in}->name;
 		push @cmds, "no ip prefix-list ".$h_n->{_acl_in}->name;
@@ -125,6 +125,16 @@ sub diff {
 	    if (defined $h_n->{_acl_out} && !defined $n->{_acl_out}) {
 		push @cmds, "no route-map ".$h_n->{_acl_out}->name;
 		push @cmds, "no ip prefix-list ".$h_n->{_acl_out}->name;
+		push @bounce_req, $n->remote_addr;
+	    }
+	    if (defined $n->{_acl_in} && !defined $h_n->{_acl_in}) {
+		push @cmds, $n->{_acl_in}->config;
+		push @cmds, 'exit';
+		push @bounce_req, $n->remote_addr;
+	    }
+	    if (defined $n->{_acl_out} && !defined $h_n->{_acl_out}) {
+		push @cmds, $n->{_acl_out}->config;
+		push @cmds, 'exit';
 		push @bounce_req, $n->remote_addr;
 	    }
 	    if (defined $n->{_acl_in} && defined $h_n->{_acl_in}) {
@@ -145,16 +155,6 @@ sub diff {
 		    }
 		}
 	    }
-	}
-    }
-    for my $n ( $host->neighbors ) {
-	unless ($whois->neighbor_set($n) ) {
-	    # not there; delete.
-	    defined $n->{_acl_in} && push @cmds, "no route-map ".$n->{_acl_in}->name;
-	    defined $n->{_acl_in} && push @cmds, "no ip prefix-list ".$n->{_acl_in}->name;
-	    defined $n->{_acl_out} && push @cmds, "no route-map ".$n->{_acl_out}->name;
-	    defined $n->{_acl_out} && push @cmds, "no ip prefix-list ".$n->{_acl_out}->name;
-	    push @bounce_req, $n->remote_addr;
 	}
     }
     

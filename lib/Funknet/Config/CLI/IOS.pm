@@ -67,7 +67,7 @@ sub get_bgp { my ($self) = @_;
 # 	    push @networks, $current;
 # 	}
 
-	if ($line =~ /^\*?\>?\s+(\d+\.\d+\.\d+\.\d+)(\/\d+)?\s+\d.{40}i/ && !$current) {
+	if ($line =~ /^\*?\>?\s+(\d+\.\d+\.\d+\.\d+)(\/\d+)?\s+\d.{40}i/ && !defined $current) {
  	    push @networks, scalar ipv4_network("$1$2");
  	}
 	if ($line =~ /^\*?\>?\s+(\d+\.\d+\.\d+\.\d+)(\/\d+)?\s+$/) {
