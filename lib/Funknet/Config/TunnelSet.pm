@@ -1,6 +1,36 @@
 package Funknet::Config::TunnelSet;
 use strict;
 
+=head1 NAME
+
+Funknet::Config::TunnelSet
+
+=head1 DESCRIPTION
+
+Provides a collection object for Tunnels. Contains the ->diff method
+for tunnels. 
+
+=head1 METHODS
+
+=head2 new(source => 'whois', tunnels => \@tuns)
+
+Takes the source and a listref of Tunnels. 
+
+=head2 diff($hostobj)
+
+Called on a TunnelSet object of source whois and passed a TunnelSet
+object of source host, returns the commands required to update the
+host's tunnel config to that specified in the whois.
+
+=head1 TODO
+
+It should probably be possible to add Tunnels via a method, rather
+than all at once by passing the constructor a listref.
+
+The diff method should take note of the ignorelist for interfaces.
+
+=cut
+
 sub new {
     my ($class, %args) = @_;
     my $self = bless {}, $class;
