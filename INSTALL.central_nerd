@@ -174,48 +174,54 @@ source:       FUNKNET
 # configure funknet
 cd ~software/unpacked/anoncvs.aldigital.co.uk-funknet-tools/
 cp funknet.conf.dist funknet.conf-BLANK
-vi funknet.conf-BLANK
+ln -s funknet.conf-BLANK funknet.conf
+vi funknet.conf
 
 # edit funknet.conf-BLANK for AS etc, make sure root = runas
 # to ensure a meaningful /var/log/tunnelup make sure debug = 1
 # then test with:
-rootdo perl config.pl -a -f funknet.conf-BLANK 
+rootdo perl config.pl -a -f funknet.conf
 
 # put that in a script...
-# see zero-lemon-ports/meta/natd-firewall-tarball/files/tunnelup.sh
-# note the firewall stuff if you want that, otherwise:
-cat - >> /etc/tunnelup.sh << EOF
-#!/bin/sh
+# note the firewall stuff if you want that, otherwise hash it out, i also
+# removed the funknet user stuff, cos this box hasnt needed one yet:
+cp zero-lemon-ports/meta/natd-firewall-tarball/files/tunnelup.sh /etc/
 
-if [ -f /var/run/tunnelup.pid ]; then
-	exit 1;
-fi
-
-echo $$ > /var/run/tunnelup.pid
-
-(
-# funknet
-# FIXME when funknet-tools gets a lemon-port
-(
-cd /home/software/unpacked/anoncvs.aldigital.co.uk-funknet-tools
-perl config.pl -a -f funknet.conf-BLANK
-)
-
-rm /var/run/tunnelup.pid
-
-) &
-
-EOF
-
-# add to boot chain
+# if joy, add to boot chain
 cat - >> /usr/local/etc/rc.d/local.sh << EOF
 
 # funknet
+
 /usr/local/sbin/zebra -d
 /usr/local/sbin/bgpd -d
-sleep 2
-sh /etc/tunnelup.sh
+/usr/local/sbin/racoon -l /var/log/racoon.log
+sleep 60
+# ensure firewall runs when tunnelup.sh does
+echo "" > /etc/tunnels.last
+sh /etc/tunnelup.sh ${oip} >/var/log/tunnelup 2>&1 &
+
 EOF
+
+cat - >> /etc/rc.conf << EOF
+
+# funknet
+oip="213.129.72.23"
+oif="xl0"  
+
+EOF
+
+# encryption funk for any tunnels you are part of that are marked as secure
+# in the whois db, at the moment we have just used the field as a flag...
+
+# just copy, no editting needed:
+cp /usr/local/etc/racoon/racoon.conf.dist /usr/local/etc/racoon/racoon.conf
+
+# edit for secure tunnels, and change the perms:   
+cp /usr/local/etc/racoon/psk.txt.dist /usr/local/etc/racoon/psk.txt
+chmod 0600 /usr/local/etc/racoon/psk.txt
+vi /usr/local/etc/racoon/psk.txt
+REAL_IP SECRET
+:wq
 
 # add cronjob, this is would be better done with a gpgmail invoked push/pull
 # operation, but for now this will do, as /etc/tunnelup.sh only acts if necc.
