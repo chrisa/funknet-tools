@@ -1,38 +1,56 @@
 This is the Funknet tools package. 
 
-WARNING - unless you add the local_endpoint param, nothing will work.
-
 To try the code: 
 
-* make sure you have RtConfig available, in /usr/local/bin/RtConfig
-  (or wherever you set in lib/Funknet/Config/AccessList.pm).
+* copy funknet.conf.dist to funknet.conf and edit to taste. 
 
+* make sure you have RtConfig available (in /usr/local/bin/RtConfig by
+  default -- set the 'rtconfig_path' param in your funknet.conf).
+
+* set your local_* params:
+
+local_as: your local AS number. The code will try to configure your router
+          for this AS's objects in the whoisdb.
+
+local_router: the platform you're using for routing. Currently only
+              'ios' and 'zebra' are supported.
+  
+local_os: the platform you're using for tunnels. Choose from bsd,
+          solaris, linux and ios. OSX counts as bsd. Linux doesn't
+          work yet.
+
+local_host: the ip address where your router's configuration interface
+            lives. On a Unix platform, likely to be 127.0.0.1.
+
+local_endpoint: this particular router's tunnel endpoint address. This 
+                exists to support multiple routers within an AS.
+
+* set your ignore_if list: the code will leave these interfaces
+  alone. This is useful for testing, and if you have tunnels to places
+  not configured by this code.
+
+* set your root-method, if you want to have the code apply its changes. 
+  Only 'runas' works for now, where you run the code as root and it just 
+  runs the commands. 'sudo' and 'userv' are planned. 
+
+* set your CLI authentication params. 'username' is required if you're
+  running 'aaa new-model' on IOS, otherwise just a password is needed. 
+  If you want the code to be able to make changes, provide 'enable'. 
+  'enable' is *not* required for the code to just extract the current
+  config. 
+ 
 Run config.pl as:
-$ ./config.pl -f funknet.conf
+$ ./config.pl -f funknet.conf 
 
-valid local_router types: ios, zebra
-valid local_os types: ios, solaris, bsd, linux
-set local_host to your router, which might well be 127.0.0.1
-set local_endpoint to your tunnel endpoint as shown in your
-tunnel objects.
+Add a -d for copious debug output. Add a -a if you want to try the
+'apply' code.
 
-* make sure there's a password set in Funknet::Config::CLI::Secrets.pm
-  that matches your local_host.
-
-This will generate a bunch of output - all of STDERR is Perl's I
-think. First you'll get a dump of the config as it should look, based
-on the whois. Then you get a dump of the config as it is, but
-generated from the system's internal data structures.
-
-Finally you'll get a list of commands required to convert one to the
-other, near enough.
-
-For example:
+You'll get a list of proposed changes to your router and host's
+configuration. For example:
 
 Proposed changes:
 
 BGP:
-in enable mode on 213.210.34.174
 configure terminal
 no router bgp 65002
 router bgp AS65001
@@ -54,7 +72,6 @@ exit
 clear ip bgp *
 
 Tunnels:
-in enable mode on 213.210.34.174
 configure terminal
 no interface Tunnel0
 exit
