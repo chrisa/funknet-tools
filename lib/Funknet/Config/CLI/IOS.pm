@@ -1,6 +1,7 @@
 package Funknet::Config::CLI::IOS;
 use strict;
 use Net::Telnet;
+use Network::IPv4Addr qw/ ipv4_network /;
 
 =head1 NAME
 
@@ -56,15 +57,26 @@ sub get_bgp { my ($self) = @_;
 	    next;
 	}
 	next unless $go;
-	if ($line =~ /^\*?\>?\s+(\d+\.\d+\.\d+\.\d+)(\/\d+)?\s+0\.0\.0\.0/) {
-	    push @networks, "$1$2";
-	}
+# 	if ($line =~ /^\*?\>?\s+(\d+\.\d+\.\d+\.\d+)(\/\d+)?\s+0\.0\.0\.0/) {
+# 	    push @networks, "$1$2";
+# 	}
+# 	if ($line =~ /^\*?\>?\s+(\d+\.\d+\.\d+\.\d+)(\/\d+)?\s+$/) {
+# 	    $current = "$1$2";
+# 	}
+# 	if ($line =~ /^\s+0\.0\.0\.0/ && $current) {
+# 	    push @networks, $current;
+# 	}
+
+	if ($line =~ /^\*?\>?\s+(\d+\.\d+\.\d+\.\d+)(\/\d+)?\s+\d.{40}i/ && !$current) {
+ 	    push @networks, scalar ipv4_network("$1$2");
+ 	}
 	if ($line =~ /^\*?\>?\s+(\d+\.\d+\.\d+\.\d+)(\/\d+)?\s+$/) {
-	    $current = "$1$2";
-	}
-	if ($line =~ /^\s+0\.0\.0\.0/ && $current) {
-	    push @networks, $current;
-	}
+ 	    $current = "$1$2";
+ 	}
+ 	if ($line =~ /^.{61}i/ && $current) {
+ 	    push @networks, scalar ipv4_network($current);
+	    undef $current;
+ 	}
 	
     }
     
@@ -180,7 +192,7 @@ sub _to_text {
 	} 
 	if ($name && $line =~ /\s+seq\s\d+\s(.*)$/) {
 	    my $rule = $1;
-	    $text .= "ip prefix-list $name $rule";
+	    $text .= "ip prefix-list $name $rule\n";
 	}
     }
     return $text;

@@ -192,6 +192,7 @@ sub diff {
 	push @cmds, "no route-map ".$host->name;
 	push @cmds, "no ip prefix-list ".$host->name;
 	push @cmds, $whois->config;
+	push @cmds, 'exit';
 	return @cmds;
     }
 
@@ -201,9 +202,10 @@ sub diff {
 	push @cmds, "no route-map ".$host->name;
 	push @cmds, "no ip prefix-list ".$host->name;
 	push @cmds, $whois->config;
+	push @cmds, 'exit';
 	return @cmds;
     }
-
+    return undef;
 }
 
 1;

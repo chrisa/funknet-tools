@@ -37,7 +37,7 @@ sub config {
 
 sub diff {
     my ($whois, $host) = @_;
-    my @cmds;
+    my @cmds = ( "configure terminal" );
 
     my (@bounce_req, $bounce_all);
     
@@ -58,14 +58,14 @@ sub diff {
     for my $r ( $whois->routes ) {
 	unless ($host->route_set($r) ) {
 	    push @cmds, "network $r";
+	    $bounce_all = 1;
 	}
-	$bounce_all = 1;
     }
     for my $r ( $host->routes ) {
 	unless ($whois->route_set($r) ) {
 	    push @cmds, "no network $r";
+	    $bounce_all = 1;
 	}
-	$bounce_all = 1;
     }
 
     # iterate neighbors, do add/remove/change.
@@ -103,26 +103,43 @@ sub diff {
 	    my $h_n = $host->neighbor($n);
 	    if (defined $n->{_acl_in} && !defined $h_n->{_acl_in}) {
 		push @cmds, $n->{_acl_in}->config;
+		push @cmds, 'exit';
+		push @bounce_req, $n->remote_addr;
 	    }
 	    if (defined $n->{_acl_out} && !defined $h_n->{_acl_out}) {
 		push @cmds, $n->{_acl_out}->config;
+		push @cmds, 'exit';
+		push @bounce_req, $n->remote_addr;
 	    }
 	    if (defined $h_n->{_acl_in} && !defined $n->{_acl_in}) {
 		push @cmds, "no route-map ".$h_n->{_acl_in}->name;
 		push @cmds, "no ip prefix-list ".$h_n->{_acl_in}->name;
+		push @bounce_req, $n->remote_addr;
 	    }
 	    if (defined $h_n->{_acl_out} && !defined $n->{_acl_out}) {
 		push @cmds, "no route-map ".$h_n->{_acl_out}->name;
 		push @cmds, "no ip prefix-list ".$h_n->{_acl_out}->name;
+		push @bounce_req, $n->remote_addr;
 	    }
 	    if (defined $n->{_acl_in} && defined $h_n->{_acl_in}) {
-		push @cmds, $n->{_acl_in}->diff($h_n->{_acl_in});
+		my @acl_diff = $n->{_acl_in}->diff($h_n->{_acl_in});
+		for my $cmd (@acl_diff) {
+		    if (defined $cmd) {
+			push @cmds, $cmd;
+			push @bounce_req, $n->remote_addr;
+		    }
+		}
 	    }
 	    if (defined $n->{_acl_out} && defined $h_n->{_acl_out}) {
-		push @cmds, $n->{_acl_out}->diff($h_n->{_acl_out});
+		my @acl_diff = $n->{_acl_out}->diff($h_n->{_acl_out});
+		for my $cmd (@acl_diff) {
+		    if (defined $cmd) {
+			push @cmds, $cmd;
+			push @bounce_req, $n->remote_addr;
+		    }
+		}
 	    }
 	}
-	push @bounce_req, $n->remote_addr;
     }
     for my $n ( $host->neighbors ) {
 	unless ($whois->neighbor_set($n) ) {

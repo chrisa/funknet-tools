@@ -169,7 +169,7 @@ sub _to_text {
 	} 
 	if ($name && $line =~ /\s+seq\s\d+\s(.*)$/) {
 	    my $rule = $1;
-	    $text .= "ip prefix-list $name $rule";
+	    $text .= "ip prefix-list $name $rule\n";
 	}
     }
     return $text;

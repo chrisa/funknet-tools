@@ -1,7 +1,7 @@
 package Funknet::Config::BGP::IOS;
 use strict;
 use base qw/ Funknet::Config::BGP /;
-use Data::Dumper;
+use Network::IPv4Addr qw/ ipv4_cidr2msk /;
 
 sub config {
     my ($self) = @_;
@@ -10,7 +10,7 @@ sub config {
 
     if (defined $self->{_routes} && ref $self->{_routes} eq 'ARRAY') {	
         for my $route (@{ $self->{_routes}}) {
-            $config .= " network $route ! amend this for IOS\n";
+            $config .= " network "._prefix_to_mask($route);
         }
     }	
 
@@ -33,7 +33,7 @@ sub config {
 
 sub diff {
     my ($whois, $host) = @_;
-    my @cmds;
+    my @cmds = ( "configure terminal" );
 
     my (@bounce_req, $bounce_all);
     
@@ -53,15 +53,15 @@ sub diff {
     
     for my $r ( $whois->routes ) {
 	unless ($host->route_set($r) ) {
-	    push @cmds, "network $r ! modify this for IOS";
+	    push @cmds, "network "._prefix_to_mask($r);
+	    $bounce_all = 1;
 	}
-	$bounce_all = 1;
     }
     for my $r ( $host->routes ) {
 	unless ($whois->route_set($r) ) {
-	    push @cmds, "no network $r ! modify this for IOS";
+	    push @cmds, "no network "._prefix_to_mask($r);
+	    $bounce_all = 1;
 	}
-	$bounce_all = 1;
     }
 
     # iterate neighbors, do add/remove/change.
@@ -71,9 +71,14 @@ sub diff {
 	    # not there; config from scratch.
 	    push @cmds, $n->config;
 	} else {
-	    # there already; make a diff.
-	    push @cmds, $n->diff($host->neighbor($n));
-	    push @bounce_req, $n->remote_addr;
+	    # there already; make a diff (careful not to push undefs)
+	    my @neighbor_diff = $n->diff($host->neighbor($n));
+	    for my $cmd (@neighbor_diff) {
+		if (defined $cmd) {
+		    push @cmds, $cmd;
+		    push @bounce_req, $n->remote_addr;
+		}
+	    }
 	}
     }
     for my $n ( $host->neighbors ) {
@@ -100,26 +105,43 @@ sub diff {
 
 	    if (defined $n->{_acl_in} && !defined $h_n->{_acl_in}) {
 		push @cmds, $n->{_acl_in}->config;
+		push @cmds, 'exit';
+		push @bounce_req, $n->remote_addr;
 	    }
 	    if (defined $n->{_acl_out} && !defined $h_n->{_acl_out}) {
 		push @cmds, $n->{_acl_out}->config;
+		push @cmds, 'exit';
+		push @bounce_req, $n->remote_addr;
 	    }
 	    if (defined $h_n->{_acl_in} && !defined $n->{_acl_in}) {
 		push @cmds, "no route-map ".$h_n->{_acl_in}->name;
 		push @cmds, "no ip prefix-list ".$h_n->{_acl_in}->name;
+		push @bounce_req, $n->remote_addr;
 	    }
 	    if (defined $h_n->{_acl_out} && !defined $n->{_acl_out}) {
 		push @cmds, "no route-map ".$h_n->{_acl_out}->name;
 		push @cmds, "no ip prefix-list ".$h_n->{_acl_out}->name;
+		push @bounce_req, $n->remote_addr;
 	    }
 	    if (defined $n->{_acl_in} && defined $h_n->{_acl_in}) {
-		push @cmds, $n->{_acl_in}->diff($h_n->{_acl_in});
+		my @acl_diff = $n->{_acl_in}->diff($h_n->{_acl_in});
+		for my $cmd (@acl_diff) {
+		    if (defined $cmd) {
+			push @cmds, $cmd;
+			push @bounce_req, $n->remote_addr;
+		    }
+		}
 	    }
 	    if (defined $n->{_acl_out} && defined $h_n->{_acl_out}) {
-		push @cmds, $n->{_acl_out}->diff($h_n->{_acl_out});
+		my @acl_diff = $n->{_acl_out}->diff($h_n->{_acl_out});
+		for my $cmd (@acl_diff) {
+		    if (defined $cmd) {
+			push @cmds, $cmd;
+			push @bounce_req, $n->remote_addr;
+		    }
+		}
 	    }
 	}
-	push @bounce_req, $n->remote_addr;
     }
 
     for my $n ( $host->neighbors ) {
@@ -148,4 +170,11 @@ sub diff {
     return @cmds;
 }
 
+sub _prefix_to_mask {
+    my ($prefix) = @_;
+    my ($network, $len) = $prefix =~ /^(.+)\/(.+)$/;
+    my $mask = ipv4_cidr2msk( $len ); 
+
+    return "$network mask $mask";
+}
 1;
