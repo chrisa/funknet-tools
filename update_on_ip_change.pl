@@ -7,14 +7,21 @@
 # name of the tunnel object to compare against.
 
 use strict;
-use lib './lib';
 use Net::Whois::RIPE;
+use Mail::GnuPG;
+use MIME::Entity;
 
 unless (scalar @ARGV == 2) 
 {
-	print STDERR "usage: $0 interface tunnel_object\n";
+	print STDERR "usage: $0 <interface> <tunnel_name>\n";
 	exit(1);
 }
+
+my $update_email='auto-dbm@funknet.org';
+my $key_id='AAAAAAAA';
+my $signing_email='a@b.c';
+
+my $hostname = qx[/bin/hostname];
 
 my $iface = $ARGV[0];
 my $tunnel_object = $ARGV[1];
@@ -39,7 +46,7 @@ sub get_ip_from_whois
 {
 	my $tunnel_object = shift(@_);
 
-	my $whois = Net::Whois::RIPE->new( 'whois.funknet.org') || die "cant connect to whois";
+	my $whois = Net::Whois::RIPE->new('whois.funknet.org') || die "cant connect to whois";
 
 	$whois->no_recursive;
 	$whois->source('FUNKNET');
@@ -48,9 +55,8 @@ sub get_ip_from_whois
 	my $tun = $whois->query($tunnel_object);
 	my @endpoints = $tun->endpoint;
 	my $ip = shift(@endpoints);
-	my $scalar_ip = scalar $ip;
-	chomp($scalar_ip);
-	return($scalar_ip);
+	chomp($ip);
+	return($ip);
 }
 
 sub read_file
@@ -72,7 +78,10 @@ sub write_file
 sub get_ip
 {
 	my $iface = shift(@_);
-	my $ip = qx[/sbin/ifconfig $iface | /usr/bin/grep inet | /usr/bin/grep -v inet6] || die "couldn't get settings of interface $iface";
+
+	#This bit is shit, but nice module wouldn't build
+
+	my $ip = qx[/sbin/ifconfig $iface 2> /dev/null | /usr/bin/grep inet | /usr/bin/grep -v inet6] || die "couldn't get settings of interface $iface";
 	$ip =~ s/.*inet\ ([^\ ]+).*/$1/;
 	return($ip);
 }
@@ -81,4 +90,32 @@ sub update_whois
 {
 	my $new_ip = shift(@_);
 	print "updating whois to $new_ip\n";
+
+	my $subject="IP update from $hostname";
+
+	my @current_entry = get_entry_from_whois();
+
+	my $mime_obj = MIME::Entity->build(From    => $signing_email,
+					   To      => $update_email,
+					   Subject => $subject,
+					   Data    => \@message);
+
+	my $mg = new Mail::GnuPG ( key => $key_id );
+	my $ret = $mg->mime_sign($mime_obj, $signing_email);
+}
+
+get_entry_from_whois
+{
+	my $whois = Net::Whois::RIPE->new('whois.funknet.org') || die "cant connect to whois";
+
+	my @current;
+
+	$whois->no_recursive;
+	$whois->source('FUNKNET');
+	$whois->query_iterator($tunnel_object);
+	while (my $obj = $iterator->next) 
+	{
+		my $test = $obj->content;
+		push(@current,$test);
+	}
 }
