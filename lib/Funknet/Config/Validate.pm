@@ -2,12 +2,20 @@ package Funknet::Config::Validate;
 use strict;
 use base qw/ Exporter /;
 use vars qw/ @EXPORT_OK /;
+use Network::IPv4Addr qw/ ipv4_parse /;
 
 @EXPORT_OK = qw/ is_ipv4 is_ipv6 is_valid_type is_valid_as is_valid_os is_valid_router /;
 
 sub is_ipv4 {
     my ($addr) = @_;
-    return 1;
+    my $checked;
+    eval {
+	$checked = ipv4_parse($addr);
+    };
+    unless ($@) {
+	return $checked;
+    }
+    return undef;
 }
 
 sub is_ipv6 {
