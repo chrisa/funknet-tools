@@ -47,6 +47,8 @@ Class abstracting methods of getting root.
 
 =head2 exec_root
 
+=head2 pipe_root
+
 =cut
 
 sub new {
@@ -57,27 +59,47 @@ sub new {
 
     if ($root_method eq 'sudo') {
 	
-	$self->{_exec} = 
-	    sub ($) {
-		my ($cmd) = @_;
-		system "sudo $cmd";
-	    };
-
+	$self->{_exec} = sub ($) {
+	    my ($cmd) = @_;
+	    system "sudo $cmd";
+	};
+	
+	$self->{_pipe} = sub ($) {
+	    my ($cmd, $data) = @_;
+	    open PIPE, ">sudo $cmd" 
+		or Funknet::Config::error("couldn't pipe to sudo $cmd");
+	    print PIPE $data;
+	};
+		      
     } elsif ($root_method eq 'userv') {
-
-	$self->{_exec} = 
-	    sub ($) {
-		my ($cmd) = @_;
-		system "userv $cmd"; # XXX this isn't right
-	    };
+		    
+      $self->{_exec} = 
+	sub ($) {
+	  my ($cmd) = @_;
+	  system "userv $cmd"; # XXX this isn't right
+	};
+      
+      $self->{_pipe} = sub ($) {
+	  my ($cmd, $data) = @_;
+	  open PIPE, ">userv $cmd" # XXX neither's this, most likely.
+	    or Funknet::Config::error("couldn't pipe to userv $cmd");
+	  print PIPE $data;
+	};
 
     } elsif ($root_method eq 'runas') {
 
-	$self->{_exec} = 
-	    sub ($) {
-		my ($cmd) = @_;
-		system "$cmd";
-	    };
+	$self->{_exec} =
+	  sub ($) {
+	    my ($cmd) = @_;
+	    system "$cmd";
+	  };
+
+	$self->{_pipe} = sub ($) {
+	  my ($cmd, $data) = @_;
+	  open PIPE, "> $cmd" 
+	    or Funknet::Config::error("couldn't pipe to $cmd");
+	  print PIPE $data;
+	};
 
     } else {
 	return undef;
@@ -90,6 +112,12 @@ sub exec_root {
     for my $cmd ($cmdset->cmds) {
 	&{ $self->{_exec} }($cmd);
     }
+}
+
+sub pipe_root {
+    my ($self, $cmd, $data) = @_;
+
+    &{ $self->{_pipe} }($cmd, $data);
 }
 
 1;
