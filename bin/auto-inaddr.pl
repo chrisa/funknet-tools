@@ -50,12 +50,12 @@ Implement the auto-inaddr@funknet.org reverse delegation robot.
 
 =cut
 
-use Funknet::RevUpdate qw/ do_update check_delegate /;
-use Funknet::Whois     qw/ parse_object check_auth /;
+use Funknet::RevUpdate::Robot;
+use Funknet::RevUpdate        qw/ do_update check_delegate /;
+use Funknet::Whois            qw/ parse_object check_auth /;
 use PGP::Mail;
 
-
-my $keyring = '/home/funknet/.gnupg/keyring';
+my $testing = 1; # getopt
 
 # parse mail, check sig.
 
@@ -68,33 +68,33 @@ while(read(STDIN, $line, 8192)) {
     $data .= $line;
 }
 
-$pgpargs =
-{
-    "no_options" => 1,
-    "extra_args" =>
-	[
-	 "--no-default-keyring",
-	 "--no-auto-check-trustdb",
-	 "--keyring" => $keyring,
-	 "--secret-keyring" => $keyring.".sec",
-	 "--keyserver-options" => "no-auto-key-retrieve",
-	],
-	"always_trust" => 1,
-};
+my $robot = Funknet::RevUpdate::Robot->new( envfrom => 'auto-inaddr@funknet.org',
+					    from    => 'auto-inaddr@funknet.org',
+					    keyring => '/home/funknet/.gnupg/keyring',
+					    testing => $testing,
+					  );
 
-my $pgp = new PGP::Mail($data, $pgpargs);
-unless ($pgp->status eq "good") {
-    error("no valid and known signature found");
+unless ($self->process_header($data)) {
+    log("error reading header -- a bounce?");
+    exit 0;    
 }
 
-my $keyid = $pgp->keyid;
-my $object_text = $pgp->data;
-my $object = parse_object($object_text);
+# check pgp sig
+
+unless (my $pgp = $self->check_sig($data)) {
+    $robot->error("no valid and known signature found");
+}
+
+# attempt to create a Net::Whois::RIPE::Object
+
+unless (my $object = parse_object($pgp->data)) {
+    $robot->error("couldn't convert the signed message into a Net::WHOIS::RIPE::Object");
+}
 
 # check authorisation against whois.
 
 unless (check_auth($object->domain, $pgp->keyid)) {
-    error("hierarchical authorisation failed");
+    $robot->error("hierarchical authorisation failed");
 }
 
 # extract zone, nameservers from object.
@@ -102,18 +102,35 @@ unless (check_auth($object->domain, $pgp->keyid)) {
 my $zone = $object->domain;
 my @ns = $object->rev_srv;
 
-# check delegation, do update.
+# check delegation
 
 unless (check_delegate($zone, @ns) ) {
-    error ("delegation check failed: " . Funknet::RevUpdate::errors );
+    $robot->error ("delegation check failed: " . Funknet::RevUpdate::errors );
 }
+
+# actually do the update, if we're error-free
+
+# XXX don't just do_update anyway...
 
 do_update($zone, @ns);
 
-
-sub error {
-    my ($error_text) = @_;
-
-    # send mail with error_text, log problem. 
-
+my $mail_text;
+if ($robot->error) {
+    $mail_text = $robot->failure_text($zone, @ns);
+} else {
+    $mail_text = $robot->success_text($zone, @ns);
 }
+
+# reply 
+
+unless (my $res = $self->reply_mail( $mail_text, subject => 'Reverse Delegation results' )) {
+    log("error sending mail: $res");
+    exit 1;
+}
+
+
+sub log {
+    my ($log_text) = @_;
+    print STDERR $log_text;
+}
+
