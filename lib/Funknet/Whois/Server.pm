@@ -56,7 +56,7 @@ sub load {
 
 	next if $line =~ /^#/;
 
-	if ($line =~ /^(.*): (.*)$/) {
+	if ($line =~ /^(.*):\s(.*)$/) {
 	    my ($key, $value) = ($1, $2);
 
 	    $key =~ s/ //g;
@@ -92,7 +92,7 @@ sub load {
 	}
     }
     close DATA;
-    
+
     my $num = scalar keys %{ $self->{_objects} };
     return $num;
 }
