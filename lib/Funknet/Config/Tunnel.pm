@@ -76,6 +76,13 @@ sub new {
     }
 
     if ($self->{_source} eq 'host') {
+
+	# is this an interface we should be ignoring?
+	my @ignore_if = Funknet::Config::ConfigFile->ignore_if;
+	if (defined $args{ifname} && (grep /$args{ifname}/, @ignore_if)) {
+	    $self->warn("ignoring $args{ifname}");
+	    return undef;
+	}
 	
 	if (defined $args{interface}) {
 	    $self->{_interface} = $args{interface};
@@ -87,13 +94,6 @@ sub new {
 	    return undef;
 	} else {
 	    $self->{_ifname} = $args{ifname};
-	}
-
-	# is this an interface we should be ignoring?
-	my @ignore_if = Funknet::Config::ConfigFile->ignore_if;
-	if (defined $args{ifname} && (grep /$args{ifname}/, @ignore_if)) {
-	    $self->warn("ignoring $args{ifname}");
-	    return undef;
 	}
     }    
 
