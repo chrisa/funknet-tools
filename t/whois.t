@@ -44,38 +44,39 @@ my $tun = $whois->tunnels;
 
 # test BGP object
 
-is (ref $bgp, 'Funknet::Config::BGP::IOS', 'we have a BGP::IOS object');
-is ($bgp->source, 'whois', 'source of BGP object is whois');
+is (ref $bgp,     'Funknet::Config::BGP::IOS', 'we have a BGP::IOS object');
+is ($bgp->source, 'whois',                     'source of BGP object is whois');
 
 my @neighbors = $bgp->neighbors;
 is (scalar @neighbors, 1, 'we have 1 BGP neighbor');
 ok (defined $bgp->{_neighbors}->{'10.0.0.2'}, 'it is 10.0.0.2');
+
 my $n = $bgp->{_neighbors}->{'10.0.0.2'};
-is (ref $n, 'Funknet::Config::Neighbor', 'we have a Neighbor object');
-is ($n->source, 'whois', 'source of Neighbor object is whois');
-is ($n->remote_addr, '10.0.0.2', 'peer is 10.0.0.2');
-is ($n->remote_as, '64513', 'peer AS is AS64513');
-is ($n->description, 'SOMETEST-OTHERTEST', 'description is SOMETEST-OTHERTEST');
+is (ref $n,          'Funknet::Config::Neighbor', 'we have a Neighbor object');
+is ($n->source,      'whois',                     'source of Neighbor object is whois');
+is ($n->remote_addr, '10.0.0.2',                  'peer is 10.0.0.2');
+is ($n->remote_as,   '64513',                     'peer AS is AS64513');
+is ($n->description, 'SOMETEST-OTHERTEST',        'description is SOMETEST-OTHERTEST');
 
-is (scalar @{$bgp->routes}, 1, 'we have one BGP network');
-is ($bgp->{_routes}->[0], '1.0.0.0/24', 'it is 1.0.0.0/24');
-
-is ($bgp->{_local_as}, '64512', 'our AS is 64512');
+is (scalar @{$bgp->routes}, 1,            'we have one BGP network');
+is ($bgp->{_routes}->[0],   '1.0.0.0/24', 'it is 1.0.0.0/24');
+is ($bgp->{_local_as},      '64512',      'our AS is 64512');
 
 # test tunnel object
 
-is (ref $tun, 'Funknet::Config::TunnelSet', 'we have a TunnelSet object');
-is ($tun->source, 'whois', 'source of TunnelSet object is whois');
-is (scalar $tun->tunnels, 1, 'we have one tunnel');
+is (ref $tun,             'Funknet::Config::TunnelSet', 'we have a TunnelSet object');
+is ($tun->source,         'whois',                      'source of TunnelSet object is whois');
+is (scalar $tun->tunnels, 1,                            'we have one tunnel');
+
 my $t = $tun->{_tunnels}->[0];
-is (ref $t, 'Funknet::Config::Tunnel::IOS', 'it is an IOS tunnel');
-is ($t->{_local_address}, '10.0.0.1', 'local address is 10.0.0.1');
-is ($t->{_remote_address}, '10.0.0.2', 'remote address is 10.0.0.2');
-is ($t->{_local_endpoint}, '1.2.3.4', 'local endpoint is 1.2.3.4');
-is ($t->{_remote_endpoint}, '1.4.3.2', 'remote endpoint is 1.4.3.2');
-is ($t->source, 'whois', 'source of tunnel object is whois');
-is ($t->type, 'ipip', 'type of tunnel object is ipip');
-is ($t->{_proto}, '4', 'protocol of tunnel object is IPv4');
+is (ref $t,                 'Funknet::Config::Tunnel::IOS', 'it is an IOS tunnel');
+is ($t->{_local_address},   '10.0.0.1',                     'local address is 10.0.0.1');
+is ($t->{_remote_address},  '10.0.0.2',                     'remote address is 10.0.0.2');
+is ($t->{_local_endpoint},  '1.2.3.4',                      'local endpoint is 1.2.3.4');
+is ($t->{_remote_endpoint}, '1.4.3.2',                      'remote endpoint is 1.4.3.2');
+is ($t->source,             'whois',                        'source of tunnel object is whois');
+is ($t->type,               'ipip',                         'type of tunnel object is ipip');
+is ($t->{_proto},           '4',                            'protocol of tunnel object is IPv4');
 
 # ==========================================================================
 #
