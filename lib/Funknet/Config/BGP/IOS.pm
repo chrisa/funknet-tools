@@ -35,7 +35,7 @@ sub config {
 sub diff {
     my ($whois, $host) = @_;
     my $l = Funknet::Config::ConfigFile->local;
-    my (@bounce_req, $bounce_all, $bgp_req);
+    my ($bounce_req, $bounce_all, $bgp_req);
     my @cmds;
 
     # first check we have the objects the right way around.
@@ -74,7 +74,7 @@ sub diff {
 	    for my $cmd (@neighbor_diff) {
 		if (defined $cmd) {
 		    push @cmds, $cmd;
-		    push @bounce_req, $n->remote_addr;
+		    $bounce_req->{$n->remote_addr} = 1;
 		    $bgp_req = 1;
 		}
 	    }
@@ -130,33 +130,33 @@ sub diff {
 	    if (defined $h_n->{_acl_in} && !defined $n->{_acl_in}) {
 		push @cmds, "no route-map ".$h_n->{_acl_in}->name;
 		push @cmds, "no ip prefix-list ".$h_n->{_acl_in}->name;
-		push @bounce_req, $n->remote_addr;
+		$bounce_req->{$n->remote_addr} = 1;
 	    }
 	    if (defined $h_n->{_acl_out} && !defined $n->{_acl_out}) {
 		push @cmds, "no route-map ".$h_n->{_acl_out}->name;
 		push @cmds, "no ip prefix-list ".$h_n->{_acl_out}->name;
-		push @bounce_req, $n->remote_addr;
+		$bounce_req->{$n->remote_addr} = 1;
 	    }
 	    if (defined $n->{_acl_in} && !defined $h_n->{_acl_in}) {
 		push @cmds, "no route-map ".$n->{_acl_in}->name;
 		push @cmds, "no ip prefix-list ".$n->{_acl_in}->name;
 		push @cmds, $n->{_acl_in}->config;
 		push @cmds, 'exit';
-		push @bounce_req, $n->remote_addr;
+		$bounce_req->{$n->remote_addr} = 1;
 	    }
 	    if (defined $n->{_acl_out} && !defined $h_n->{_acl_out}) {
 		push @cmds, "no route-map ".$n->{_acl_out}->name;
 		push @cmds, "no ip prefix-list ".$n->{_acl_out}->name;
 		push @cmds, $n->{_acl_out}->config;
 		push @cmds, 'exit';
-		push @bounce_req, $n->remote_addr;
+		$bounce_req->{$n->remote_addr} = 1;
 	    }
 	    if (defined $n->{_acl_in} && defined $h_n->{_acl_in}) {
 		my @acl_diff = $n->{_acl_in}->diff($h_n->{_acl_in});
 		for my $cmd (@acl_diff) {
 		    if (defined $cmd) {
 			push @cmds, $cmd;
-			push @bounce_req, $n->remote_addr;
+			$bounce_req->{$n->remote_addr} = 1;
 		    }
 		}
 	    }
@@ -165,7 +165,7 @@ sub diff {
 		for my $cmd (@acl_diff) {
 		    if (defined $cmd) {
 			push @cmds, $cmd;
-			push @bounce_req, $n->remote_addr;
+			$bounce_req->{$n->remote_addr} = 1;
 		    }
 		}
 	    }
@@ -185,7 +185,7 @@ sub diff {
     if ( $bounce_all ) {
 	push @cmds, 'clear ip bgp *';
     } else {
-	push @cmds, map { "clear ip bgp $_" } @bounce_req;
+	push @cmds, map { "clear ip bgp $_" } keys %$bounce_req;
     }
 
     return @cmds;
