@@ -577,7 +577,7 @@ sub error {
 	$err = $self;
     }
     if (defined $err) {
-	push @errors, "Whois::OG: \n$err";
+	push @errors, "Whois::OG: $err";
     } else {
 	my @this = @errors;
 	@errors = ();

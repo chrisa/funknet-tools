@@ -83,7 +83,7 @@ sub key_cert {
     my (%args) = @_;
 
     unless (defined $args{name}) {
-	error( "didn't get a list of peers" );
+	error( "didn't get a name" );
     }
     unless (defined $args{changed}) {
 	error( "didn't get an email address for 'changed:'" );
@@ -291,7 +291,7 @@ sub error {
     }
 
     if (defined $err) {
-	push @errors, "Tools::OG: \n$err";
+	push @errors, "Tools::OG: $err";
     } else {
 	my @this = @errors;
 	@errors = ();
