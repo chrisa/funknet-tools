@@ -142,14 +142,14 @@ sub new_from_ifconfig {
 sub delete {
     my ($self) = @_;
 
-    my $tun_type;
-    for ($self->{_type})
-    {
-	if    (/tun/) {$tun_type = 'tun';}
-	elsif (/tap/) {$tun_type = 'tap';}
-    }
+    # generate a filename for our config file (from the whois)
+    $self->{_ovpn_file} = '/etc/openvpn/' . $self->{_name} . '.conf';
 
-    return undef;
+    # create a SystemFile object on that path
+    my $ovpn_file = Funknet::Config::SystemFile->new( text => undef,
+						      path => $self->{_ovpn_file} );
+    
+    return $ovpn_file->delete;
 }
 
 sub create {
