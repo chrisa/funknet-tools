@@ -59,7 +59,7 @@ sub diff {
 	unless ($host->route_set($r) ) {
 	    push @cmds, "network $r";
 	}
-	$bounce_req = 1;
+	$bounce_all = 1;
     }
     for my $r ( $host->routes ) {
 	unless ($whois->route_set($r) ) {
