@@ -68,6 +68,7 @@ my $ip_info = inet_ntoa($addr);
 
 # if IP has changed, we need 1st to update the funknet.conf file
 # as other bits use it 
+
 if ($config->local_endpoint ne $ip_info)
 {
 	print STDERR "best update the funknet.conf\n";
@@ -82,6 +83,8 @@ my $pgp_key_dir = $config->pgp_key_dir;
 my $signing_email = $config->signing_email;
 my $from_email = $config->from_email;
 my $local_as = $config->local_as;
+
+my @mail_text;
 
 my $hostname = qx[/bin/hostname];
 
@@ -139,6 +142,8 @@ foreach my $tunnel_object (@tunnel_objects)
 		print"IP same\n";
 	}
 }
+
+send_mail();
 exit(0);
 
 sub update_whois
@@ -155,19 +160,29 @@ sub update_whois
 	$current->endpoint(\@endpoints);
 	$current->changed($signing_email);
 
-	my $entry = $current->text();
-	my $subject="IP Update from $hostname";
-	chomp($subject);
-	print"from:$from_email\nto:$update_email\nsubject:$subject\n";
-	my $mime_obj = MIME::Entity->build(From    => $from_email,
-					   To      => $update_email,
-					   Subject => $subject,
-					   Data    => [$entry]);
-	my $mg = new Mail::GnuPG ( key => $key_id, 
-				   passphrase => $pgp_passphrase,
-				   keydir => $pgp_key_dir );
-	my $ret = $mg->mime_sign($mime_obj, $signing_email);
-	print"$ret\n";
-	$mime_obj->smtpsend;
+	my $tmp = $current->text();
+	push(@mail_text, $tmp);
+}
+
+sub send_mail
+{
+	my @backup = @mail_text;
+	if (defined(shift @backup))
+	{
+		my $msg_body = join("\n\n", @mail_text);
+		my $subject="IP Update from $hostname";
+		chomp($subject);
+		print"from:$from_email\nto:$update_email\nsubject:$subject\n";
+		my $mime_obj = MIME::Entity->build(From    => $from_email,
+						   To      => $update_email,
+						   Subject => $subject,
+						   Data    => [$msg_body]);
+		my $mg = new Mail::GnuPG ( key => $key_id, 
+					   passphrase => $pgp_passphrase,
+					   keydir => $pgp_key_dir );
+		my $ret = $mg->mime_sign($mime_obj, $signing_email);
+		print"$ret\n";
+		$mime_obj->smtpsend;
+	}
 }
 
