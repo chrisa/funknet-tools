@@ -2,21 +2,21 @@ package Funknet::Config::Neighbor;
 use strict;
 use Funknet::Config::Validate qw/ is_ipv4 /;
 
-# limitation - we don't deal with multiprotocol BGP yet.
+use base qw/ Funknet::Config /;
 
 sub new {
     my ($class, %args) = @_;
     my $self = bless {}, $class;
 
     unless (defined $args{source} && ($args{source} eq 'whois' || $args{source} eq 'host')) {
-	warn "missing source";
+	$self->warn("missing source");
 	return undef;
     } else {
 	$self->{_source} = $args{source};
     }
 
     unless (defined $args{remote_as}) {
-	warn "missing remote_as";
+	$self->warn("missing remote_as");
 	return undef;
     } else {
 	my $asno = $args{remote_as};
@@ -25,7 +25,7 @@ sub new {
     }
 
     unless (defined $args{remote_addr}) {
-	warn "missing remote_addr";
+	$self->warn("missing remote_addr");
 	return undef;
     } else {
 	$self->{_remote_addr} = $args{remote_addr};

@@ -7,6 +7,8 @@ use Funknet::Config::Tunnel::IOS;
 use Funknet::Config::Tunnel::Linux;
 use Funknet::Config::Tunnel::Solaris;
 
+use base qw/ Funknet::Config /;
+
 =head1 NAME
 
 Funknet::Config::Tunnel
@@ -37,26 +39,26 @@ sub new {
 
     my @ignore_if = Funknet::Config::ConfigFile->ignore_if;
     if (defined $args{ifname} && (grep /$args{ifname}/, @ignore_if)) {
-	warn "ignoring $args{ifname}";
+	$self->warn("ignoring $args{ifname}");
 	return undef;
     }
     
     unless (defined $args{source} && ($args{source} eq 'whois' || $args{source} eq 'host')) {
-	warn "missing source";
+	$self->warn("$args{ifname}: missing or invalid source address");
 	return undef;
     } else {
 	$self->{_source} = $args{source};
     }
 
     unless (defined $args{type} && is_valid_type($args{type})) {
-	warn "missing or invalid type";
+	$self->warn("$args{ifname}: missing or invalid type");
 	return undef;
     } else {
 	$self->{_type} = $args{type};
     }
 
     unless (defined $args{proto} && is_valid_proto($args{proto})) {
-	warn "missing or invalid protocol";
+	$self->warn("$args{ifname}: missing or invalid protocol");
 	return undef;
     } else {
 	$self->{_proto} = $args{proto};
@@ -65,7 +67,7 @@ sub new {
     if ($self->{_proto} eq '4') {
 	for my $addr (qw/ local_address remote_address local_endpoint remote_endpoint / ) {
 	    unless (is_ipv4 ($args{$addr})) {
-		warn "invalid ipv4 address";
+		$self->warn("$args{ifname} $addr: missing or invalid ipv4 address");
 		return undef;
 	    } else {
 		$self->{"_$addr"} = $args{$addr};
@@ -74,7 +76,7 @@ sub new {
     } elsif ($self->{_proto} eq '6') {
 	for my $addr (qw/ local_address remote_address / ) {
 	    unless (is_ipv6 ($args{$addr})) {
-		warn "invalid ipv6 address";
+		$self->warn("$args{ifname} $addr: invalid ipv6 address");
 		return undef;
 	    } else {
 		$self->{"_$addr"} = $args{$addr};
@@ -82,7 +84,7 @@ sub new {
 	}
 	for my $addr (qw/ local_endpoint remote_endpoint / ) {
 	    unless (is_ipv4 ($args{$addr})) {
-		warn "invalid ipv4 address";
+		$self->warn("$args{ifname} $addr: invalid ipv4 address");
 		return undef;
 	    } else {
 		$self->{"_$addr"} = $args{$addr};
@@ -93,7 +95,7 @@ sub new {
 	if (defined $args{interface}) {
 	    $self->{_interface} = $args{interface};
 	} else {
-	    warn "missing interface for host tunnel";
+	    $self->warn("$args{ifname}: missing interface for host tunnel");
 	}
     }
 	    

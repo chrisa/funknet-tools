@@ -102,9 +102,6 @@ sub tunnels {
 	my @if = split /(?=^[a-z])/m,$c;
 
 	for my $if (@if) {
-
-	    warn "considering: $if";
-
 	    chomp $if;
 	    my $tun = Funknet::Config::Tunnel->new_from_ifconfig( $if, $l->{os} );
 	    if (defined $tun) {

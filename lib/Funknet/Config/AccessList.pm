@@ -1,5 +1,7 @@
 package Funknet::Config::AccessList;
 use strict;
+use base qw/ Funknet::Config /;
+
 =head1 NAME
 
 Funknet::Config::AccessList
@@ -176,7 +178,7 @@ sub diff {
 
     # first check we have the objects the right way around.
     unless ($whois->source eq 'whois' && $host->source eq 'host') {
-	warn "diff passed objects backwards";
+	$whois->warn("diff passed objects backwards");
 	return undef;
     }    
 

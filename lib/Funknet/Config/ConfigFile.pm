@@ -4,6 +4,7 @@ use Data::Dumper;
 use vars qw/ $AUTOLOAD /;
 use Carp qw/ cluck /;
 use Funknet::Config::Validate qw / is_ipv4 is_ipv6 is_valid_as is_valid_router is_valid_os /;
+use base qw/ Funknet::Config /;
 
 =head1 NAME
 
@@ -64,23 +65,23 @@ sub new {
     $self->{config} = $config;
 
     unless (defined $config->{local_as} && is_valid_as($config->{local_as})) {
-	warn "missing local_as";
+	$self->warn("missing local_as");
 	return undef;
     } 
     unless (defined $config->{local_host} && is_ipv4($config->{local_host})) {
-	warn "missing local_host";
+	$self->warn("missing local_host");
 	return undef;
     } 
     unless (defined $config->{local_endpoint} && is_ipv4($config->{local_endpoint})) {
-	warn "missing local_endpoint";
+	$self->warn("missing local_endpoint");
 	return undef;
     } 
     unless (defined $config->{local_router} && is_valid_router($config->{local_router})) {
-	warn "missing local_router";
+	$self->warn("missing local_router");
 	return undef;
     } 
     unless (defined $config->{local_os} && is_valid_os($config->{local_os})) {
-	warn "missing local_os";
+	$self->warn("missing local_os");
 	return undef;
     } 
 
@@ -121,7 +122,7 @@ sub AUTOLOAD {
 	    return $config->{$key};
 	}
     } else {
-	cluck("accessing non existent config param $key");
+	$self->warn("accessing non existent config param $key");
 	return undef;
     }
 }

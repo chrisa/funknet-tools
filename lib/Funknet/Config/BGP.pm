@@ -6,20 +6,22 @@ use Funknet::Config::Neighbor;
 use Funknet::Config::BGP::IOS;
 use Funknet::Config::BGP::Zebra;
 
+use base qw/ Funknet::Config /;
+
 sub new {
     my ($class, %args) = @_;
     my $self = bless {}, $class;
     my $l = Funknet::Config::ConfigFile->local;
 
     unless (defined $args{source} && ($args{source} eq 'whois' || $args{source} eq 'host')) {
-	warn "missing source or invalid";
+	$self->warn("missing or invalid source");
 	return undef;
     } else {
 	$self->{_source} = $args{source};
     }
 
     unless (defined $args{local_as} && is_valid_as($args{local_as})) {
-	warn "missing or invalid local_as";
+	$self->warn("missing or invalid local_as");
 	return undef;
     } else {
         my $asno = $args{local_as};
@@ -28,7 +30,7 @@ sub new {
     }
 
     unless (defined $args{routes} && ref $args{routes} eq 'ARRAY') {
-	warn "no routes";
+	$self->warn("no routes");
         $self->{_routes} = [];
     } else {
         $self->{_routes} = $args{routes}; 
