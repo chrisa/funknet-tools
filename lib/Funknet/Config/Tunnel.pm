@@ -2,6 +2,11 @@ package Funknet::Config::Tunnel;
 use strict;
 use Funknet::Config::Validate qw/ is_ipv4 is_ipv6 is_valid_type /;
 
+use Funknet::Config::Tunnel::BSD;
+use Funknet::Config::Tunnel::IOS;
+use Funknet::Config::Tunnel::Linux;
+use Funknet::Config::Tunnel::Solaris;
+
 sub new {
     my ($class, %args) = @_;
     my $self = bless {}, $class;
@@ -53,6 +58,19 @@ sub new {
 	    }
 	}
     }
+
+    # rebless if we have a specific OS to target 
+    # for this tunnel endpoint.
+
+    $args{local_os} eq 'bsd' and 
+	bless $self, 'Funknet::Config::Tunnel::BSD';
+    $args{local_os} eq 'ios' and 
+	bless $self, 'Funknet::Config::Tunnel::IOS';
+    $args{local_os} eq 'linux' and
+	bless $self, 'Funknet::Config::Tunnel::Linux';
+    $args{local_os} eq 'solaris' and
+	bless $self, 'Funknet::Config::Tunnel::Solaris';
+
     return $self;
 }
 
@@ -63,6 +81,21 @@ sub as_string {
 	"$self->{_type}:\n" .
 	"$self->{_local_endpoint} -> $self->{_remote_endpoint}\n" . 
 	"$self->{_local_address} -> $self->{_remote_address}\n";
+}
+
+sub new_from_ifconfig {
+    my ($class, $if, $local_os) = @_;
+    
+    if ($local_os eq 'bsd') {
+	return Funknet::Config::Tunnel::BSD->new_from_ifconfig( $if );
+    }
+    if ($local_os eq 'linux') {
+	return Funknet::Config::Tunnel::Linux->new_from_ifconfig( $if );
+    }
+    if ($local_os eq 'solaris') {
+	return Funknet::Config::Tunnel::Solaris->new_from_ifconfig( $if );
+    }
+    return undef;
 }
 
 1;

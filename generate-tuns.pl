@@ -11,13 +11,25 @@ unless (scalar @ARGV == 1) {
 
 my $local_as = $ARGV[0];
 
-my $whois = Funknet::Config::Whois->new();
-my $local_tun = $whois->tunnels($local_as);
-my $local_bgp = $whois->sessions($local_as);
+my $whois = Funknet::Config::Whois->new( local_as => $ARGV[0],
+					 local_os => 'bsd',
+					 local_router => 'zebra'
+				       );
+my $whois_tun = $whois->tunnels;
+my $whois_bgp = $whois->sessions;
 
-for my $tun (@{$local_tun}) {
-    print $tun->as_string;
+for my $tun (@{$whois_tun}) {
+    print $tun->config;
     print "\n";
 }
+print $whois_bgp->config;
 
-print $local_bgp->config;
+my $host = Funknet::Config::Host->new( local_as => $ARGV[0],
+				       local_os => 'bsd',
+				       local_router => 'zebra'
+				     );
+my $host_tun = $host->tunnels;
+for my $tun (@{$host_tun}) {
+    print $tun->config;
+    print "\n";
+}

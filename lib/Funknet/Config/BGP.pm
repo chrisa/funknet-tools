@@ -3,6 +3,8 @@ use strict;
 use Funknet::Config::Validate qw/ is_valid_os is_valid_as is_valid_router /;
 use Funknet::Config::AccessList;    
 use Funknet::Config::Neighbor;
+use Funknet::Config::BGP::IOS;
+use Funknet::Config::BGP::Zebra;
 
 sub new {
     my ($class, %args) = @_;
@@ -30,6 +32,11 @@ sub new {
     } else {
         $self->{_routes} = $args{routes}; 
     }
+
+    $args{local_router} eq 'ios' and 
+	bless $self, 'Funknet::Config::BGP::IOS';
+    $args{local_router} eq 'zebra' and 
+	bless $self, 'Funknet::Config::BGP::Zebra';
 
     return $self;
 }
@@ -72,28 +79,5 @@ sub add_session {
 	push @{$self->{_neighbors}}, $session;
     }
 }
-
-sub config {
-    my ($self) = @_;
-    
-    my $config = "router bgp $self->{_local_as}\n";
-
-    if (defined $self->{_routes} && ref $self->{_routes} eq 'ARRAY') {	
-        for my $route (@{ $self->{_routes}}) {
-            $config .= " network $route\n";
-        }
-    }	
-
-    foreach my $neighbor (@{ $self->{_neighbors} }) {
-	$config .= $neighbor->config;
-    }
-    $config .= "!\n";
-
-    foreach my $acl (@{ $self->{_acls} }) {
-	$config .= $acl->config;
-    }
-    return $config;
-}
-    
 
 1;
