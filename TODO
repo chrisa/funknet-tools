@@ -2,6 +2,8 @@ Known bugs:
 
 * diffing access-lists isn't done yet. this might turn out to be hard,
   or we might just replace the existing one with the whois one...
+     -- done. we just blow away the old one if the whois has one. 
+        bit sucky but it'll work. 
 
 * the names of access-lists read off the router are lost - just a bug,
   it should work.
@@ -10,6 +12,8 @@ Known bugs:
   at all yet, just captured and saved, so it's wrong. this might not
   matter, depending on what we do in the diff routine as we'll never
   need to send it back to the router.
+    -- we only need this in the diff routine, which we aren't using
+       just yet
 
 * there are no tunnel commands in there yet, so ->config on a tunnel
   just prints the relevant details - but this is already split into

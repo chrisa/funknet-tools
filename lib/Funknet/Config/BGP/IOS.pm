@@ -112,10 +112,14 @@ sub diff {
 		push @cmds, "no ip prefix-list ".$h_n->{_acl_out}->name;
 	    }
 	    if (defined $n->{_acl_in} && defined $h_n->{_acl_in}) {
-		push @cmds, $n->{_acl_in}->diff($h_n->{_acl_in});
+		push @cmds, "no route-map ".$h_n->{_acl_in}->name;
+		push @cmds, "no ip prefix-list ".$h_n->{_acl_in}->name;
+		push @cmds, $n->{_acl_in}->config;
 	    }
 	    if (defined $n->{_acl_out} && defined $h_n->{_acl_out}) {
-		push @cmds, $n->{_acl_out}->diff($h_n->{_acl_out});
+		push @cmds, "no route-map ".$h_n->{_acl_out}->name;
+		push @cmds, "no ip prefix-list ".$h_n->{_acl_out}->name;
+		push @cmds, $n->{_acl_out}->config;
 	    }
 	}
 	push @bounce_req, $n->remote_addr;
