@@ -7,6 +7,6 @@ Standards-Version: 3.6.0
 Package: funknet-tools
 Section: net
 Architecture: all
-Depends: ${perl:Depends}
+Depends: 
 Description: the funknet-tools package
  tools for configuring Funknet nodes (nerds?)

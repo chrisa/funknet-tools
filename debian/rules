@@ -11,7 +11,7 @@ ifndef PERL
 PERL = /usr/bin/perl
 endif
 
-TMP     =$(CURDIR)/debian/$(PACKAGE)
+TMP     =$(CURDIR)/debian/tmp
 
 # Allow disabling build optimation by setting noopt in
 # $DEB_BUILD_OPTIONS
