@@ -100,10 +100,12 @@ sub diff {
 		push @cmds, $n->{_acl_out}->config;
 	    }
 	    if (defined $h_n->{_acl_in} && !defined $n->{acl_in}) {
-		push @cmds, $h_n->{_acl_in}->config;
+		push @cmds, "no route-map ".$h_n->{_acl_in}->name;
+		push @cmds, "no ip prefix-list ".$h_n->{_acl_in}->name;
 	    }
 	    if (defined $h_n->{_acl_out} && !defined $n->{acl_out}) {
-		push @cmds, $h_n->{_acl_out}->config;
+		push @cmds, "no route-map ".$h_n->{_acl_out}->name;
+		push @cmds, "no ip prefix-list ".$h_n->{_acl_out}->name;
 	    }
 	    if (defined $n->{_acl_in} && defined $h_n->{_acl_in}) {
 		push @cmds, $n->{_acl_in}->diff($h_n->{_acl_in});
