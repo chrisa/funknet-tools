@@ -151,8 +151,11 @@ sub diff {
 	}
     }
 
+    # this is right for IPTables and IPFW; when (if) we do Cisco
+    # firewalling or equivalent, we'll need to move this method 
+    # so we can set 'target' correctly. leave for now. 
     my $cmdset = Funknet::Config::CommandSet->new( cmds => \@cmds,
-						   target => 'cli',
+						   target => 'host',
 						 );
     
     return Funknet::Config::ConfigSet->new( cmds => [ $cmdset ] );
