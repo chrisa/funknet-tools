@@ -1,0 +1,141 @@
+=head1 NAME 
+
+The FUNKNET whois database
+
+=head1 OBJECTS
+
+=head2 inetnum
+
+Allocations of IP addresses to networks. Essentially free naming
+policy.
+
+=head2 aut-num
+
+An autonomous system -- a 'node'. Contains the node's tunnels and
+route import and export policies. Essentially free naming policy. 
+
+=head2 route
+
+Relates an inetnum or aggregatable set of inetnums to a specific
+autonomous system. Should take the name of its single inetnum, or a
+name describing the aggregate.
+
+=head2 as-set
+
+Also called an AS macro, allows multiple aut-num objects to be
+referenced with a single policy. Autonomous systems providing transit
+to others should create an as-set object containing the ASs they
+transit. Names should be of the form AS-FOO where FOO is the node
+name.
+
+=head2 tunnel
+
+Contains all the information required to set up a tunnel --
+endpoints, addresses, type, encryption. Names are typically of the
+form NODEA-NODEB.
+
+=head2 mntner
+
+A database 'user'. Holds authentication information. Every object in
+the database should be associated with a maintainer. Names are
+typically of the form 'FOO-MNT' though this isn't required. 
+
+=head2 person
+
+A real person. May be associated with multiple maintainers.
+
+=head2 key-cert
+
+A PGP public key. Referenced in a maintainer objects. Automatically
+named as 'PGPKEY-$keyid'.
+
+
+=head1 AUTHENTICATION
+
+Authentication is based on maintainer objects. When you send mail to
+the database, it looks to see if it can relate some element of the
+mail to a specific maintainer or sent of maintainers. In the case of
+FUNKNETDB, the only authentication method allowed is PGP-signature.
+
+=head2 PGP in the FUNKNET DB
+
+The database keeps the PGP keys of users both in a gpg keyring and in
+the database. When a mail is received, the signature is checked, and
+if found to be valid, the keyid is looked up in the database,
+producing a key-cert object. 
+
+Maintainer objects contain a list of key-cert objects in the auth:
+attribute, and the sender of the mail is authenticated as all the
+maintainers whose objects contain a reference to the key used to sign
+the mail.
+
+=head1 AUTHORISATION
+
+Once the user is authenticated as a maintainer (or set of maintainers)
+the database tries to find a match between the objects being modified
+and the list of maintainers (this list called an 'authentication
+vector' by the code).
+
+In order for a modification to succeed, the object must have one of:
+no maintainer, a maintainer in the user's authentication vector or
+some relationship to a maintainer in the AV.
+
+=head2 No maintainer
+
+All objects in the database which don't contain a 'mnt-by:' line may
+be changed by anyone -- not just any maintainer, anyone at all who
+sends mail to the system. It's important to have these lines.
+
+=head2 Direct relationship
+
+If the mnt-by: line of the object to be modified references a
+maintainer which the user has authenticated as, the modification will
+succeed.
+
+=head2 Indirect relationship
+
+Creating objects in the database requires that the user's maintainer
+be listed in one of the indirect attributes of a related object. For
+example, inetnum creation is restricted by the next less specific
+inetnum object, using the mnt-lower: attribute. 
+
+The maintainer specified in the new object must also be one of the
+maintainers that that user has authenticated as. 
+
+=head2 Example
+
+Given the inetnums shown below, the user must authenticate as both
+FOO-MNT and BAR-MNT for the object to be created.
+
+existing inetnum:
+
+  inetnum:    10.0.0.0 - 10.255.255.255
+  netname:    RFC1918-1
+  ...
+  mnt-by:     FOO-MNT
+  mnt-lower:  FOO-MNT
+
+new inetnum:
+
+  inetnum:    10.1.2.0 - 10.1.2.255
+  netname:    MY-NEW-NET
+  ...
+  mnt-by:     BAR-MNT
+
+=head1 OBJECT RELATIONSHIPS
+
+
+  inetnum (global)               0.0.0.0/0
+    \- inetnum (allocation)      10.0.0.0/8
+        \- inetnum (assignment)  10.2.0.0/24
+              ^
+              |
+              v                  as-set
+            route <--> aut-num -/
+                         |
+                         \- tunnel
+			 \- tunnel
+			 \- tunnel
+			 
+=cut 
+
