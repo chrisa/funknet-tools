@@ -144,5 +144,28 @@ sub _connect {
 	return undef;
     }
 }
+
+# these are moved in here from Funknet::Whois.
+
+sub check_auth {
+    my ($self, $object, $keyid) = @_;
+    my $auth_ok;
+
+    $self->type('mntner');
+
+  AUTH:
+    for my $mnt_by ($object->mnt_by) {
+	my $mntner = $self->query($mnt_by);
+	for my $auth ($mntner->auth) {
+	    if ($auth eq "PGPKEY-$keyid") {
+		$auth_ok = 1;
+		last AUTH;
+	    }
+	}
+    }
+    return $auth_ok;
+}
+
+
     
 1;

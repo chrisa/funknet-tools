@@ -44,7 +44,8 @@ Use Email::Robot to implement a pureperl whois-by-email updater.
 package Funknet::Whois::Update;
 use strict;
 
-use Funknet::Whois qw/ parse_object check_auth /;
+use Funknet::Whois qw/ parse_object /;
+use Funknet::Whois::Client;
 use Funknet::Whois::Update::Robot;
 use Fcntl qw/ :DEFAULT :flock :seek /;
 use Data::Dumper;
@@ -73,6 +74,10 @@ sub new {
     $self->{_source}  = $args{source};
     $self->{_testing} = $args{testing};
     $self->{_objfile} = $args{objfile};
+
+    # server
+    $self->{_host}    = $args{listen_address};
+    $self->{_port}    = $args{listen_port};
 
     # gpg
     $self->{_pubring} = $args{pubring};
@@ -153,6 +158,9 @@ sub update {
 
     # check authorisation and source against whois.
 
+    # first get a FWC.
+    my $client = Funknet::Whois::Client->new( $self->{_host}, Port => $self->{_port} );
+    
     my (@ok, @noauth, @nosource);
     for my $object (@objects) {
 	if ($object->source ne $self->{_source}) {
@@ -165,7 +173,7 @@ sub update {
 	my $keyid64 = $pgp->keyid;
 	my ($keyid32) = $keyid64 =~ /([A-Z0-9]{8})$/i;
 
-	if (check_auth($object, $keyid32)) {
+	if ($client->check_auth($object, $keyid32)) {
 	    push @ok, $object;
 	} else {
 	    warn "auth fail";

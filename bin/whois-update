@@ -18,11 +18,14 @@ unless (-f $opt{f}) {
 
 my $config = new Funknet::ConfigFile::Whois($opt{f});
 my $updater_config = $config->updater_config();
+my $server_config  = $config->server_config();
 
 if ($opt{v}) { $updater_config->{verbose} = 1 };
 if ($opt{t}) { $updater_config->{testing} = 1 };
 
-my $u = new Funknet::Whois::Update(%$updater_config);
+my $u = new Funknet::Whois::Update(%$updater_config, 
+				   %$server_config
+				  );
 $u->update();
 
 
