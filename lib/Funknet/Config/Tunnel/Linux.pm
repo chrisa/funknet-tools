@@ -125,7 +125,7 @@ sub delete {
 
 sub create {
     my ($self, $inter) = @_;
-    return ("ip tunnel add tunl$inter mode ipip local $self->{_local_endpoint} remote $self->{_remote_endpoint}",
+    return ("ip tunnel add tunl$inter mode ipip local $self->{_local_endpoint} remote $self->{_remote_endpoint} ttl 64",
 	    "ip addr add $self->{_local_address}/30 peer $self->{_remote_address} dev tunl$inter",
 	    "ip link set tunl$inter up" );
 }
