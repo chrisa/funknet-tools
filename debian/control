@@ -1,0 +1,12 @@
+Source: funknet-tools
+Priority: optional
+Maintainer: Chris Andrews <chris@nodnol.org>
+Build-Depends: debhelper (>= 4.0.0), perl (>= 5.6.0-16)
+Standards-Version: 3.6.0
+
+Package: funknet-tools
+Section: net
+Architecture: all
+Depends: ${perl:Depends}
+Description: the funknet-tools package
+ tools for configuring Funknet nodes (nerds?)

@@ -47,6 +47,10 @@ use Funknet::Config::ConfigFile;
 
 Funknet::Config
 
+=head1 ABSTRACT
+
+The funknet-tools autoconfig system.
+
 =head1 SYNOPSIS
 
     my $conf = new Funknet::Config( configfile => '/full/path/to/configfile' );
@@ -66,6 +70,9 @@ Funknet::Config
 =head2 debug
 
 =cut
+
+use vars qw/ $VERSION /;
+$VERSION = 0.99;
 
 my (@warnings, @errors);
 
