@@ -271,7 +271,7 @@ sub exec_enable {
     for my $cmd ($cmdset->cmds) {
         for my $cmd_line (split /\n/, $cmd) {
             $t->cmd($cmd_line);
-            sleep 2;
+            select(undef,undef,undef,0.3);
         }
     }
     $t->cmd('disable');
