@@ -100,7 +100,7 @@ sub sessions {
 		my $acl_in = Funknet::Config::AccessList->new( source_as   => $as[$i],
 							       peer_as     => $as[1-$i],
 							       source_addr => $ad[$i],
-							       peer_addr   => $ad[1-$i,]
+							       peer_addr   => $ad[1-$i],
 							       dir         => 'import',
 							       source      => 'whois',
 							       local_host  => $self->{_local_host},

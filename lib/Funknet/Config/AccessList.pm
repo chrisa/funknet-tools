@@ -4,6 +4,9 @@ use strict;
 sub new {
     my ($class, %args) = @_;
 
+    $args{source_as} =~ s/^AS//;
+    $args{peer_as} =~ s/^AS//;
+
     $args{source_as} =~ /^\d+$/ or return undef;
     $args{peer_as}   =~ /^\d+$/ or return undef;
     $args{source_addr} =~ /^\d+\.\d+\.\d+\.\d+$/ or return undef;
@@ -11,9 +14,13 @@ sub new {
     $args{dir}      =~ /^(import|export)$/ or return undef;
     
     if ($args{source} eq 'whois') {
-	my $self = bless {}, $class;
-	$self->_get_whois(%args);
-	return $self;
+	my $self = _get_whois(%args);
+
+	if (defined $self) {
+	    return bless $self, $class;
+	} else {
+	    return undef;
+	}
     }
     if ($args{source} eq 'host') {
 	my $cli = Funknet::Config::CLI->new( local_as => $args{source_as},
@@ -32,7 +39,7 @@ sub new {
 }
 
 sub _get_whois {
-    my ($self, %args) = @_;
+    my (%args) = @_;
 
     my $rtconfig = 
 	'/usr/local/bin/RtConfig -h whois.funknet.org -p 43 -s FUNKNET -protocol ripe ' . 
@@ -53,10 +60,11 @@ sub _get_whois {
 	$acl_text .= $line;
     }
     
+    my $acl;
     if (length $acl_text) {
-	$self->{_acl_text} = $acl_text;
-	$self->{_name} = $acl_name;
-	return $self;
+	$acl->{_acl_text} = $acl_text;
+	$acl->{_name} = $acl_name;
+	return $acl;
     } else {
 	return undef;
     }
