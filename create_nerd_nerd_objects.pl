@@ -1,4 +1,4 @@
-#!/usr/pkg/bin/perl -w
+#!/usr/bin/perl -w
 
 use strict;
 
@@ -102,6 +102,9 @@ foreach my $splurby_tun (keys(%splurby_nerd_tunnels))
 	print "$other_as:$ip\n";
 }
 
+my $ab='10.4.';
+my $d=0;
+my $c=0;
 open(FILE,">nerd_nerd_objects");
 print STDERR "bout to start big loop\n";
 foreach my $thing (@ass)
@@ -128,8 +131,12 @@ foreach my $thing (@ass)
 		print FILE "type: ipip\n";
 		print FILE "as: $thing\n";
 		print FILE "as: $twat\n";
-		print FILE "address: \n";
-		print FILE "address: \n";
+		my $this_d_local=$d+1;
+		my $this_d_remote=$d+2;
+		my $this_local="$ab$c\.$this_d_local";
+		my $this_remote="$ab$c\.$this_d_remote";
+		print FILE "address: $this_local\n";
+		print FILE "address: $this_remote\n";
 		print FILE "endpoint: $local_endpoint\n";
 		print FILE "endpoint: $remote_endpoint\n";
 #		print FILE "endpoint: \n";
@@ -142,9 +149,17 @@ foreach my $thing (@ass)
 		print FILE "source: FUNKNET\n";
 		print FILE "\n";
 
-
 		push(@done,"$local_as_name:$remote_as_name");
 		push(@done,"$remote_as_name:$local_as_name");
+		if($d == 252)
+		{
+			$d=0;
+			$c++;
+		}
+		else
+		{
+			$d+=4;
+		}
 	}
 }
 close(FILE);
