@@ -31,6 +31,7 @@
 # SUCH DAMAGE.
 
 use strict;
+use lib './lib';
 
 =head1 NAME
 
