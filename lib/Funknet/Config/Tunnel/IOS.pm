@@ -104,4 +104,8 @@ sub create {
         "exit" );
 }
 
+sub ifsym {
+    return 'Tunnel';
+}
+
 1;

@@ -142,4 +142,8 @@ sub create {
      );
 }
 
+sub ifsym {
+    return 'gif';
+}
+
 1;
