@@ -93,7 +93,7 @@ sub sho_ip_bgp {
 
     # string can be an ipv4 address, an aspath regex or the empty string
     if (is_ipv4($string) || 
-	$string =~ /^[0-9\^\$_ ]$/ ||
+	$string =~ /^r(egexp)? [0-9\^\$_ ]+$/ ||
 	$string eq '') {
 	
 	my $text = $self->{_cli}->exec_cmd("sho ip bgp $string");
