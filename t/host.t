@@ -34,8 +34,7 @@
 # SUCH DAMAGE.
 
 use strict;
-use Test::More tests => 1;
-use Data::Dumper;
+use Test::More tests => 24;
 
 BEGIN { use_ok ( 'Funknet::Config::Host' ); }
 
@@ -43,9 +42,48 @@ my $host = new Funknet::Config::Host;
 my $bgp = $host->sessions;
 my $tun = $host->tunnels;
 
-print Dumper { host => $host,
-		 bgp => $bgp,
-		   tun => $tun, };
+# test BGP object
+
+is (ref $bgp,     'Funknet::Config::BGP::IOS', 'we have a BGP::IOS object');
+is ($bgp->source, 'host',                     'source of BGP object is host');
+
+my @neighbors = $bgp->neighbors;
+is (scalar @neighbors, 1, 'we have 1 BGP neighbor');
+ok (defined $bgp->{_neighbors}->{'10.0.0.2'}, 'it is 10.0.0.2');
+
+my $n = $bgp->{_neighbors}->{'10.0.0.2'};
+is (ref $n,          'Funknet::Config::Neighbor', 'we have a Neighbor object');
+is ($n->source,      'host',                     'source of Neighbor object is host');
+is ($n->remote_addr, '10.0.0.2',                  'peer is 10.0.0.2');
+is ($n->remote_as,   '64513',                     'peer AS is AS64513');
+is ($n->description, 'SOMETEST-OTHERTEST',        'description is SOMETEST-OTHERTEST');
+
+TODO: {
+
+local $TODO = 'looks like bgp network parsing doesn\'t actually work very well';
+
+is (scalar @{$bgp->routes}, 1,            'we have one BGP network');
+is ($bgp->{_routes}->[0],   '1.0.0.0/24', 'it is 1.0.0.0/24');
+};
+
+is ($bgp->{_local_as},      '64512',      'our AS is 64512');
+
+# test tunnel object
+
+is (ref $tun,             'Funknet::Config::TunnelSet', 'we have a TunnelSet object');
+is ($tun->source,         'host',                      'source of TunnelSet object is host');
+is (scalar $tun->tunnels, 1,                            'we have one tunnel');
+
+my $t = $tun->{_tunnels}->[0];
+is (ref $t,                 'Funknet::Config::Tunnel::IOS', 'it is an IOS tunnel');
+is ($t->{_local_address},   '10.0.0.1',                     'local address is 10.0.0.1');
+is ($t->{_remote_address},  '10.0.0.2',                     'remote address is 10.0.0.2');
+is ($t->{_local_endpoint},  '1.2.3.4',                      'local endpoint is 1.2.3.4');
+is ($t->{_remote_endpoint}, '1.4.3.2',                      'remote endpoint is 1.4.3.2');
+is ($t->source,             'host',                        'source of tunnel object is host');
+is ($t->type,               'ipip',                         'type of tunnel object is ipip');
+is ($t->{_proto},           '4',                            'protocol of tunnel object is IPv4');
+
 
 # ==========================================================================
 #
@@ -81,18 +119,18 @@ Status codes: s suppressed, d damped, h history, * valid, > best, i - internal
 Origin codes: i - IGP, e - EGP, ? - incomplete
 
    Network          Next Hop            Metric LocPrf Weight Path
-*> 10.2.0.0/24      10.2.0.37                0             0 65000 i
-*> 10.6.6.0/24      10.2.0.37                              0 65000 65005 i
-*> 10.10.38.0/24    10.2.0.37                              0 65000 65017 i
-*> 192.168.9.0      10.2.0.37                              0 65000 65007 i
-*> 192.168.20.0     10.2.0.37                              0 65000 65005 i
-*> 192.168.24.0     10.2.0.37                              0 65000 65008 i
-*> 192.168.30.0     10.2.0.37                              0 65000 65020 i
-*> 192.168.74.0     213.210.34.162           1         32768 i
-*> 192.168.160.0    10.2.0.37                              0 65000 65004 i
-*> 192.168.246.0    10.2.0.37                              0 65000 65008 i
+*> 10.2.0.0/24      10.0.0.2                0             0 64513 i
+*> 10.6.6.0/24      10.0.0.2                              0 64513 65005 i
+*> 10.10.38.0/24    10.0.0.2                              0 64513 65017 i
+*> 192.168.9.0      10.0.0.2                              0 64513 65007 i
+*> 192.168.20.0     10.0.0.2                              0 64513 65005 i
+*> 192.168.24.0     10.0.0.2                              0 64513 65008 i
+*> 192.168.30.0     10.0.0.2                              0 64513 65020 i
+*> 1.0.0.0/24       0.0.0.0                 1         32768 i
+*> 192.168.160.0    10.0.0.2                              0 64513 65004 i
+*> 192.168.246.0    10.0.0.2                              0 64513 65008 i
 *> 213.210.34.144/28
-                    10.2.0.37                              0 65000 65006 i
+                    10.0.0.2                              0 64513 65006 i
 *> 213.210.34.176/28
                     0.0.0.0                  1         32768 i
 nodnol-tun>
@@ -102,7 +140,7 @@ OUTPUT
 
     if ($cmd eq 'show ip bgp sum') {
 	return split "\n", <<OUTPUT;
-BGP router identifier 213.210.34.174, local AS number 65002
+BGP router identifier 213.210.34.174, local AS number 64512
 BGP table version is 35, main routing table version 35
 13 network entries and 13 paths using 1729 bytes of memory
 9 BGP path attribute entries using 540 bytes of memory
@@ -113,15 +151,15 @@ BGP table version is 35, main routing table version 35
 BGP activity 25/180 prefixes, 30/14 paths, scan interval 60 secs
 
 Neighbor        V    AS MsgRcvd MsgSent   TblVer  InQ OutQ Up/Down  State/PfxRcd
-10.2.0.37       4 65000    2744    2741       35    0    0 1d21h          10
+10.0.0.2       4 64513    2744    2741       35    0    0 1d21h          10
 nodnol-tun>
 OUTPUT
 }
 
     if ($cmd eq 'show ip bgp neighbors') {
 	return split "\n", <<OUTPUT;
-BGP neighbor is 10.2.0.37,  remote AS 65000, external link
- Description: NODNOL-SPLURBY
+BGP neighbor is 10.0.0.2,  remote AS 64513, external link
+ Description: SOMETEST-OTHERTEST
   BGP version 4, remote router ID 131.231.83.95
   BGP state = Established, up for 1d21h
   Last read 00:00:55, hold time is 180, keepalive interval is 60 seconds
@@ -140,8 +178,8 @@ BGP neighbor is 10.2.0.37,  remote AS 65000, external link
   Inbound soft reconfiguration allowed
   Inbound path policy configured
   Outbound path policy configured
-  Route map for incoming advertisements is 65000import
-  Route map for outgoing advertisements is 65000export
+  Route map for incoming advertisements is 64513import
+  Route map for outgoing advertisements is 64513export
   10 accepted prefixes consume 360 bytes
   Prefix advertised 2, suppressed 0, withdrawn 0
   1 denied but saved prefixes consume 36 bytes
@@ -157,8 +195,8 @@ BGP neighbor is 10.2.0.37,  remote AS 65000, external link
   Connections established 1; dropped 0
   Last reset never
 Connection state is ESTAB, I/O status: 1, unread input bytes: 0
-Local host: 10.2.0.38, Local port: 179
-Foreign host: 10.2.0.37, Foreign port: 3829
+Local host: 10.0.0.1, Local port: 179
+Foreign host: 10.0.0.2, Foreign port: 3829
 
 Enqueued packets for retransmit: 0, input: 0  mis-ordered: 0 (0 bytes)
 
@@ -189,8 +227,8 @@ OUTPUT
 
     if ($cmd =~ /show ip bgp neighbor (\d+\.\d+\.\d+\.\d+)/) {
 	return split "\n", <<OUTPUT;
-	BGP neighbor is 10.2.0.37,  remote AS 65000, external link
- Description: NODNOL-SPLURBY
+	BGP neighbor is 10.0.0.2,  remote AS 64513, external link
+ Description: SOMETEST-OTHERTEST
   BGP version 4, remote router ID 131.231.83.95
   BGP state = Established, up for 1d21h
   Last read 00:00:45, hold time is 180, keepalive interval is 60 seconds
@@ -209,8 +247,8 @@ OUTPUT
   Inbound soft reconfiguration allowed
   Inbound path policy configured
   Outbound path policy configured
-  Route map for incoming advertisements is 65000import
-  Route map for outgoing advertisements is 65000export
+  Route map for incoming advertisements is 64513import
+  Route map for outgoing advertisements is 64513export
   10 accepted prefixes consume 360 bytes
   Prefix advertised 2, suppressed 0, withdrawn 0
   1 denied but saved prefixes consume 36 bytes
@@ -226,8 +264,8 @@ OUTPUT
   Connections established 1; dropped 0
   Last reset never
 Connection state is ESTAB, I/O status: 1, unread input bytes: 0
-Local host: 10.2.0.38, Local port: 179
-Foreign host: 10.2.0.37, Foreign port: 3829
+Local host: 10.0.0.1, Local port: 179
+Foreign host: 10.0.0.2, Foreign port: 3829
 
 Enqueued packets for retransmit: 0, input: 0  mis-ordered: 0 (0 bytes)
 
@@ -259,9 +297,9 @@ OUTPUT
     if ($cmd =~ /sho ip prefix-list (.*)/) {
 	my $pl = $1;
 	
-	if ($pl eq '65000import') {
+	if ($pl eq '64513import') {
 	    return split "\n", <<OUTPUT;
-ip prefix-list 65000import: 23 entries
+ip prefix-list 64513import: 23 entries
    seq 5 permit 10.1.1.0/24
    seq 10 permit 10.2.0.0/24
    seq 15 permit 10.6.6.0/24
@@ -287,10 +325,10 @@ ip prefix-list 65000import: 23 entries
    seq 115 deny 0.0.0.0/0 le 32
 nodnol-tun>
 OUTPUT
-	} elsif ($pl eq '65000export') {
+	} elsif ($pl eq '64513export') {
 	    return split "\n", <<OUTPUT;
-sho ip prefix-list 65000export
-ip prefix-list 65000export: 3 entries
+sho ip prefix-list 64513export
+ip prefix-list 64513export: 3 entries
    seq 5 permit 192.168.74.0/24
    seq 10 permit 213.210.34.176/28
    seq 15 deny 0.0.0.0/0 le 32
@@ -453,12 +491,12 @@ Serial0 is administratively down, line protocol is down
 
 Tunnel0 is up, line protocol is up 
   Hardware is Tunnel
-  Internet address is 10.2.0.38/30
+  Internet address is 10.0.0.1/30
   MTU 1514 bytes, BW 9 Kbit, DLY 500000 usec, 
      reliability 255/255, txload 1/255, rxload 1/255
   Encapsulation TUNNEL, loopback not set
   Keepalive not set
-  Tunnel source 213.210.34.174 (Ethernet0), destination 131.231.83.95
+  Tunnel source 1.2.3.4 (Ethernet0), destination 1.4.3.2
   Tunnel protocol/transport IP/IP, key disabled, sequencing disabled
   Checksumming of packets disabled,  fast tunneling enabled
   Path MTU Discovery, ager 10 mins, MTU 0, expires never
