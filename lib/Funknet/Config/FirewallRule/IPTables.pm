@@ -119,7 +119,7 @@ sub _dst {
     
     my $dst_str = " ";
     if (defined $self->{_destination_address}) {
-	$dst_str .= "-s $self->{_destination_address} ";
+	$dst_str .= "-d $self->{_destination_address} ";
     }
     return $dst_str;
 }
