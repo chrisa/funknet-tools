@@ -13,6 +13,7 @@ my @done;
 my %nerd_autnum_objects;
 my %splurby_nerd_tunnels;
 my %as_names;
+my %endpoints;
 
 my $whois = Net::Whois::RIPE->new( 'whois.funknet.org');
 unless (defined $whois)
@@ -75,6 +76,32 @@ foreach my $thing (@lines)
 		$splurby_nerd_tunnels{$thing} = $tun;		
         }
 }
+
+foreach my $splurby_tun (keys(%splurby_nerd_tunnels))
+{
+	my @endpoints = $splurby_nerd_tunnels{$splurby_tun}->endpoint;
+	my @ass = $splurby_nerd_tunnels{$splurby_tun}->as;
+	my $ip;
+	my $other_as;
+	my $splurby_as='AS65000';
+        my ($as1,$as2) = @ass;
+	if ($as1 =~ /AS65000/m)
+	{ 
+		my $tmp = shift(@endpoints);
+		$ip = shift(@endpoints);
+		$other_as = $as2;
+		print STDERR "as1 matched\n";
+	}
+	elsif ($as2  =~ /AS65000/m)
+	{
+		$ip = shift(@endpoints);
+		$other_as = $as1;
+		print STDERR "as2 matched\n";
+	}
+	$endpoints{$other_as} = $ip;
+	print "$other_as:$ip\n";
+}
+
 open(FILE,">nerd_nerd_objects");
 print STDERR "bout to start big loop\n";
 foreach my $thing (@ass)
@@ -94,8 +121,8 @@ foreach my $thing (@ass)
 		my $tunnel_name = "$local_as_name-$remote_as_name";
 		print STDERR "$as_names{$thing} <-> $as_names{$twat}\n";
 		print STDERR "$tunnel_name\n";
-		my $local_endpoint = get_endpoint($local_as_name,$tunnel_name);
-		my $remote_endpoint = get_endpoint($remote_as_name,$tunnel_name);
+		my $remote_endpoint = $endpoints{$twat};
+		my $local_endpoint = $endpoints{$thing};
 
 		print FILE "tunnel: $tunnel_name\n";
 		print FILE "type: ipip\n";
@@ -103,10 +130,10 @@ foreach my $thing (@ass)
 		print FILE "as: $twat\n";
 		print FILE "address: \n";
 		print FILE "address: \n";
-#		print FILE "endpoint: $local_endpoint\n";
-#		print FILE "endpoint: $remote_endpoint\n";
-		print FILE "endpoint: \n";
-		print FILE "endpoint: \n";
+		print FILE "endpoint: $local_endpoint\n";
+		print FILE "endpoint: $remote_endpoint\n";
+#		print FILE "endpoint: \n";
+#		print FILE "endpoint: \n";
 		print FILE "admin-c: CA1-FUNKNET\n";
 		print FILE "tech-c: CA1-FUNKNET\n";
 		print FILE "mnt-by: FUNK-MNT\n";
