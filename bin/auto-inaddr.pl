@@ -43,9 +43,11 @@ Implement the auto-inaddr@funknet.org reverse delegation robot.
 
 =cut
 
-use Funknet::RevUpdate qw/ do_update /;
+use Funknet::RevUpdate qw/ do_update check_delegate /;
 
 my ($zone, @ns) = @ARGV;
+
+check_delegate($zone, @ns);
 
 print "updating zone $zone to nameservers: ", join ',',@ns;
 print "\n";

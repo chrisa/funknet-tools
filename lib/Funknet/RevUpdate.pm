@@ -31,6 +31,7 @@
 
 package Funknet::RevUpdate;
 use strict;
+use Data::Dumper;
 
 =head1 NAME
 
@@ -43,13 +44,51 @@ A reverse-dns update robot, after 'Marvin', the RIPE robot.
 =cut
 
 use Net::DNS;
-
 use vars qw/ @EXPORT_OK @ISA /;
 @EXPORT_OK = qw/ do_update /;
 @ISA = qw/ Exporter /;
 use Exporter; 
 
 my @auth_zones = qw/ 10.in-addr.arpa 16.172.in-addr.arpa 168.192.in-addr.arpa /;
+
+=head2 check_delegate
+
+The delegation check - we query the nameservers we're being asked to delegate
+to for the NS record for the domain we're trying to delegate, to avoid lameness.
+
+=cut
+
+sub check_delegate {
+
+    my ($rev_zone, @ns) = @_;
+
+    my $res = Net::DNS::Resolver->new;
+
+    for my $ns (@ns) {
+	$res->nameservers($ns);
+	my $query = $res->query($rev_zone, 'NS');
+	
+	my @results;
+	if ($query) {
+	    foreach $rr (grep { $_->type eq 'NS' } $query->answer) {
+		push @results, $rr->nsdname;
+	    }
+	} else {
+	    print STDERR "query failed: ", $res->errorstring, "\n";
+	} 
+
+	# the list @results should be the same as @ns. 
+
+	print Dumper { ns => \@ns, results => \@results };
+	
+}
+
+=head2 do_update
+
+Actually perform the ddns update. Assumes everything is good to go.
+
+=cut
+
 
 sub do_update {
     
