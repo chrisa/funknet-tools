@@ -79,15 +79,6 @@ sub diff {
 	return undef;
     }
     
-#     # see if we need to change the AS on the bgp-router first
-#     if (defined $host->local_as && $host->local_as != $whois->local_as) {
-# 	push @cmds, "no router bgp ".$host->local_as;
-# 	push @cmds, "router bgp ".$whois->local_as;
-#     } else {
-# 	# not sure of this logic, but will fix current bork -- doug
-# 	push @cmds, "router bgp ".$whois->local_as;
-#     }
-    
     # see what we need to do to the 'network' statements
     
     for my $r ( $whois->routes ) {
