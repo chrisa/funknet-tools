@@ -35,6 +35,8 @@ use IO::Socket::INET;
 use Data::Dumper;
 use Funknet::Whois::Object;
 
+our $cache;
+
 sub new {
     my ($class, $host, %args) = @_;
     my $self = bless {}, $class;
@@ -65,13 +67,22 @@ sub type {
    
 sub query {
     my ($self, $query) = @_;
-    
+
     my $query_string;
     if ($self->{_inverse}) {
-	$query_string = "-t $self->{_type} -i $self->{_inverse} $query";
-	$self->{_inverse} = '';
+	if (defined $cache->{$self->{_type}}->{$self->{_inverse}}->{$query}) {
+	    my @objects = @{ $cache->{$self->{_type}}->{$self->{_inverse}}->{$query} };
+	    return wantarray ? @objects : $objects[0];
+	} else {
+	    $query_string = "-t $self->{_type} -i $self->{_inverse} $query";
+	}
     } else {
-	$query_string = "-t $self->{_type} $query";
+	if (defined $cache->{$self->{_type}}->{$query}) {
+	    my @objects = @{ $cache->{$self->{_type}}->{$query} };
+	    return wantarray ? @objects : $objects[0];
+	} else {
+	    $query_string = "-t $self->{_type} $query";
+	}
     }
 
     $self->_connect();
@@ -79,6 +90,14 @@ sub query {
     print $s "$query_string\n";
     
     my @objects = $self->parse_result();
+
+    if ($self->{_inverse}) {
+	$cache->{$self->{_type}}->{$self->{_inverse}}->{$query} = [ @objects ];
+	$self->{_inverse} = '';
+    } else {
+	$cache->{$self->{_type}}->{$query} = [ @objects ];
+    }
+
     return wantarray ? @objects : $objects[0];
 }
 
