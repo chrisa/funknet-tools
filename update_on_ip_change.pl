@@ -112,14 +112,14 @@ foreach my $tunnel_object (@tunnel_objects)
                 $old_ip = shift(@endpoints);
                 my $tmp = shift(@endpoints);
                 $enc = shift(@encryptions);
-                $enc ? print "SECURE_TUNNEL $tmp\n" : print "TUNNEL $tmp\n";
+                $enc ? print "SECURE_TUNNEL $tmp\n" : print "PLAIN_TUNNEL $tmp\n";
         }
         elsif ($as2 eq $local_as)
         {
                 my $tmp = shift(@endpoints);
                 $old_ip = shift(@endpoints);
                 $enc = shift(@encryptions);
-                $enc ? print "SECURE_TUNNEL $tmp\n" : print "TUNNEL $tmp\n";
+                $enc ? print "SECURE_TUNNEL $tmp\n" : print "PLAIN_TUNNEL $tmp\n";
         }
 	else
 	{
