@@ -33,6 +33,7 @@ package Funknet::Tools::ObjectGenerator;
 use strict;
 use Funknet::Whois qw/ get_object get_object_inverse /;
 use Funknet::Whois::ObjectGenerator;
+use Funknet::Config::Validate qw/ is_ipv4 /;
 
 use Data::Dumper;
 
@@ -181,7 +182,14 @@ sub node_set {
 	error( "network is already taken" );
 	return undef;
     }
-    
+
+    # check the endpoint looks valid
+
+    unless (is_ipv4($args{endpoint}) {
+	error( "invalid ipv4 address: $args{endpoint}" );
+	return undef;
+    }
+
     # check the specified peers exist
     my $peers;
     for my $peer (@{$args{peers}}) {
