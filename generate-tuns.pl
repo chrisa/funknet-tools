@@ -39,3 +39,8 @@ for my $tun (@{$host_tun}) {
     print "\n";
 }
 print $host_bgp->config;
+
+print "====================================================\n";
+
+my @diff_cmds = $whois_bgp->diff($host_bgp);
+print join "\n", @diff_cmds;

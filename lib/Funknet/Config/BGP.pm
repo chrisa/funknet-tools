@@ -58,4 +58,42 @@ sub add_session {
     }
 }
 
+# accessors
+
+sub source {
+    my ($self) = @_;
+    return $self->{_source};
+}
+sub local_as {
+    my ($self) = @_;
+    return $self->{_local_as};
+}
+sub routes {
+    my ($self) = @_;
+    return wantarray?@{$self->{_routes}}:$self->{_routes};
+}
+sub route_set {
+    my ($self, $route) = @_;
+    unless (defined $self->{_route_hash}) {
+	for (@{$self->{_routes}}) {
+	    $self->{_route_hash}->{$_} = 1;
+	}
+    }
+    return 1
+	if defined $self->{_route_hash}->{$route};
+    return undef;
+}
+sub neighbors {
+    my ($self) = @_;
+    my @n = map { $self->{_neighbors}->{$_} } keys %{ $self->{_neighbors} };
+}
+sub neighbor_set {
+    my ($self, $neighbor) = @_;
+    return (defined $self->{_neighbors}->{$neighbor->remote_addr})?1:0;
+}
+sub neighbor {
+    my ($self, $n) = @_;
+    return $self->{_neighbors}->{$n->remote_addr};
+}
+
 1;
