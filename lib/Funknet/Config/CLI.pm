@@ -29,14 +29,12 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 # SUCH DAMAGE.
 
-
 package Funknet::Config::CLI;
 use strict;
 use Funknet::Config::CLI::Secrets;
 use Funknet::Config::CLI::Zebra;
 use Funknet::Config::CLI::IOS;
 use Funknet::Config::ConfigFile;
-use Net::Telnet;
 
 =head1 NAME
 
@@ -127,6 +125,13 @@ sub new {
 	$self->{_persist} = 1;
     }
 
+    # see if the caller requested Debug. if so, the trace from Net::Telnet will 
+    # show up on STDOUT.
+
+    if ($args{Debug}) {
+	$self->{_debug} = 1;
+    }
+
     # rebless into relevant class
 
     $l->{router} eq 'ios' and 
@@ -142,5 +147,26 @@ sub new {
     return $self;
 }
 
+=head2 exec_cmd
+
+Runs the specified command in user mode, and returns the text
+(supports looking-glass functions). Doesn't do any checking of the
+command itself, caller must do that.
+
+=cut
+
+use Data::Dumper;
+
+sub exec_cmd {
+    my ($self, $cmd) = @_;
+
+    $self->login;
+    my @output = $self->{t}->cmd($cmd);
+    $self->logout;
+
+    warn Dumper { output => \@output };
+
+    return wantarray ? @output : join '', @output;
+}
 
 1;

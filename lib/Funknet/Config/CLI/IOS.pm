@@ -32,6 +32,9 @@
 
 package Funknet::Config::CLI::IOS;
 use strict;
+
+use base qw/ Funknet::Config::CLI /;
+
 use Net::Telnet;
 use Network::IPv4Addr qw/ ipv4_network /;
 
@@ -345,7 +348,6 @@ sub get_as {
 sub exec_enable {
     my ($self, $cmdset) = @_;
     $self->login;
-    $self->{t}->input_log(\*STDOUT);
     $self->{t}->cmd('enable');
     $self->{t}->cmd($self->{_enable});
     for my $cmd ($cmdset->cmds) {
@@ -378,6 +380,9 @@ sub login {
 	my $r = $self->{t}->getline;
 	$self->{t}->cmd($self->{_password});
 	$self->{t}->cmd('terminal length 0');
+	if ($self->{_debug}) {
+	    $self->{t}->input_log(\*STDOUT);
+	}
     }
 }
 

@@ -48,13 +48,19 @@ use Funknet::Config::Validate qw/ is_ipv4 /;
 
 =head2 new
 
+Pass 'configfile => funknet.conf for the router you want to connect to'.
+
 =head2 sho_ip_bgp
+
+call with either an ipv4 address, an aspath regex or the empty string.
 
 =head2 sho_ip_bgp_sum
 
 =head2 sho_ver
 
 =cut
+
+our $cf;
 
 sub new {
     my ($class, %args) = @_;
@@ -63,8 +69,10 @@ sub new {
 	warn "can't access configfile: $args{configfile}";
 	return undef;
     }
-    my $cf = Funknet::Config::ConfigFile->new($args{configfile})
-      or return undef;    
+    unless (defined $cf) {
+	$cf = Funknet::Config::ConfigFile->new($args{configfile})
+	  or return undef;    
+    }
 
     my $self = bless {}, $class;
     $self->{_cli} = Funknet::Config::CLI->new();
@@ -88,7 +96,7 @@ sub sho_ip_bgp {
 	$string =~ /^[0-9\^\$_ ]$/ ||
 	$string eq '') {
 	
-	my $text = $self->{_cli}->cmd("sho ip bgp $string");
+	my $text = $self->{_cli}->exec_cmd("sho ip bgp $string");
 	return $text;
     } else {
 	warn "invalid string passed to sho_ip_bgp: $string";
@@ -98,16 +106,15 @@ sub sho_ip_bgp {
 sub sho_ip_bgp_sum {
     my ($self) = @_;
 
-    my $text = $self->{_cli}->cmd("sho ip bgp sum");
+    my $text = $self->{_cli}->exec_cmd("sho ip bgp sum");
     return $text;
 }
 
 sub sho_ver {
     my ($self) = @_;
 
-    my $text = $self->{_cli}->cmd("sho ver");
+    my $text = $self->{_cli}->exec_cmd("sho ver");
     return $text;
 }
 
-
-	
+1;

@@ -32,6 +32,9 @@
 
 package Funknet::Config::CLI::Zebra;
 use strict;
+
+use base qw/ Funknet::Config::CLI /;
+
 use Net::Telnet;
 use Data::Dumper;
 use Network::IPv4Addr qw/ ipv4_network /;
