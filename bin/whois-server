@@ -1,0 +1,8 @@
+#!/usr/bin/perl
+use strict;
+use Funknet::Whois::Server;
+
+my $s = new Funknet::Whois::Server("FUNKNET");
+my $num = $s->load("objects");
+$s->go;
+
