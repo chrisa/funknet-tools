@@ -47,7 +47,7 @@ Funknet::Config::ConfigFile
 
 =head1 SYNOPSIS
 
-  my $config = Funknet::Config::ConfigFile->new( $configfile )
+  my $config = Funknet::Config::ConfigFile->new( $configfile, $interact_yn )
 
 =head1 DESCRIPTION
 
@@ -61,6 +61,13 @@ An abstraction over a simple test config file. Syntax is:
 
 A repeated key causes the values to be added to the existing values
 rather than overwriting them.
+
+If you pass $interact_yn a true value and the file specified does not
+exist, then the user will be prompted for the standard funknet.conf
+params (see Interactive.pm).
+
+If you want to just create a funknet.conf, call new with the config
+file name, store some keys into it, then call write.
 
 =head1 METHODS
 
@@ -76,6 +83,10 @@ method. Multi-value key semantics: called in scalar context, returns
 the value, or the first value of a list. Called in list context,
 returns either the list or just the one value. Never returns a
 reference.
+
+AUTOLOADed methods take params, and set them in the config hash. If
+you pass one scalar value, it sets it. if you pass a list, it stores
+it as an arrayref, if you pass an arrayref it just stores that.
 
 =cut
 
@@ -231,12 +242,23 @@ sub error {
 }
 
 sub AUTOLOAD {
-    my ($self) = @_;
+    my ($self, @params) = @_;
     my $key = $AUTOLOAD;
     $key =~ s/Funknet::Config::ConfigFile:://;
 
     if (ref $self) {
 	$config = $self->{config};
+    }
+
+    # if we have params, set the key. 
+    if (ref $params[0] eq 'ARRAY') {
+	$config->{$key} = $params[0];
+    } elsif (defined $params[0] && defined $params[1]) {
+	$config->{$key} = [ @params ];
+    } elsif (defined $params[0]) {
+	$config->{$key} = $params[0];
+    } else {
+	# don't set anything
     }
 
     # default 'halt' to 1 
