@@ -125,7 +125,7 @@ sub diff {
 	}
     }
 
-    push @cmds, map { "clear ip bgp $_" }, @bounce_req;
+    push @cmds, map { "clear ip bgp $_" } @bounce_req;
     $bounce_all and push @cmds, 'clear ip bgp *';
 
     return @cmds;
