@@ -40,6 +40,7 @@ use vars qw/ $AUTOLOAD @ISA /;
 use Carp qw/ cluck /;
 use Funknet::Config::Validate qw / is_ipv4 is_ipv6 is_valid_as is_valid_router is_valid_os /;
 use Funknet::Debug;
+use Funknet::Config::Interactive;
 
 =head1 NAME
 
@@ -102,7 +103,6 @@ sub new {
     unless (-f $file) {
 	if ($interact) {
 	    # go interactive.
-	    require Funknet::Config::Interactive;
 	    my $fci = new Funknet::Config::Interactive;
 	    $config = $fci->get_config;
 	    $self->{config} = $config;
