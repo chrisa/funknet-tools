@@ -33,10 +33,9 @@ sub config {
 
 sub diff {
     my ($whois, $host) = @_;
-    my @cmds = ( "configure terminal" );
+    my (@bounce_req, $bounce_all, $bgp_req);
+    my @cmds;
 
-    my (@bounce_req, $bounce_all);
-    
     # first check we have the objects the right way around.
     unless ($whois->source eq 'whois' && $host->source eq 'host') {
 	warn "diff passed objects backwards";
@@ -46,8 +45,8 @@ sub diff {
     # see if we need to change the AS on the bgp-router first
     if (defined $host->local_as && $host->local_as != $whois->local_as) {
 	push @cmds, "no router bgp ".$host->local_as;
+	push @cmds, "router bgp ".$whois->local_as;
     }
-    push @cmds, "router bgp ".$whois->local_as;
     
     # see what we need to do to the 'network' statements
     
@@ -55,12 +54,14 @@ sub diff {
 	unless ($host->route_set($r) ) {
 	    push @cmds, "network "._prefix_to_mask($r);
 	    $bounce_all = 1;
+	    $bgp_req = 1;
 	}
     }
     for my $r ( $host->routes ) {
 	unless ($whois->route_set($r) ) {
 	    push @cmds, "no network "._prefix_to_mask($r);
 	    $bounce_all = 1;
+	    $bgp_req = 1;
 	}
     }
 
@@ -70,6 +71,7 @@ sub diff {
 	unless ($host->neighbor_set($n) ) {
 	    # not there; config from scratch.
 	    push @cmds, $n->config;
+	    $bgp_req = 1;
 	} else {
 	    # there already; make a diff (careful not to push undefs)
 	    my @neighbor_diff = $n->diff($host->neighbor($n));
@@ -77,6 +79,7 @@ sub diff {
 		if (defined $cmd) {
 		    push @cmds, $cmd;
 		    push @bounce_req, $n->remote_addr;
+		    $bgp_req = 1;
 		}
 	    }
 	}
@@ -85,12 +88,15 @@ sub diff {
 	unless ($whois->neighbor_set($n) ) {
 	    # not there; delete.
 	    push @cmds, "no neighbor ".$n->remote_addr;
+	    $bgp_req = 1;
 	}
     }
     
     # we're done with bgp, get back to configuration mode
-
-    push @cmds, 'exit';
+    
+    if ($bgp_req) {
+	push @cmds, 'exit';
+    }
 
     # iterate acls, do add/remove/change
 
@@ -147,17 +153,20 @@ sub diff {
     for my $n ( $host->neighbors ) {
 	unless ($whois->neighbor_set($n) ) {
 	    # not there; delete.
-	    defined $n->{_acl_in} && push @cmds, "no route-map ".$n->{acl_in}->name;
-	    defined $n->{_acl_in} && push @cmds, "no ip prefix-list ".$n->{acl_in}->name;
-	    defined $n->{_acl_out} && push @cmds, "no route-map ".$n->{acl_out}->name;
-	    defined $n->{_acl_out} && push @cmds, "no ip prefix-list ".$n->{acl_out}->name;
+	    defined $n->{_acl_in} && push @cmds, "no route-map ".$n->{_acl_in}->name;
+	    defined $n->{_acl_in} && push @cmds, "no ip prefix-list ".$n->{_acl_in}->name;
+	    defined $n->{_acl_out} && push @cmds, "no route-map ".$n->{_acl_out}->name;
+	    defined $n->{_acl_out} && push @cmds, "no ip prefix-list ".$n->{_acl_out}->name;
 	    push @bounce_req, $n->remote_addr;
 	}
     }
 
     # we're done in configuration mode, get back to enable.
     
-    push @cmds, 'exit';
+    if (scalar @cmds) {
+	unshift @cmds, 'configure terminal';
+	push @cmds, 'exit';
+    }
 
     # bounce the relevant bgp sessions (i.e. changed route-maps)
 
