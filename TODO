@@ -37,6 +37,9 @@
   endpoint addresses). Neighbor config needs to use the same logic
   here as tunnels do.
 
+* soft-reconfig -- this is applied to every neighbor, but the diff
+  code doesn't yet know how to use it.
+
 === Reverse Update robot
 
 * should check for existence of the domain object it gets sent. 
