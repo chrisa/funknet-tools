@@ -216,7 +216,8 @@ sub node_set {
 	return undef;
     }
 
-    # generate tunnels
+    # generate tunnels - reset Policy first
+    Funknet::Whois::Policy::reset_inums();
     
     my (@tun_names, @tun_inums, @tun_objs, @tun_as);
     for my $peer (@{$args{peers}}) {

@@ -99,6 +99,8 @@ i.e. "10.2.0.0 - 10.2.0.3".
 
 =cut
 
+our %assigned_inums;
+
 sub assign_tunnel_inetnum {
     my ($peer) = @_;
     unless ($peer =~ /^AS\d+$/) {
@@ -149,22 +151,30 @@ sub assign_tunnel_inetnum {
     my ($tun_start, $tun_end) = $sth->fetchrow_array;
     $sth->finish;
     
-    # return the /30 following this
-    
-    $tun_start += 4;
-    $tun_end += 4;
+    # return the /30 following this and any others
+    # allocated since reset
+
+    do {
+	$tun_start += 4;
+	$tun_end += 4;
+    } while (defined $assigned_inums{$tun_start});
+    $assigned_inums{$tun_start} = 1;
     
     if ($tun_start >= $alloc_start && $tun_end <= $alloc_end) {
 	my $start_ip = $dbh->int_to_ipv4($tun_start);
 	my $end_ip = $dbh->int_to_ipv4($tun_end);
-
-# XXX return an inetnum or a cidr network?
+	
+	# XXX return an inetnum or a cidr network?
 	my $tun_inum = "$start_ip/30";
         return $tun_inum;
     } else {
 	error("assignment full?");
 	return undef;
     }
+}
+
+sub reset_inums {
+    %assigned_inums = ();
 }
 
 sub error {
