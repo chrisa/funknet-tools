@@ -15,6 +15,10 @@ router. See the Perl dependencies in the DEPENDENCIES file.
 
 To try the code: 
 
+* if you don't have a router set up, use the -c switch which will
+  generate a config based only on the whois, not a diff based on whois
+  and router config.
+
 * copy funknet.conf.dist to funknet.conf and edit to taste. 
   -- *or* run config.pl, specifying a non-existent config file and 
      the -i switch, which will prompt you for the config params
