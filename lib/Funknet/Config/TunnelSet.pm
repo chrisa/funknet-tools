@@ -83,7 +83,10 @@ sub config {
     my ($self) = @_;
 
     my @cmds;
-    my $i = 0;
+
+    # tunl0 never works properly on linux
+    my $i = 1;
+
     for my $tun ($self->tunnels) {
         push @cmds, $tun->create($i);
 	$i++;
