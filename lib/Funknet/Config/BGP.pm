@@ -19,7 +19,9 @@ sub new {
 	warn "missing local_as";
 	return undef;
     } else {
-	$self->{_local_as} = $args{local_as};
+        my $asno = $args{local_as};
+        $asno =~ s/^AS//;
+	$self->{_local_as} = $asno;
     }
 
 #     unless (defined $args{local_os} && is_valid_os($args{local_os})) {
