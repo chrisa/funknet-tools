@@ -124,12 +124,13 @@ sub diff {
 	    push @cmds, $h->delete;
 	}
     }
-    my @ignore_if = Funknet::Config::ConfigFile->ignore_if;
+
+    my @ignore_if = (Funknet::Config::ConfigFile->ignore_if, map {$_->ifname} $host->tunnels);
 
     for my $w ($whois->tunnels) {
 	unless ($host_tuns->{$w->as_hashkey}) {
 	    my $if_sym = $w->ifsym;
-	    while((scalar(grep /$if_sym$if_num/,@ignore_if))>0 ) {
+	    while ( scalar( grep /$if_sym$if_num/, @ignore_if ) >0 ) {
 		$if_num++;
 	    }
 	    push @cmds, $w->create($if_num);
