@@ -38,7 +38,7 @@ $password = {
 };
 $enable   = { 
     '213.210.34.174' => 'funken',
-    '127.0.0.1'      => '',
+    '127.0.0.1'      => 'zebra',
 };
 
 sub username {
