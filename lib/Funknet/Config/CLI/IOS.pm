@@ -348,7 +348,7 @@ sub get_as {
 sub exec_enable {
     my ($self, $cmdset) = @_;
     $self->login;
-    $self->{t}->cmd('enable');
+    $self->{t}->print('enable');
     $self->{t}->cmd($self->{_enable});
     for my $cmd ($cmdset->cmds) {
 	for my $cmd_line (split /\n/, $cmd) {
