@@ -135,6 +135,8 @@ sub get_bgp {
 	}
 	if ($line =~ /^ Description: (.+)/ && $current_neighbor) {
 	    $neighbors->{$current_neighbor}->{description} = $1;
+	    # Zebra gives us a rogue space here.
+	    $neighbors->{$current_neighbor}->{description} =~ s/ //g;
 	}
     }
 
@@ -186,10 +188,10 @@ sub get_access_list {
     
     my ($acl_in, $acl_out);
     foreach my $line (@output) {
-	if ($line =~ /Route map for incoming advertisements is ([^\*]+)/) {
+	if ($line =~ /Route map for incoming advertisements is \*(.+)/) {
 	    $acl_in = $1;
 	}
-	if ($line =~ /Route map for outgoing advertisements is ([^\*]+)/) {
+	if ($line =~ /Route map for outgoing advertisements is \*(.+)/) {
 	    $acl_out = $1;
 	}
     }
