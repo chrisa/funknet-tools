@@ -91,6 +91,8 @@ sub load {
 
 	}
     }
+    close DATA;
+    
     my $num = scalar keys %{ $self->{_objects} };
     return $num;
 }
