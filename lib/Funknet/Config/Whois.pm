@@ -300,7 +300,6 @@ sub sessions {
 sub encryption {
     my ($self, $tun_set) = @_;
     my $w = $self->{_fwc};
-    my $l = Funknet::ConfigFile::Tools->local;
     $w->type('tunnel');
     my @local_enc;
 
@@ -313,27 +312,37 @@ sub encryption {
 
 	my @en = $whois_obj->encryption;
 	my @ep = $whois_obj->endpoint;
-
+	
 	my $encr;
-	if ($ep[0] eq $l->{endpoint}) {
+	if ($ep[0] eq $tun->local_endpoint()) {
 	    $encr = $en[0];
 	}
-	if ($ep[1] eq $l->{endpoint}) {
+	if ($ep[1] eq $tun->local_endpoint()) {
 	    $encr = $en[1];
 	}
 
 	if (defined $encr) {
 	    my ($type, $param);
-	    if ($encr =~ /^(PGPKEY-.*)/) {
+	    if ($encr =~ /^(X509CERT-.*)/) {
 		$param = $1;
-		$type = 'some crazy pgp encr scheme';
-	    } elsif ($encr =~ /^(X509CERT-.*)/) {
-		$param = $1;
-		$type = 'ipsec';
-	    } elsif ($encr =~ /^(SSHKEY-.*)/) {
-		$param = $1;
-		$type = 'openvpn';
+
+		if (ref $tun eq 'Funknet::Config::Tunnel::Linux') {
+		    $type = 'ipsec';
+		}
+		if (ref $tun eq 'Funknet::Config::Tunnel::BSD') {
+		    $type = 'ipsec';
+		}
+		if (ref $tun eq 'Funknet::Config::Tunnel::Solaris') {
+		    $type = 'ipsec';
+		}
+		if (ref $tun eq 'Funknet::Config::Tunnel::IOS') {
+		    $type = 'ipsec';
+		}
+		if (ref $tun eq 'Funknet::Config::Tunnel::OpenVPN') {
+		    $type = 'openvpn';
+		}
 	    }
+
 	    my $enc_obj = Funknet::Config::Encryption->new( tun    => $tun,
 							    type   => $type,
 							    param  => $param,

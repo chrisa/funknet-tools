@@ -39,11 +39,11 @@ package Funknet::Config::Encryption;
 use strict;
 use base qw/ Funknet::Config /;
 
-use Data::Dumper;
-
 use Funknet::Config::Validate qw/ is_valid_encryption /;
 use Funknet::Config::Encryption::IPSec;
 use Funknet::Config::Encryption::OpenVPN;
+use Funknet::KeyStash::Client;
+use Funknet::Config::SystemFile;
 
 =head2 new
 
@@ -143,6 +143,64 @@ sub apply {
     my ($self) = @_;
     $self->warn("generic Encryption apply method called...");
     return undef;
+}
+
+# this is used by Encryption types which need a key and cert 
+# (IPSec and OpenVPN)
+
+sub get_keycert {
+    my ($self, $param) = @_;
+
+    my $e = Funknet::ConfigFile::Tools->encryption;
+    my $k = Funknet::ConfigFile::Tools->keystash;
+    my $ks = Funknet::KeyStash::Client->new(%$k);
+    unless (defined $ks) {
+	$self->warn("Couldn't get a KeyStash::Client");
+	return undef;
+    }
+
+    # get values from whois and wherever, call $self->new( ... );
+    # this is IPSec, $param is a serial number of a cert in the whois. 
+
+    # get the cert. 
+    my $cert = $ks->get_cert($param);
+    if (!defined $cert) {
+	$self->warn("certificate not found: $param");
+	return undef;
+    }
+
+    my $text = $cert->rawtext;
+    if (!defined $text) {
+	$self->warn("using raw cert file contents");
+	$text = join '', @{ $cert->{_content} };
+    }
+    my $certfile = Funknet::Config::SystemFile->new(
+						    text => $text,
+						    path => "$e->{certpath}/$param",
+						   );
+
+    # get the private key that corresponds to this cert
+    ## use KeyStash
+
+    # the CN of the cert is in the owner field
+    my $cn = $cert->owner;
+    if (!defined $cn) {
+	$self->warn("using cert filename for key filename: $param");
+	$cn = $param;
+    }
+    my $key = $ks->get_key($cn);
+
+    if (!defined $key) {
+	$self->warn("key not found: $cn");
+	return undef;
+    }
+    my $keyfile = Funknet::Config::SystemFile->new(
+						   text => $key,
+						   path => "$e->{keypath}/$cn",
+						  );
+
+
+    return ($keyfile, $certfile);
 }
 
 1;

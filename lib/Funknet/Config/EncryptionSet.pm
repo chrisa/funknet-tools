@@ -82,12 +82,31 @@ sub encryptions {
 
 sub config {
     my ($self) = @_;
-    my @config;
+    my (@cmds, @files);
 
+    # ->create could return a SystemFile object or a 
+    # CommandSet object here, deal with either. 
     for my $enc ($self->encryptions) {
-	push @config, $enc->apply();
+	my @objs = $enc->apply();
+	for my $apply_obj (@objs) {
+	    if ($apply_obj->isa('Funknet::Config::SystemFile')) {
+		push @files, $apply_obj;
+	    } 
+	    if ($apply_obj->isa('Funknet::Config::CommandSet')) {
+		push @cmds, $apply_obj;
+	    } 
+	}
     }
-    return @config;
+
+    my $fileset = Funknet::Config::SystemFileSet->new(
+						      files => \@files,
+						     );
+
+    my $cs = Funknet::Config::ConfigSet->new(
+					     files => [ $fileset ],
+					     cmds  => \@cmds,
+					    );
+    return $cs;
 }
 
 sub source {

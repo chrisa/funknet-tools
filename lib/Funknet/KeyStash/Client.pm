@@ -69,20 +69,28 @@ sub new {
     my ($class, %args) = @_;
     my $self = bless {}, $class;
     
-    unless (defined $args{user} &&
-	    defined $args{pass} &&
-	    defined $args{host} &&
-	    defined $args{cert} &&
-	    defined $args{path} 
+    unless (defined $args{www_user} &&
+	    defined $args{www_pass} &&
+	    defined $args{www_host} &&
+	    defined $args{www_cert} &&
+	    defined $args{path} &&
+	    defined $args{whois_host} &&
+	    defined $args{whois_port} &&
+	    defined $args{whois_source}
 	   ) {
 	return undef;
     }
 
-    $self->{_user} = $args{user};
-    $self->{_pass} = $args{pass};
-    $self->{_host} = $args{host};
-    $self->{_cert} = $args{cert};
+    $self->{_www_user} = $args{www_user};
+    $self->{_www_pass} = $args{www_pass};
+    $self->{_www_host} = $args{www_host};
+    $self->{_wwW_cert} = $args{www_cert};
+
     $self->{_path} = $args{path};
+
+    $self->{_whois_host}   = $args{whois_host};
+    $self->{_whois_port}   = $args{whois_port};
+    $self->{_whois_source} = $args{whois_source};
     
     $self->{_ua} = new LWP::UserAgent;
     return $self;
@@ -108,7 +116,7 @@ sub get_key {
     
     # give up and retrieve the key from the server.
     my $uri_cn = uri_escape($cn);
-    my $uri = "http://$self->{_host}/keystash/$uri_cn";
+    my $uri = "http://$self->{_www_host}/keystash/$uri_cn";
     my $req = HTTP::Request->new('GET', $uri);
     my $res = $self->{_ua}->request($req);
 
@@ -145,13 +153,18 @@ sub get_cert {
     }
     
     # give up and retrieve the key from the server.
-    
-    my $cert = get_object($name);
+    my $fwc = Funknet::Whois::Client->new($self->{_whois_host}, 
+					  Port    => $self->{_whois_port},
+					  Timeout => 10);
+    $fwc->source($self->{_whois_source});
+    $fwc->type('key-cert');
+    my $cert = $fwc->query($name);
+
     if (!defined $cert) {
 	$self->warn("certificate not found: $name");
 	return undef;
     } else {
-	my $certtext = $cert->rawtext;
+	my $certtext = $cert->text;
 
 	# write a local copy
 	$self->_write_file('cert',$name,$certtext);

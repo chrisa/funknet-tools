@@ -39,6 +39,132 @@ package Funknet::Config::Encryption::OpenVPN;
 use strict;
 use base qw/ Funknet::Config::Encryption /;
 
+=head2 init
 
+Just some param checking and bless down into E::OpenVPN
+
+=cut
+
+sub init {
+    my ($self, %args) = @_;
+    my $l = Funknet::ConfigFile::Tools->local;
+
+    unless (defined $args{source} && ($args{source} eq 'whois' || $args{source} eq 'host')) {
+	$self->warn("encryption-openvpn: missing or invalid source");
+	return undef;
+    } else {
+	$self->{_source} = $args{source};
+    }
+    
+    unless (defined $args{certfile} && ref $args{certfile} eq 'Funknet::Config::SystemFile') {
+	$self->warn("encryption-openvpn: missing or invalid certfile");
+	return undef;
+    } else {
+	$self->{_certfile} = $args{certfile};
+    }
+    unless (defined $args{keyfile} && ref $args{keyfile} eq 'Funknet::Config::SystemFile') {
+	$self->warn("encryption-openvpn: missing or invalid keyfile");
+	return undef;
+    } else {
+	$self->{_keyfile} = $args{keyfile};
+    }
+
+    return $self;
+}
+
+=head2 whois_init
+
+This method, given a 'param' value from the tunnel's encryption: attribute in the whois,
+should fully populate the Encryption object by retrieving other values from the whois and 
+calling the generic Encryption class constructor.
+
+=cut
+
+sub whois_init {
+    my ($self, $tun, $param) = @_;
+    
+    # get key and cert SystemFile objects out of whois/keystash
+    my ($keyfile, $certfile) = $self->get_keycert($param);
+    
+    # rebless into specialised Encryption class.
+    bless $self, "Funknet::Config::Encryption::OpenVPN";
+    
+    # fire object back through init for checking 
+    return $self->init(
+		       source   => 'whois',
+		       keyfile  => $keyfile,
+		       certfile => $certfile,
+		      );
+}
+
+=head2 host_init
+
+
+=cut
+
+sub host_init {
+    my ($self, $tun, $param) = @_;
+    
+    # get the openvpn config file for this tunnel if it's there.
+    my $ovpn_file = $tun->tunnel_ovpn_file();
+    if (! -f $ovpn_file) {
+	return undef;
+    }
+    
+    unless (open CONF, $ovpn_file) {
+        $self->warn("couldn't open $ovpn_file: $!");
+	return undef;
+    }
+    my $ovpn_conf;
+    {
+	local $/ = undef;
+	$ovpn_conf = <CONF>;
+    }
+    
+    my $conf_data = _parse_openvpn_conf($ovpn_conf);
+    my ($keyfile_path, $certfile_path) = ($conf_data->{key}, $conf_data->{cert});
+
+    my $keyfile = Funknet::Config::SystemFile->new( path => $keyfile_path );
+    my $certfile = Funknet::Config::SystemFile->new( path => $certfile_path );
+
+    # rebless into specialised Encryption class.
+    bless $self, "Funknet::Config::Encryption::OpenVPN";
+    
+    # fire object back through init for checking and bless
+    return $self->init(
+		       source   => 'whois',
+		       keyfile  => $keyfile,
+		       certfile => $certfile,
+		      );
+}
+
+sub apply {
+    my ($self) = @_;
+
+    # get cert/key
+    my $cert = $self->{_certfile};
+    my $key  = $self->{_keyfile};
+
+    return ($cert, $key);
+}
+
+sub _parse_openvpn_conf {
+    my ($text) = @_;
+
+    my $config;
+    for my $line ( split /\n/, $text) {
+	
+	# skip blank lines; comments
+	next unless $line;
+	next if $line =~ /^#/;
+
+	my ($key, $val) = $line =~ m!^(\w+)\s+(.*)$!;
+	next unless ($key);
+	
+	$config->{$key} = $val;
+    }
+    
+    return $config;
+}
 
 1;

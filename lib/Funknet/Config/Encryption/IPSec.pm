@@ -42,9 +42,6 @@ use base qw/ Funknet::Config::Encryption /;
 use Funknet::Config::Encryption::IPSec::KAME;
 use Funknet::Config::Encryption::IPSec::Freeswan;
 use Funknet::Config::Validate qw/ :ipsec is_ipv4 is_valid_filepath /;
-use Funknet::KeyStash::Client;
-use Funknet::Config::SystemFile;
-
 
 =head2 whois_init
 
@@ -57,56 +54,10 @@ calling the generic Encryption class constructor.
 sub whois_init {
     my ($self, $tun, $param) = @_;
     my $e = Funknet::ConfigFile::Tools->encryption;
-    my $k = Funknet::ConfigFile::Tools->keystash;
-    my $ks = Funknet::KeyStash::Client->new(%$k);
-    unless (defined $ks) {
-	$self->warn("Couldn't get a KeyStash::Client");
-	return undef;
-    }
-
-    # get values from whois and wherever, call $self->new( ... );
-    # this is IPSec, $param is a serial number of a cert in the whois. 
-
-    # get the cert. 
-    my $cert = $ks->get_cert($param);
-    if (!defined $cert) {
-	$self->warn("certificate not found: $param");
-	return undef;
-    }
-
-    my $text = $cert->rawtext;
-    if (!defined $text) {
-	$self->warn("using raw cert file contents");
-	$text = join '', @{ $cert->{_content} };
-    }
-    my $certfile = Funknet::Config::SystemFile->new(
-						    text => $text,
-						    path => "$e->{certpath}/$param",
-						   );
-
-    # get the private key that corresponds to this cert
-    ## use KeyStash
-
-    # the CN of the cert is in the owner field
-    my $cn = $cert->owner;
-    if (defined $cn) {
-	$self->warn("cn: $cn");
-    } else {
-	$self->warn("using cert filename for key filename: $param");
-	$cn = $param;
-    }
-    my $key = $ks->get_key($cn);
-
-    if (!defined $key) {
-	$self->warn("key not found: $cn");
-	return undef;
-    }
-    my $keyfile = Funknet::Config::SystemFile->new(
-						   text => $key,
-						   path => "$e->{keypath}/$cn",
-						  );
-
-
+    
+    # get key and cert SystemFile objects.
+    my ($keyfile, $certfile) = $self->get_keycert($param);
+    
     # policy
     my $policy;
     my $tun_type = $tun->type;
@@ -119,7 +70,6 @@ sub whois_init {
 	$self->warn("couldn't establish ipsec policy for tunnel type $tun_type");
 	return undef;
     }
-	
 
     # rebless into specific class for type of ipsec 
 

@@ -163,13 +163,13 @@ sub create {
     $self->{_ovpn_port} = 5000 + $self->{_ovpn_inter};
     
     # generate a filename for our config file (from the whois)
-    my $ovpn_file = '/etc/openvpn/' . $self->{_name} . '.conf';    
+    $self->{_ovpn_file} = '/etc/openvpn/' . $self->{_name} . '.conf';    
     
     # get our config text
     my $ovpn_conf = _gen_openvpn_conf($self);
  
     my $ovpn_file = Funknet::Config::SystemFile->new( text => $ovpn_conf,
-						      path => $ovpn_file );
+						      path => $self->{_ovpn_file} );
 						      
     return $ovpn_file;
 }
@@ -191,6 +191,11 @@ sub tunnel_destination_port {
     my ($self) = @_;
     return $self->{_ovpn_port};
 }
+
+sub tunnel_opvn_file {
+    my ($self) = @_;
+    return $self->{_ovpn_file};
+}    
 
 sub _gen_openvpn_conf {
     my ($self) = @_;

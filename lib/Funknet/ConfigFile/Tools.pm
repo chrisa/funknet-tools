@@ -93,11 +93,16 @@ sub keystash {
 	$config = $self->get_config();
     }
     
-    return { user => $config->{ks_user},
-	     pass => $config->{ks_pass},
-	     host => $config->{ks_host},
-	     cert => $config->{ks_cert},
+    return { www_user => $config->{ks_www_user},
+	     www_pass => $config->{ks_www_pass},
+	     www_host => $config->{ks_www_host},
+	     www_cert => $config->{ks_www_cert},
+
 	     path => $config->{ks_path},
+
+	     whois_host   => $config->{ks_whois_host},
+	     whois_port   => $config->{ks_whois_port},
+	     whois_source => $config->{ks_whois_source},
 	   };
 }
     
