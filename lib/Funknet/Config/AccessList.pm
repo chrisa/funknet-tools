@@ -197,9 +197,10 @@ sub source {
 
 sub config {
     my ($self) = @_;
-    my $config = $self->{_acl_text}."!\n";
-    $config .= "route-map $self->{_name} permit 1\n" . 
-	       " match ip address prefix-list $self->{_name}\n!\n";
+    my @cmds;
+    push @cmds, $self->{_acl_text};
+    push @cmds, "route-map $self->{_name} permit 1", "match ip address prefix-list $self->{_name}";
+    return @cmds;
 }
 
 sub diff {
