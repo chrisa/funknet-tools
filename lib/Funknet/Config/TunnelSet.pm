@@ -33,6 +33,7 @@
 package Funknet::Config::TunnelSet;
 use strict;
 use base qw/ Funknet::Config /;
+use Data::Dumper;
 
 =head1 NAME
 
@@ -60,7 +61,7 @@ host's tunnel config to that specified in the whois.
 It should probably be possible to add Tunnels via a method, rather
 than all at once by passing the constructor a listref.
 
-The diff method should take note of the ignorelist for interfaces.
+If we destroy interfaces, we should probably reuse the numbering.
 
 =cut
 
@@ -95,8 +96,8 @@ sub source {
 
 sub diff {
     my ($whois, $host) = @_;
-    my (@cmds, $next_inter);
-    $next_inter = 0;
+    my (@cmds, $if_num);
+    $if_num = 0;
 
     # first check we have the objects the right way around.
     unless ($whois->source eq 'whois' && $host->source eq 'host') {
@@ -113,8 +114,8 @@ sub diff {
     for my $tun ($host->tunnels) {
 	$host_tuns->{$tun->as_hashkey} = 1;
 	# keep track of interface numbering
-	if ($tun->interface > $next_inter) {
-	    $next_inter = $tun->interface;
+	if ($tun->interface > $if_num) {
+	    $if_num = $tun->interface;
 	}
     }
 
@@ -124,22 +125,15 @@ sub diff {
 	}
     }
     my @ignore_if = Funknet::Config::ConfigFile->ignore_if;
-    my $local_os_type = Funknet::Config::ConfigFile->local_os;
 
     for my $w ($whois->tunnels) {
 	unless ($host_tuns->{$w->as_hashkey}) {
-
-	    my $tun_type = $w->type;
-	    if($local_os_type eq 'bsd' && $tun_type eq 'ipip') 
-	    {
-		$tun_type = 'gif';
+	    my $if_sym = $w->ifsym;
+	    while((scalar(grep /$if_sym$if_num/,@ignore_if))>0 ) {
+		$if_num++;
 	    }
-	    while((scalar(grep /$tun_type$next_inter/,@ignore_if))>0 )
-	    {
-		$next_inter++;
-	    }
-	    push @cmds, $w->create($next_inter);
-	    $next_inter++;
+	    push @cmds, $w->create($if_num);
+	    $if_num++;
 	}
     }
     return @cmds;
