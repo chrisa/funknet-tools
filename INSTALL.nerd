@@ -1,0 +1,103 @@
+# INSTALL_NOTES based on creation of katgate
+# should serve as pace notes for funknet-nerd deployment
+#
+# http://www.funknet.org
+#
+# note: katgate is a FreeBSD 4.7-STABLE machine
+#	installed with all distribution sets, freebsd ports,
+#	and the following port tree:
+#
+# http://zero.lemonia.org/cgi-bin/cvsweb.cgi/zero-lemon-ports
+#
+# the only really important task this tree provides is that of ensuring
+# versions and applied patches are correct, so you could just use that info
+#
+# this tree assumes you have ssh-keyed cvs access, so many of the scripts
+# in tools/ will fail, however, some minor edits should be enuff for here
+#
+# set PORTSDIR DISTDIR and (not importantly) PACKAGES to suit yerself
+cd PORTSDIR/../
+vi zero-lemon-ports/common/lemon.port.mk
+
+# >>>>WARNING<<<< to avoid adding some root/user ssh accounts, knock out
+# the lemon/sysadmin-* and lemon/user-* BUILD_DEPENDS lines...
+vi zero-lemon-ports/meta/server-tarball/Makefile
+
+# then:
+cd zero-lemon-ports/natd-firewall-tarball
+
+# edit Makefile so FUNKNET_ENABLE is enabled,
+# and SPEEDTOUCH_ENABLE if you have that modem, well any that use tun device,
+# (but you may have to get adsl.sh to fire up your own modem yourself)
+# and FUNKNET_GPGKEY if you are assigned a dyn-ip by yr ISP
+vi Makefile
+rootdo make install
+
+# create zebra files
+cd /usr/local/etc/zebra
+cp bgpd.conf.sample bgpd.conf
+cp zebra.conf.sample zebra.conf
+
+# edit zebra files for hostname, passwords, and vty restrictions
+vi bgpd.conf
+vi zebra.conf
+
+# important lines being: (BEGIN_EXAMPLE)
+!
+hostname blank
+password zebra
+enable password zebra
+!
+access-list term permit 127.0.0.1/32
+access-list term permit 10.2.0.0/24
+access-list term deny any
+!
+line vty
+!
+(END_EXAMPLE)
+
+# run daemons (add similar to boot chain when cool)
+zebra -d
+bgpd -d
+
+# checkout anoncvs.aldigital.co.uk-funknet-tools
+cd ~software/unpacked/
+cvs -d :ext:anoncvs.aldigital.co.uk:/home/cvsroot \
+	co anoncvs.aldigital.co.uk-funknet-tools
+
+# sent this mail, signed with my funknet-whois-db-registered key,
+# ( see http://www.funknet.org/doc/routing/whois.html ),
+# to auto-dbm@funknet.org : (BEGIN_MAIL)
+
+tunnel:       BLANK-KATGATE
+remarks:      endpoint is fiction
+type:         ipip
+as:           AS65023
+as:           AS65016
+address:      10.2.5.65
+address:      10.2.5.66
+endpoint:     213.129.72.23
+endpoint:     81.86.226.157
+admin-c:      DOUG-FUNKNET
+tech-c:       DOUG-FUNKNET
+mnt-by:       DOUG-MNT
+notify:       doug@netdotnet.net
+changed:      doug@lemonia.org
+source:       FUNKNET
+
+(END_MAIL)
+
+# configure funknet
+cd ~software/unpacked/anoncvs.aldigital.co.uk-funknet-tools/
+cp funknet.conf.dist funknet.conf-KATGATE
+vi funknet.conf-KATGATE
+
+# edit funknet.conf-KATGATE for AS etc, make sure root = runas
+# then test with:
+rootdo perl config.pl -a -f funknet.conf-KATGATE 
+
+# if cool:
+reboot
+
+# youre done, skin up.
+

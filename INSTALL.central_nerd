@@ -166,7 +166,8 @@ cd ~software/unpacked/anoncvs.aldigital.co.uk-funknet-tools/
 cp funknet.conf.dist funknet.conf-BLANK
 vi funknet.conf-BLANK
 
-# edit funknet.conf-BLANK for AS etc, then:
+# edit funknet.conf-BLANK for AS etc, make sure root = runas
+# then test with:
 rootdo perl config.pl -a -f funknet.conf-BLANK 
 
 # if joy, add to boot chain
