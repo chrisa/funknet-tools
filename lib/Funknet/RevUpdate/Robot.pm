@@ -48,6 +48,7 @@ package Funknet::RevUpdate::Robot;
 use strict;
 
 use PGP::Mail;
+use IPC::Open3;
 
 my @error;
 
@@ -120,10 +121,10 @@ sub process_header {
 	    }
 	}
 	elsif($l =~ /^from:\s+/i) {
-	    $self->{_fromline} = $l;
+	    $self->{_fromline} = _getemails($l);
 	}
 	elsif($l =~ /^reply-to:\s+/i) {
-	    $self->{_replytoline} = $l;
+	    $self->{_replytoline} = _getemails($l);
 	}
 	elsif($l =~ /^$/) {
 	    last;
@@ -168,20 +169,12 @@ sub reply_mail {
     my ($self, $text, %h) = @_;
     my $subject=defined($h{subject}) ? $h{subject} : "";
 
-    my @emails;
-
-    if($self->{_replytoline} && @{$self->{_replytoline}} && !@emails) {
-	@emails=@{$self->{_replytoline}};
-    }
-    elsif($self->{_fromline} && @{$self->{_fromline}} && !@emails) {
-	@emails=@{$self->{_fromline}};
-    }
-
-    if(!@emails) {
+    my $to = $self->{_replytoline} || $self->{_fromline};
+    unless ($to) {
 	return 0;
     }
 
-    my $pid;
+  my $pid;
     if($self->{_testing}) {
 	open(MAIL, ">&STDOUT");
     }
@@ -190,15 +183,16 @@ sub reply_mail {
 	    $pid=open3(\*MAIL, \*M_OUT, \*M_ERR,
 		$self->{_sendmail}, "-bm", "-oi", "-oem",
 		"-f", $self->{_envfrom},
-		@emails
+		$to
 		);
 	    };
+
 	return undef if $@;
     }
 
     # Print out the mail
     print MAIL _header("From", "Reverse Delegation Robot <" . $self->{_from} . ">");
-    print MAIL _header("To", @emails);
+    print MAIL _header("To", $to);
     print MAIL _header("Subject", $subject)
 	if(length $subject);
     print MAIL "\n";
@@ -288,6 +282,99 @@ Dennis
 MAILTEXT
 
     $self->reply_mail( $text, subject => "Reverse Delegation error" );
+    exit 0;
 }
+
+sub _header {
+    my $text=shift;
+
+    my $output=$text . ": ";
+
+    while(@_) {
+	$output .= shift();
+	if(@_) {
+	    $output .= ",";
+	    $output =~ /^([^\n]*)$/;
+	    if(length $1 > 50) {
+		$output .= "\n ";
+	    }
+	    else {
+		$output .= " ";
+	    }
+	}
+    }
+    return $output . "\n";
+}
+
+use vars qw(@DIM
+	    $DM_ATOM $DM
+	    $LP_ATOM
+	    $QTEXT $QP
+	    $QUOTED_LP
+	    $LP
+	    $CTEXT $CCONTENT $COMMENT
+	    $PHRASE
+	    $UKPC
+	    );
+
+
+# Local-parts of email addresses
+$LP_ATOM=qr/ (?: [a-zA-Z0-9!\x23\/\$%\&'*+=?^_`{}|~-]+ ) /x; #' 
+
+#     Quoted local-parts
+$QTEXT=qr/ (?: [\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]+ ) /x;
+$QP=qr/ (?: \\[\x01-\x09\x0b\x0c\x0e-\x7f] ) /x;
+$QUOTED_LP=qr/ (?: " (?: $QP | $QTEXT )* " ) /x;
+$CTEXT=qr/ (?: [\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x27\x2a-\x5b\x5d-\x7f] ) /x;
+$CCONTENT=qr/
+             (?:
+		 $CTEXT |
+		 $QP |
+		 \(\s* (?:
+		     $CTEXT |
+		     $QP |
+		     \(\s* (?:
+			 $CTEXT |
+			 $QP
+		     )
+		     \s*\)
+		 )
+		 \s*\)
+	     ) /x;
+$LP=qr/ (?: (?: $LP_ATOM (?: \.$LP_ATOM )* ) | $QUOTED_LP )/x;
+$DM_ATOM=qr/ (?: [a-z0-9] (?: [a-z0-9-]*[a-z0-9] )? ) /xi;
+$DM=qr/ (?: $DM_ATOM (?: \.$DM_ATOM )* \.?  ) /x;
+$COMMENT=qr/ (?: \s* \( (?: \s* $CCONTENT )* \s*\) \s* | \s* ) /x;
+$PHRASE=qr/ (?: $COMMENT* (?: (?: $LP_ATOM | $QUOTED_LP ) $COMMENT* )* ) /x;
+
+
+sub _getemails {
+    my $header = shift;
+
+    $header =~ s/^[^:]+:\s+//;
+    $header =~ s/\s*$//;
+
+    my @email=();
+    while(length $header) {
+	if($header =~
+	    s/^ $COMMENT* $PHRASE* < ($LP \@ $DM) > $COMMENT* (?:, (.*))?$/
+		defined $2 ? $2 : ""
+		/xe) {
+	    push(@email, $1);
+	}
+	elsif($header =~
+	    s/^ $COMMENT* ($LP \@ $DM) $COMMENT* (?:, (.*))?$/
+		defined $2 ? $2 : ""
+		/xe) {
+	    push(@email, $1);
+	}
+	else {
+	    # invalid header line
+	    return ();
+	}
+    }
+    return @email[0];
+}
+
 
 1;
