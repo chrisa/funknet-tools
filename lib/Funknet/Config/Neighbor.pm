@@ -73,7 +73,6 @@ sub diff {
 	push @cmds, $whois->config;
     }
 
-    my $bounce_req;
     unless ($whois->description eq $host->description) {
 	push @cmds, "neighbor ".$whois->remote_addr." description ".$whois->description;
     }
@@ -83,18 +82,15 @@ sub diff {
 	    # both exist, check they're the same
 	    unless ($whois->{_acl_in}->name eq $host->{_acl_in}->name) {
 		push @cmds, "neighbor ".$whois->remote_addr." route-map ".$whois->{_acl_in}->name." in";
-		$bounce_req = 1;
 	    }
 	} else {
 	    # nothing in host, but whois exists: add.
 	    push @cmds, "neighbor ".$whois->remote_addr." route-map ".$whois->{_acl_in}->name." in";
-	    $bounce_req = 1;
 	}
     } else {
 	if (defined $host->{_acl_in}) {
 	    # host has acl, but it's not in whois: delete
 	    push @cmds, "no neighbor ".$host->remote_addr." route-map ".$host->{_acl_in}->name." in";
-	    $bounce_req = 1;
 	}
     }
     
@@ -103,23 +99,18 @@ sub diff {
 	    # both exist, check they're the same
 	    unless ($whois->{_acl_out}->name eq $host->{_acl_out}->name) {
 		push @cmds, "neighbor ".$whois->remote_addr." route-map ".$whois->{_acl_out}->name." out";
-		$bounce_req = 1;
 	    }
 	} else {
 	    # nothing in host, but whois exists: add.
 	    push @cmds, "neighbor ".$whois->remote_addr." route-map ".$whois->{_acl_out}->name." out";
-	    $bounce_req = 1;
 	}
     } else {
 	if (defined $host->{_acl_out}) {
 	    # host has acl, but it's not in whois: delete
 	    push @cmds, "no neighbor ".$host->remote_addr." route-map ".$host->{_acl_out}->name." out";
-	    $bounce_req = 1;
 	}
     }
 
-    $bounce_req and push @cmds, "clear ip bgp ".$whois->remote_addr;
-    
     return @cmds;
 }
 

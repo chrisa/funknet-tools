@@ -33,9 +33,13 @@ sub config {
 }
     
 
+
+
 sub diff {
     my ($whois, $host) = @_;
     my @cmds;
+
+    my (@bounce_req, $bounce_all);
     
     # first check we have the objects the right way around.
     unless ($whois->source eq 'whois' && $host->source eq 'host') {
@@ -51,15 +55,17 @@ sub diff {
     
     # see what we need to do to the 'network' statements
     
-    for my $n ( $whois->routes ) {
-	unless ($host->route_set($n) ) {
-	    push @cmds, "network $n";
+    for my $r ( $whois->routes ) {
+	unless ($host->route_set($r) ) {
+	    push @cmds, "network $r";
 	}
+	$bounce_req = 1;
     }
-    for my $n ( $host->routes ) {
-	unless ($whois->route_set($n) ) {
-	    push @cmds, "no network $n";
+    for my $r ( $host->routes ) {
+	unless ($whois->route_set($r) ) {
+	    push @cmds, "no network $r";
 	}
+	$bounce_all = 1;
     }
 
     # iterate neighbors, do add/remove/change.
@@ -71,12 +77,13 @@ sub diff {
 	} else {
 	    # there already; make a diff.
 	    push @cmds, $n->diff($host->neighbor($n));
+	    push @bounce_req, $n->remote_addr;
 	}
     }
     for my $n ( $host->neighbors ) {
 	unless ($whois->neighbor_set($n) ) {
 	    # not there; delete.
-	    push @cmds, "no neighbor ".$n->remote_as;
+	    push @cmds, "no neighbor ".$n->remote_addr;
 	}
     }
 
@@ -109,6 +116,7 @@ sub diff {
 		push @cmds, $n->{_acl_out}->diff($h_n->{_acl_out});
 	    }
 	}
+	push @bounce_req, $n->remote_addr;
     }
     for my $n ( $host->neighbors ) {
 	unless ($whois->neighbor_set($n) ) {
@@ -117,8 +125,12 @@ sub diff {
 	    defined $n->{_acl_in} && push @cmds, "no ip prefix-list ".$n->{acl_in}->name;
 	    defined $n->{_acl_out} && push @cmds, "no route-map ".$n->{acl_out}->name;
 	    defined $n->{_acl_out} && push @cmds, "no ip prefix-list ".$n->{acl_out}->name;
+	    push @bounce_req, $n->remote_addr;
 	}
     }
+
+    push @cmds, map { "clear ip bgp $_" }, @bounce_req;
+    $bounce_all and push @cmds, 'clear ip bgp *';
 
     return @cmds;
 }
