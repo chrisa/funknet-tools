@@ -68,12 +68,12 @@ my $ip_info = inet_ntoa($addr);
 
 # if IP has changed, we need 1st to update the funknet.conf file
 # as other bits use it 
-#if ($config->local_endpoint ne $ip_info)
-#{
-#	print STDERR "best update the funknet.conf\n";
-#	$config->{local_endpoint} = $ip_info;
-#	$config->write();
-#}
+if ($config->local_endpoint ne $ip_info)
+{
+	print STDERR "best update the funknet.conf\n";
+	$config->local_endpoint($ip_info);
+	$config->write();
+}
 
 my $update_email = $config->update_email;
 my $key_id = $config->pgp_key_id;
