@@ -22,6 +22,24 @@ my $hosts;
 my $services;
 my $hosts_inside;
 my $hosts_outside;
+my $host_template = qq[
+        check_command           check_ping_remote
+        checks_enabled          1
+        max_check_attempts      5
+        notification_interval   30
+        notification_period     24x7
+        notification_options    d,u,r
+];
+my $service_template = qq[
+        check_command           check_ping_remote
+        max_check_attempts      5
+        check_period            24x7
+        normal_check_interval   15
+        retry_check_interval    1
+        notification_interval   30
+        notification_period     24x7
+        notification_options    w,c,r
+];
 
 my $whois = Net::Whois::RIPE->new( 'whois.funknet.org');
 unless (defined $whois)
@@ -91,54 +109,25 @@ define host{
         host_name               $as_name
         alias                   $as_num
         address                 $ip
-        check_command           check_ping_remote
-        checks_enabled          1
-        max_check_attempts      5
-        notification_interval           30
-        notification_period             24x7
-        notification_options            d,u,r
-        }
+        $host_template}
 define host{
         host_name               ${as_name}-funknet
         alias                   $as_num
         address                 $ip_addy
 	parents			$as_name
-        check_command           check_ping_remote
-        checks_enabled          1
-        max_check_attempts      5
-        notification_interval           30
-        notification_period             24x7
-        notification_options            d,u,r
-        }
-];
+        $host_template}];
+
 	$services .= qq[
 define service{
         host_name               $as_name
         service_description     $as_name ping_remote
-        check_command           check_ping_remote 
-        max_check_attempts      5
-        check_period            24x7
-        normal_check_interval   15
-        retry_check_interval    1
-        notification_interval   30
-        notification_period     24x7
-        notification_options    w,c,r
         contact_groups          funknet-outside
-        }
+        $service_template}
 define service{
         host_name               ${as_name}-funknet
         service_description     ${as_name}-funknet ping_remote
-        check_command           check_ping_remote 
-        max_check_attempts      5
-        check_period            24x7
-        normal_check_interval   15
-        retry_check_interval    1
-        notification_interval   30
-        notification_period     24x7
-        notification_options    w,c,r
         contact_groups          funknet-inside
-        }
-];
+        $service_template}];
 
 	$hosts_inside .= "${as_name}-funknet,";
 	$hosts_outside .= "$as_name,";
@@ -161,24 +150,136 @@ define hostgroup{
 }
 ];
 
-open(HOSTS,">hosts.cfg");
-print HOSTS qq[
-$hosts
-];
-close(HOSTS);
+my $contactgroups = qq[
+define contactgroup{
+        contactgroup_name       funknet-outside
+        alias                   funknet
+        members                 FUNKNET
+}
 
-open(SERVICES,">services.cfg");
-print SERVICES qq[
-$services
+define contactgroup{
+        contactgroup_name       funknet-inside
+        alias                   funknet
+        members                 FUNKNET
+}
 ];
-close(SERVICES);
 
-open(HOSTGROUPS,">hostgroups.cfg");
-print HOSTGROUPS qq[
-$hostgroups_inside
-$hostgroups_outside
+open(HOSTS,">hosts.cfg"); print HOSTS qq[$hosts]; close(HOSTS);
+open(SERVICES,">services.cfg"); print SERVICES qq[$services]; close(SERVICES);
+open(CONTACTGROUPS,">contactgroups.cfg"); print CONTACTGROUPS qq[$contactgroups]; close(CONTACTGROUPS);
+open(HOSTGROUPS,">hostgroups.cfg"); print HOSTGROUPS qq[$hostgroups_inside\n$hostgroups_outside]; close(HOSTS);
+
+# add conf for non-whois hosts, or exit if there is none
+
+opendir(DIR, "./nagios") || usage();
+my $d_ent;
+my @d_ents;
+while(defined($d_ent=readdir(DIR))) {
+    next if $d_ent eq ".";
+    next if $d_ent eq "..";
+    push(@d_ents, $d_ent);
+}
+closedir(DIR);
+
+foreach my $network (@d_ents) {
+    print STDERR ">>> $network\n";
+    my $host_names;
+
+    $contactgroups = qq[
+define contactgroup{
+        contactgroup_name       $network
+        alias                   $network network
+        members                 FUNKNET
+}
 ];
-close(HOSTS);
+
+    open(CONTACTGROUPS,">>contactgroups.cfg"); print CONTACTGROUPS qq[$contactgroups]; close(CONTACTGROUPS);
+
+    open(NAGIOSCONF,"<./nagios/$network") || usage();
+    $hosts = "";
+    $services = "";
+    while (<NAGIOSCONF>) {
+        chomp;
+        print STDERR "$_\n";
+        my ($host_name,$address,$parent) = split / /,$_;
+        (my $alias = $host_name) =~ s/\..*//;
+        $parent = $network unless defined($parent);
+    
+        $host_names .= "$host_name,";
+
+        $hosts .= qq[
+define host{
+        host_name               $host_name
+        alias                   $alias
+        address                 $address
+        parents                 $parent
+        $host_template}];
+    
+        $services .= qq[
+define service{
+        host_name               $host_name
+        service_description     $host_name ping_remote
+        contact_groups          $network
+        $service_template}];
+    
+    }
+
+    close(NAGIOSCONF);
+
+    $hostgroups_inside = qq[
+define hostgroup{
+        hostgroup_name          $network
+        alias                   $network network
+        contact_groups          $network
+        members                 $host_names
+}
+];
+
+    open(HOSTGROUPS,">>hostgroups.cfg"); print HOSTGROUPS qq[$hostgroups_inside]; close(HOSTS);
+    open(HOSTS,">>hosts.cfg"); print HOSTS qq[$hosts]; close(HOSTS);
+    open(SERVICES,">>services.cfg"); print SERVICES qq[$services]; close(SERVICES);
+    
+}
 
 exit 1;
 
+sub usage {
+    print STDERR qq[
+this script autogenerates nagios config files:
+
+	hosts.cfg
+	hostgroups.cfg
+	services.cfg
+	contactgroups.cfg
+
+...based on info in whois.funknet.org FUNKNET whois database used by funknet-tools.
+
+to monitor hosts on FUNKNET whith no whois data, ie, those hosts behind FUNKNET nerds,
+please create ./nagios/ in this directory and populate with files like this:
+
+# cat ./nagios/NETDOTNET-funknet
+consume.netdotnet.funknet.org 192.168.9.6
+dell.netdotnet.funknet.org 192.168.9.253
+naught.netdotnet.funknet.org 192.168.9.3
+null.netdotnet.funknet.org 192.168.10.2 naught.netdotnet.funknet.org
+atom.netdotnet.funknet.org 192.168.10.4 naught.netdotnet.funknet.org
+farst.netdotnet.funknet.org 192.168.10.5 naught.netdotnet.funknet.org
+prefect.netdotnet.funknet.org 192.168.10.6 naught.netdotnet.funknet.org
+#
+
+... the format being '<hostname> <ip_addr> [<parent>]
+where parent defaults to the FUNKNET nerd ( NETDOTNET-funknet )
+if not specified.
+
+the contact group created is network specific, with FUNKNET as the only member,
+this can be added to by editting the nagios contacts.cfg file
+(untouched by this script)
+
+to ditch this error message, either make use of ./nagios/ or,
+runme >/dev/null 2>&1
+
+:)
+
+];
+    exit 1;
+}
