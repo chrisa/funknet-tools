@@ -144,7 +144,7 @@ sub new {
 	  bless $self, 'Funknet::Config::CLI::Zebra::Vtysh';
     } else {
 	$l->{router} eq 'zebra' and 
-	  bless $self, 'Funknet::Config::CLI::Zebra::Zebra';
+	  bless $self, 'Funknet::Config::CLI::Zebra::Telnet';
     }
 
     # check we have the correct details or don't return the object.
