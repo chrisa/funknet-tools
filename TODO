@@ -1,5 +1,10 @@
 Known bugs:
 
+* There are a lot of places where we pass the static local_* values
+  around from the config file. This should be replaced with calls to
+  Funknet::Config::ConfigFile, at the point where the values are
+  actually needed.
+
 * diffing access-lists isn't done yet. this might turn out to be hard,
   or we might just replace the existing one with the whois one...
     -- changed - we now at least look to see if the access list
