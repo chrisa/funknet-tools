@@ -114,6 +114,7 @@ sub go {
 	# child
         $lh->stopio;
 
+      QUERY:
 	my $query = <$sh>;
 	unless (defined $query) {
 	    exit;
@@ -124,12 +125,12 @@ sub go {
 	print $sh "% See http://www.funknet.org for details\n\n";
 
 	# remove network line-ending
-	chop $query;
-	chomp $query;
+	$query =~ s/\n//g;
+	$query =~ s/\r//g;
 	
 	# sanitize query
 	if ($query =~ /^([A-Za-z0-9-. ]+)$/) {
-	    $query = $1;
+	    $query = " $1"; # space so we can see it's an option, below... 
 	    $self->_log("query: $query\n");
 	} else {
 	    $self->_log("evil query: $query\n");
@@ -140,47 +141,67 @@ sub go {
 	my $opts;
 		
 	# client version 
-	if ($query =~ s/-v ?([^ ]+)//i) {
+	if ($query =~ s/ -v ?([^ ]+)//i) {
 	    $opts->{client_version} = $1;
 	}
 
 	# source
-	if ($query =~ s/-s ?([^ ]+)//i) {
+	if ($query =~ s/ -s ?([^ ]+)//i) {
 	    $opts->{source} = $1;
 	}
 
 	# object type
-	if ($query =~ s/-t ?([^ ]+)//i) {
+	if ($query =~ s/ -t ?([^ ]+)//i) {
 	    $opts->{type} = $1;
 	}
 	
 	# inverse, origin
-	if ($query =~ s/-i ?([^ ]+)//i) {
+	if ($query =~ s/ -i ?([^ ]+)//i) {
 	    $opts->{inverse} = $1;
+	}
+
+	# persistent connection?
+	if ($query =~ s/ -k//) {
+	    $opts->{k} = 1;
+	}
+
+	# can't remember what these are.
+	if ($query =~ s/ -K//) {
+	    $opts->{K} = 1;
+	}
+	if ($query =~ s/ -r//i) {
+	    $opts->{r} = 1;
 	}
 
 	# trim query of spaces, now it has no options
 	# all spaces? or just at start/end?
 	$query =~ s/ //g;
 
+	#print STDERR Dumper { opts => $opts, query => $query };
+
 	# attempt to answer query
 	if (defined $opts->{type} && defined $self->{_objects}->{$opts->{type}}->{$query}) {
 
 	    print $sh $self->{_objects}->{$opts->{type}}->{$query};
-	    print $sh "\n";
-	    $self->_log("object:\n$self->{_objects}->{$opts->{type}}->{$query}\n");
+	    print $sh "\n\n";
+	    $self->_log("object found by name\n");
 	    
 	} elsif (defined $opts->{inverse} && $opts->{inverse} eq 'origin' && defined $self->{_index}->{origin}->{$query}) {
 	    
 	    for my $object (@{ $self->{_index}->{origin}->{$query} }) {
-		print $sh $object, "\n";
-		$self->_log("object:\n$object\n");
+		print $sh $object, "\n\n";
+		$self->_log("object found via inverse lookup\n");
 	    }
 	    
 	} else {
 
 	    print $sh "% No entries found in the selected source\n\n";
+	    $self->_log("*** no object found ***\n");
+	}
 
+	# hacktastic. must clean this up. 
+	if ($opts->{k} && $query) {
+	    goto QUERY;
 	}
 	
         exit;
