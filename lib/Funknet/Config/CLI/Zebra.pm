@@ -148,15 +148,31 @@ sub get_access_list {
     if ($args{dir} eq 'import') {
 	@output = $t->cmd("sho ip prefix-list $acl_in");
 	$acl->{_name} = $acl_in;
-	$acl->{_acl_text} = join "\n",@output;
+	$acl->{_acl_text} = _to_text(@output);
     }
     if ($args{dir} eq 'export') {
 	@output = $t->cmd("sho ip prefix-list $acl_out");
 	$acl->{_name} = $acl_out;
-	$acl->{_acl_text} = join "\n",@output;
+	$acl->{_acl_text} = _to_text(@output);
     }
     return $acl;
 
+}
+
+sub _to_text {
+    my @lines = @_;
+    my ($text,$name);
+
+    for my $line (@lines) {
+	if ($line =~ /ip\s+prefix-list\s+([A-Za-z0-9-]+):\s+(\d+)\s+entr/) {
+	    $name = $1;
+	} 
+	if ($name && $line =~ /\s+seq\s\d+\s(.*)$/) {
+	    my $rule = $1;
+	    $text .= "ip prefix-list $name $rule";
+	}
+    }
+    return $text;
 }
 
 sub check_login {
