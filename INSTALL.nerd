@@ -119,6 +119,19 @@ source:       FUNKNET
 
 (END_MAIL)
 
+# and then update blank's (central nerd) tunnel info,
+# chances are, you dont have auth on the central node, but if you do,
+# this can be retrieved with:
+whois3 -h whois.funknet.org AS65023
+
+# ...then add the following lines in the relavent sections:
+import:       from AS65016 action pref=100; accept AS65016
+export:       to AS65016 announce AS-FUNKTRANSIT
+tun:          BLANK-KATGATE
+
+# ...sign and send to auto-dbm@funknet.org
+# otherwise, you will have to ask the central nerd maintainer to do it.
+
 # note in the fully meshed case, you will need to do likewise for all tunnels
 # you want to form, otherwise in the dynamic case, the funknet users whois db
 # mails will fail, and the other nodes will not pick up the change in ip.
