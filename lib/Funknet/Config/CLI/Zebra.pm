@@ -315,6 +315,7 @@ sub exec_enable {
             select(undef,undef,undef,0.2);
         }
     }
+    $t->cmd('write file');
     $t->cmd('disable');
     $t->close;
 }
