@@ -52,7 +52,8 @@ sub text {
     
     my $text = $self->SUPER::text;
 
-    my (@lines, $maxkey = 0);
+    my @lines;
+    my $maxkey = 0;
     for my $line (split /\n/, $text) {
 	my ($key, $val) = $line =~ /(.+): (.+)/;
 	push @lines, { key => $key, val => $val };
