@@ -177,6 +177,10 @@ if ($opt{a}) {
     $bgp->apply;
     debug("Generating Tunnel config");
     $tun->apply;
+    if ($opt{r}) {
+	debug("Generating Firewall config");
+	$fwall->apply;
+    }
     if ($opt{e}) {
 	debug("Generating Encryption config");
 	$enc->apply;
