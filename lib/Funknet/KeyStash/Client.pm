@@ -128,6 +128,7 @@ sub get_key {
 
 	return $key;
     } else {
+	$self->warn("https get failed for $cn");
 	return undef;
     }
 }

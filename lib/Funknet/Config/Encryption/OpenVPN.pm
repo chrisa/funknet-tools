@@ -143,10 +143,15 @@ sub host_init {
 
 sub tun_data {
     my ($self) = @_;
-    return {
-	    keyfile_path  => $self->{_keyfile}->path(),
-	    certfile_path => $self->{_certfile}->path(),
-	   };
+    if (defined $self->{_keyfile} &&
+	defined $self->{_certfile}) {
+	
+	return {
+		keyfile_path  => $self->{_keyfile}->path(),
+		certfile_path => $self->{_certfile}->path(),
+	       };
+    }
+    return undef;
 }
 
 sub apply {

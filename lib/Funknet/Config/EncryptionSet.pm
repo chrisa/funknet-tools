@@ -89,6 +89,7 @@ sub config {
     for my $enc ($self->encryptions) {
 	my @objs = $enc->apply();
 	for my $apply_obj (@objs) {
+	    next unless defined $apply_obj;
 	    if ($apply_obj->isa('Funknet::Config::SystemFile')) {
 		push @files, $apply_obj;
 	    } 
