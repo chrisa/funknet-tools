@@ -4,7 +4,7 @@ use Getopt::Std;
 use Funknet::Whois::Server;
 use Funknet::ConfigFile::Whois;
 
-use vars qw/ $s /;
+use vars qw/ $s $pidfile /;
 
 my %opt;
 getopts('f:', \%opt);
@@ -20,15 +20,42 @@ unless (-f $opt{f}) {
 
 my $config = new Funknet::ConfigFile::Whois($opt{f});
 
-$s = new Funknet::Whois::Server($config->whois_source, $config->objects_file, 1);
-my $num = $s->load();
-
 $SIG{HUP} = \&main::reload;
 sub reload {
     $Funknet::Whois::Server::reload = 1;
     $SIG{HUP} = \&main::reload;
 }	
 
+$SIG{INT}  = \&main::cleanup;
+$SIG{TERM} = \&main::cleanup;
+sub cleanup {
+    unlink $pidfile;
+    exit 0;
+}
+
+$pidfile = '/var/run/whois-server-'.($config->whois_source()).'.pid';
+if (-f $pidfile) {
+    open PID, "$pidfile"
+      or die "can't open pidfile $pidfile: $!";
+    my $pid = <PID>;
+    close PID;
+    
+    if (-d "/proc/$pid") {
+	print STDERR 'whois-server for source '.($config->whois_source())." already running with pid $pid\n";
+	exit 1;
+    } else {
+	unlink $pidfile;
+	print STDERR "stale pidfile with pid $pid removed\n";
+    }
+}
+
+open PID, ">$pidfile"
+  or die "can't write to pidfile $pidfile: $!";
+print PID "$$";
+close PID;
+
+$s = new Funknet::Whois::Server($config->whois_source, $config->objects_file, 1);
+$s->load();
 $s->start($config->listen_address(), $config->listen_port());
 $s->go();
 
