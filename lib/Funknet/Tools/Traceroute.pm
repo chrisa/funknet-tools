@@ -59,7 +59,7 @@ not be such a great idea.
 
 =cut
 
-use Funknet::Config::ConfigFile;
+use Funknet::ConfigFile::Tools;
 use Funknet::Config::CLI;
 use Funknet::Config::Validate qw/ is_ipv4 /;
 
@@ -86,7 +86,7 @@ sub traceroute {
 
     # must init ConfigFile first
     unless (defined $cf) {
-	$cf = Funknet::Config::ConfigFile->new('/home/funknet/funknet-tools/funknet.conf-MUNKY');
+	$cf = Funknet::ConfigFile::Tools->new('/home/funknet/funknet-tools/funknet.conf-MUNKY');
     }
     my $cli = Funknet::Config::CLI->new()
       or return undef;

@@ -40,7 +40,7 @@ in this tree for Ping and Traceroute.
 
 =cut
 
-use Funknet::Config::ConfigFile;
+use Funknet::ConfigFile::Tools;
 use Funknet::Config::CLI;
 use Funknet::Config::Validate qw/ is_ipv4 /;
 
@@ -70,7 +70,7 @@ sub new {
 	return undef;
     }
     unless (defined $cf) {
-	$cf = Funknet::Config::ConfigFile->new($args{configfile})
+	$cf = Funknet::ConfigFile::Tools->new($args{configfile})
 	  or return undef;    
     }
 
