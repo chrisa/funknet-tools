@@ -84,7 +84,18 @@ changed:
 source:
 ';
 
-
+$t->{'key-cert'} = '
+key-cert:
+method:
+owner:
+fingerpr:
+certif:
+remarks:
+notify:
+mnt-by:
+changed:
+source:
+';
 
 
 1;

@@ -221,6 +221,7 @@ use Funknet::Config::Validate qw/ is_ipv4 is_valid_as / ;
 use Funknet::Whois qw / get_object parse_object /;
 use Funknet::Whois::Templates qw / tmpl /;
 use Net::Whois::RIPE;
+use Data::Dumper;
 
 sub new {
     my ($class, %args) = @_;
@@ -275,7 +276,44 @@ sub mntner {
     }
 }
 
+sub key_cert {
+    my ($self, %args) = @_;
+    if (defined $args{name} &&
+	defined $args{certif}) {
 
+	if ($args{certif} =~ /\n/) {
+	    my @lines =  split /\n/, $args{certif};
+	    $args{certif} = [ @lines ];
+	}
+
+	# create a key-cert.
+
+	my $k = parse_object(tmpl('key-cert'));
+
+	$k->key_cert($args{name});
+	$k->certif  ($args{certif});
+	$k->changed ($args{e_mail});
+	$k->source ($self->{source});
+
+	return $k;
+	
+    } elsif (defined $args{name} &&
+	     defined $args{mntner}) {
+	
+	# go and get the old object and modify the 
+	# maintainer. if it doesn't exist, return undef.
+
+	my $k = get_object('key-cert', $args{name})
+	  or return undef;
+
+	$k->mnt_by($args{mntner});
+	return $k;
+	
+    } else {
+	
+	return undef;
+    }
+}
 
 sub person {
     my ($self, %args) = @_;
