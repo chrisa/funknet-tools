@@ -130,7 +130,7 @@ sub diff {
     else {
 
 	# first check we have the objects the right way around.
-	unless ($whois->source eq 'whois' && (( ! defined($host)) || $host->source eq 'host')) {
+	unless ($whois->source eq 'whois' && $host->source eq 'host') {
 	    $whois->warn("diff passed objects backwards");
 	    return undef;
 	}    

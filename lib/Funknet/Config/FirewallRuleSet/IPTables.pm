@@ -54,7 +54,7 @@ so. Currently we just dump the information in an arbitrary format.
 =head2 local_firewall_rules
 
 Returns a FirewallRuleSet::IPTables object representing the current
-configuration of the host
+configuration of the host, or undef if the chain doesn't exist
 
 =cut
 
