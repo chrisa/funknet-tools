@@ -8,6 +8,9 @@
 # Replace the username and password with your local router username and password  
 # Replace the AS number with your AS number
 
+# rtconfig_path is mandatory
+
+rtconfig_path = /usr/local/bin/RtConfig
  
 # local_as/router/os/host are mandatory
 
