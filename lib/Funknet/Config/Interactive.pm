@@ -63,9 +63,10 @@ sub new {
 	require Term::Interact;
     };
     unless ($@) {
-	$self->{interact_p} = 1;
+	return $self;
+    } else {
+	return undef;
     }
-    return $self;
 }
 
 =head2 get_config
