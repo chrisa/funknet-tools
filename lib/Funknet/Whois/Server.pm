@@ -112,14 +112,14 @@ sub go {
 	# child
         $lh->stopio;
 
-	# banner
-	print $sh "% This is a FUNKNET Whois Server\n";
-	print $sh "% See http://www.funknet.org for details\n\n";
-
 	my $query = <$sh>;
 	unless (defined $query) {
 	    exit;
 	}
+
+	# banner
+	print $sh "% This is a FUNKNET Whois Server\n";
+	print $sh "% See http://www.funknet.org for details\n\n";
 
 	# remove network line-ending
 	chop $query;
