@@ -113,6 +113,24 @@ sub new {
     return $self;
 }
 
+sub my_tunnels {
+    my ($self) = @_;
+    my $w = $self->{_net_whois_ripe};
+    my $l = Funknet::Config::ConfigFile->local;
+    $w->type('aut-num');
+    my $as = $w->query($l->{as});
+    
+    my @local_tuns;
+
+    foreach my $tun_name ($as->tun)
+    {
+        $w->type('tunnel');
+        my $tun = $w->query($tun_name);
+        push (@local_tuns, $tun);
+    }
+    return(@local_tuns);
+}
+
 sub tunnels {
     my ($self) = @_;
     my $w = $self->{_net_whois_ripe};
