@@ -451,7 +451,12 @@ sub inetnum {
 	
 	my $m = parse_object(tmpl('inetnum'));
 
-	$m->inetnum(cidr_to_inetnum($args{network}));
+	my $inetnum = cidr_to_inetnum($args{network});
+	unless (defined $inetnum) {
+	    error("cidr_to_inetnum failed");
+	    return undef;
+	}
+	$m->inetnum($inetnum);
 	$m->netname($args{name});
 	$m->descr($args{descr});
 
@@ -564,8 +569,16 @@ sub route {
 sub cidr_to_inetnum {
     my ($cidr) = @_;
 
-    my ($lo) = ipv4_network($cidr);
-    my ($hi) = ipv4_broadcast($cidr);
+    my ($hi, $lo);
+    eval {
+	($lo) = ipv4_network($cidr);
+	($hi) = ipv4_broadcast($cidr);
+    };
+    if ($@) {
+	error($@);
+	return undef;
+    }
+      
 
     return "$lo - $hi";
 }
