@@ -31,7 +31,7 @@
 
 package Funknet::Tools::ObjectGenerator;
 use strict;
-use Funknet::Whois qw/ get_object /;
+use Funknet::Whois qw/ get_object get_object_inverse /;
 use Funknet::Whois::ObjectGenerator;
 
 use Data::Dumper;
@@ -205,7 +205,7 @@ sub node_set {
 	my $t_inetnum = $gen->inetnum_assign( 'name' => $n,
 					      'peer' => $peer );
 	
-	my $rtr = get_object('inet-rtr', 'local-as', $peer);
+	my $rtr = get_object_inverse('inet-rtr', 'local-as', $peer);
 	unless (defined $rtr) {
 	    error( "inet-rtr for $peer doesn't exist" );
 	    return undef;
@@ -215,7 +215,7 @@ sub node_set {
 	
 	my $t = $gen->tunnel( 'name'    =>  $args{nodename}.'-'.$peers->{$peer}->as_name,
 			      'as'      => [$peers->{$peer}->aut_num,$ns->{as}->aut_num],
-			      'endpoint'      => [$args{endpoint},$ifaddr],
+			      'endpoint'      => [$ifaddr, $args{endpoint}],
 			      'address'    => ['',''],
 			      'type'    => 'ipip',
 			    );
