@@ -187,12 +187,24 @@ rootdo perl config.pl -a -f funknet.conf-BLANK
 cat - >> /etc/tunnelup.sh << EOF
 #!/bin/sh
 
+if [ -f /var/run/tunnelup.pid ]; then
+	exit 1;
+fi
+
+echo $$ > /var/run/tunnelup.pid
+
+(
 # funknet
 # FIXME when funknet-tools gets a lemon-port
 (
 cd /home/software/unpacked/anoncvs.aldigital.co.uk-funknet-tools
-perl config.pl -a -f funknet.conf-BLANK 
+perl config.pl -a -f funknet.conf-BLANK
 )
+
+rm /var/run/tunnelup.pid
+
+) &
+
 EOF
 
 # add to boot chain
