@@ -28,30 +28,17 @@ want to access a router on '127.0.0.1'.
 
 =cut
 
-$username = { 
-    '213.210.34.174' => '',
-    '127.0.0.1'      => '',
-};
-$password = { 
-    '213.210.34.174' => 'funknet',
-    '127.0.0.1'      => 'zebra',
-};
-$enable   = { 
-    '213.210.34.174' => 'funken',
-    '127.0.0.1'      => 'zebra',
-};
-
 sub username {
-    my ($class, $host) = @_;
-    return $username->{$host};
+    my ($class) = @_;
+    return Funknet::Config::ConfigFile->username;
 }
 sub password {
-    my ($class, $host) = @_;
-    return $password->{$host};
+    my ($class) = @_;
+    return Funknet::Config::ConfigFile->password;
 }
 sub enable {
-    my ($class, $host) = @_;
-    return $enable->{$host};
+    my ($class) = @_;
+    return Funknet::Config::ConfigFile->enable;
 }
 
 

@@ -1,0 +1,25 @@
+# funknet.conf
+# 
+# local_as/router/os/host are mandatory
+
+local_as       = AS64512
+local_router   = ios
+local_os       = ios
+local_host     = x.x.x.x
+local_endpoint = y.y.y.y
+
+# optional:
+
+ignore_if =
+ignore_neighbor = 
+root = sudo
+
+# print warnings as they're generated
+
+warnings = 1
+
+# authentication
+
+username = yourusernameornothing
+password = yourpassword
+enable = yourenablepassword
