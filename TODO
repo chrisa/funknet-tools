@@ -8,6 +8,8 @@ Known bugs:
     -- and that data structure is Net::ACL. You'll create access-
        list objects with Net::ACL::RtConfig, or maybe Net::ACL::
        RtConfig::SOAP.
+    -- except that Net::ACL suxx0rs. We'll need to build a model under 
+       Funknet::Config::AccessList::, but based on Net::ACL. 
 
 * Privilege in general needs thinking about - the program only needs
   root to alter tunnels. Is userv portable enough? Secrets.pm should
@@ -23,3 +25,11 @@ Known bugs:
 
 * some network statements in the BGP configs aren't visible in 
   'sho ip bgp', so we miss them. 
+
+* add methods in Funknet::Config to provide access to configs other
+  than as a diff -- both current Host config and proposed Whois
+  config.
+
+* tests!
+
+* this persistent tunnel config malarkey
