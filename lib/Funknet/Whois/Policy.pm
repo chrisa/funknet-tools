@@ -81,9 +81,6 @@ sub assign_as {
 	return undef;
     }
     my ($as) = $sth->fetchrow_array;
-
-print STDERR "as from sql: $as\n";
-
     $sth->finish;
     
     return 'AS'.($as + 1);    
@@ -114,17 +111,10 @@ sub assign_tunnel_inetnum {
     my $tspace = get_object( 'inetnum', $netname );
     my $inum = $tspace->inetnum;
 
-print STDERR "inum: $inum\n";
-
     my $dbh = new Funknet::Whois::DirectMysql;
 	
     my ($alloc_start, $alloc_end);
     if ($inum =~ /(.*) - (.*)/) {
-
-print STDERR "1 $1 2 $2\n";
-print STDERR $dbh->ipv4_to_int($1);
-print STDERR $dbh->ipv4_to_int($2);
-
 	($alloc_start, $alloc_end) = ($dbh->ipv4_to_int($1), $dbh->ipv4_to_int($2));
     } else {
 	warn "inetnum didn't parse";
@@ -139,8 +129,6 @@ print STDERR $dbh->ipv4_to_int($2);
              ORDER BY end_in DESC
                 LIMIT 1";
 
-print STDERR "as: $alloc_start ae: $alloc_end\n";
-
     my $sth = $dbh->prepare($sql);
     my $rv = $sth->execute($alloc_start, $alloc_end);
     unless ($rv) {
@@ -150,14 +138,10 @@ print STDERR "as: $alloc_start ae: $alloc_end\n";
     my ($tun_start, $tun_end) = $sth->fetchrow_array;
     $sth->finish;
     
-print STDERR "s: $tun_start e: $tun_end\n";
-
-    # return the 30 following this
+    # return the /30 following this
     
     $tun_start += 4;
     $tun_end += 4;
-
-print STDERR "new: s $tun_start e $tun_end\n";
     
     if ($tun_start >= $alloc_start && $tun_end <= $alloc_end) {
 	my $start_ip = $dbh->int_to_ipv4($tun_start);
@@ -165,7 +149,6 @@ print STDERR "new: s $tun_start e $tun_end\n";
 
 # XXX return an inetnum or a cidr network?
 	my $tun_inum = "$start_ip/30";
-print STDERR "tun_inum: $tun_inum\n";
         return $tun_inum;
     } else {
 	warn "assignment full?";

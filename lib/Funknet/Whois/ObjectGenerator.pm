@@ -502,9 +502,6 @@ sub route {
 	return undef;
     }
 
-    print STDERR "in route, args: \n";
-    print STDERR Dumper \%args;
-
     if (defined $args{descr} &&
 	defined $args{route} &&
 	defined $args{origin}) {
@@ -539,8 +536,6 @@ sub route {
 sub cidr_to_inetnum {
     my ($cidr) = @_;
 
-print STDERR "cidr_to_inetnum: $cidr\n";
-    
     my ($lo) = ipv4_network($cidr);
     my ($hi) = ipv4_broadcast($cidr);
 
