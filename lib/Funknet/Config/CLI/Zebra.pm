@@ -95,8 +95,9 @@ sub get_bgp {
 	if ($line =~ /^\*?\>?\s+(\d+\.\d+\.\d+\.\d+)(\/\d+)?\s+$/) {
 	    $current = "$1$2";
 	}
-	if ($line =~ /^\s+0\.0\.0\.0/ && $current) {
+	if ($line =~ /^\*?\>?\s+0\.0\.0\.0/ && $current) {
 	    push @networks, $current;
+	    undef $current;
 	}
     }
 
@@ -258,6 +259,11 @@ sub check_login {
 	return undef;
     }
 }
+
+# another way of doing this would be to apply these config changes directly 
+# to the config in /etc/zebra/bgpd.conf or wherever, but we would have to 
+# do the 'merge' ourselves, probably, if Zebra doesn't support 
+# copy startup-config running-config in a sane fashion. 
 
 sub exec_enable {
     my ($self, $cmdset) = @_;
