@@ -66,6 +66,9 @@ sub new {
     if (defined $args{description}) {
 	$self->{_description} = $args{description};
     }
+    if (defined $args{soft_reconfig}) {
+	$self->{_soft_reconfig} = $args{soft_reconfig};
+    }
 
     if (defined $args{acl_in}) {
 	$self->{_acl_in} = $args{acl_in};
@@ -91,6 +94,9 @@ sub config {
     if (defined $self->{_acl_out}) {
 	push @cmds, "neighbor $self->{_remote_addr} route-map ".($self->{_acl_out}->name)." out";
     }
+    if (defined $self->{_acl_in} || defined $self->{_acl_out}) {
+	push @cmds, "neighbor $self->{_remote_addr} soft-reconfiguration inbound";
+    }
     return @cmds;
 }
 
@@ -98,47 +104,55 @@ sub diff {
     my ($whois, $host) = @_;
     my @cmds;
 
-    unless ($whois->remote_as == $host->remote_as) {
-	# change of as - delete, restart from scratch.
-	push @cmds, "no neighbor ".$host->remote_addr;
-	push @cmds, $whois->config;
-    }
+    for (1) {
+	
+	unless ($whois->remote_as == $host->remote_as) {
+	    # change of as - delete, restart from scratch.
+	    push @cmds, "no neighbor ".$host->remote_addr;
+	    push @cmds, $whois->config;
+	    last;
+	}
+	
+	unless ($whois->description eq $host->description) {
+	    push @cmds, "neighbor ".$whois->remote_addr." description ".$whois->description;
+	}
 
-    unless ($whois->description eq $host->description) {
-	push @cmds, "neighbor ".$whois->remote_addr." description ".$whois->description;
-    }
+	unless ($host->soft_reconfig) {
+	    push @cmds, "neighbor ".$whois->remote_addr." soft-reconfiguration inbound";
+	}
     
-    if (defined $whois->{_acl_in}) {
-	if (defined $host->{_acl_in}) {
-	    # both exist, check they're the same
-	    unless ($whois->{_acl_in}->name eq $host->{_acl_in}->name) {
+	if (defined $whois->{_acl_in}) {
+	    if (defined $host->{_acl_in}) {
+		# both exist, check they're the same
+		unless ($whois->{_acl_in}->name eq $host->{_acl_in}->name) {
+		    push @cmds, "neighbor ".$whois->remote_addr." route-map ".$whois->{_acl_in}->name." in";
+		}
+	    } else {
+		# nothing in host, but whois exists: add.
 		push @cmds, "neighbor ".$whois->remote_addr." route-map ".$whois->{_acl_in}->name." in";
 	    }
 	} else {
-	    # nothing in host, but whois exists: add.
-	    push @cmds, "neighbor ".$whois->remote_addr." route-map ".$whois->{_acl_in}->name." in";
+	    if (defined $host->{_acl_in}) {
+		# host has acl, but it's not in whois: delete
+		push @cmds, "no neighbor ".$host->remote_addr." route-map ".$host->{_acl_in}->name." in";
+	    }
 	}
-    } else {
-	if (defined $host->{_acl_in}) {
-	    # host has acl, but it's not in whois: delete
-	    push @cmds, "no neighbor ".$host->remote_addr." route-map ".$host->{_acl_in}->name." in";
-	}
-    }
     
-    if (defined $whois->{_acl_out}) {
-	if (defined $host->{_acl_out}) {
-	    # both exist, check they're the same
-	    unless ($whois->{_acl_out}->name eq $host->{_acl_out}->name) {
+	if (defined $whois->{_acl_out}) {
+	    if (defined $host->{_acl_out}) {
+		# both exist, check they're the same
+		unless ($whois->{_acl_out}->name eq $host->{_acl_out}->name) {
+		    push @cmds, "neighbor ".$whois->remote_addr." route-map ".$whois->{_acl_out}->name." out";
+		}
+	    } else {
+		# nothing in host, but whois exists: add.
 		push @cmds, "neighbor ".$whois->remote_addr." route-map ".$whois->{_acl_out}->name." out";
 	    }
 	} else {
-	    # nothing in host, but whois exists: add.
-	    push @cmds, "neighbor ".$whois->remote_addr." route-map ".$whois->{_acl_out}->name." out";
-	}
-    } else {
-	if (defined $host->{_acl_out}) {
-	    # host has acl, but it's not in whois: delete
-	    push @cmds, "no neighbor ".$host->remote_addr." route-map ".$host->{_acl_out}->name." out";
+	    if (defined $host->{_acl_out}) {
+		# host has acl, but it's not in whois: delete
+		push @cmds, "no neighbor ".$host->remote_addr." route-map ".$host->{_acl_out}->name." out";
+	    }
 	}
     }
 
@@ -158,6 +172,10 @@ sub remote_as {
 sub description {
     my ($self) = @_;
     return $self->{_description};
+}
+sub soft_reconfig {
+    my ($self) = @_;
+    return $self->{_soft_reconfig};
 }
 sub source {
     my ($self) = @_;

@@ -138,6 +138,10 @@ sub get_bgp {
 	    # Zebra gives us a rogue space here.
 	    $neighbors->{$current_neighbor}->{description} =~ s/ //g;
 	}
+	# check this against actual zebra output
+	if ($line =~ /Inbound soft reconfiguration allowed/ && $current_neighbor) {
+	    $neighbors->{$current_neighbor}->{soft_reconfig} = 1;
+	}
     }
 
 
@@ -161,6 +165,7 @@ sub get_bgp {
 	
 	$bgp->add_session(
 	    description => $neighbors->{$peer}->{description},
+	    soft_reconfig => $neighbors->{$peer}->{soft_reconfig},
 	    remote_as => $neighbors->{$peer}->{remote_as},
 	    local_addr => $neighbors->{$peer}->{local_addr},
 	    remote_addr => $neighbors->{$peer}->{remote_addr},

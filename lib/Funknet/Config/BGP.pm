@@ -81,12 +81,13 @@ sub add_session {
 
     $args{remote_as} =~ s/^AS//;
 
-    my $session = Funknet::Config::Neighbor->new( remote_as   => $args{remote_as},
-						  remote_addr => $args{remote_addr},
-						  description => $args{description},
-						  source      => $self->{_source},
-						  acl_in      => $args{acl_in},
-						  acl_out     => $args{acl_out},
+    my $session = Funknet::Config::Neighbor->new( remote_as     => $args{remote_as},
+						  remote_addr   => $args{remote_addr},
+						  description   => $args{description},
+						  soft_reconfig => $args{soft_reconfig},
+						  source        => $self->{_source},
+						  acl_in        => $args{acl_in},
+						  acl_out       => $args{acl_out},
 						);
     if (defined $session) {
 	$self->{_neighbors}->{$args{remote_addr}} = $session;
