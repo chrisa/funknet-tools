@@ -32,6 +32,14 @@ sub new {
     my ($class, %args) = @_;
     my $self = bless {}, $class;
 
+    # is this an interface we should be ignoring?
+
+    my @ignore_if = Funknet::Config::ConfigFile->ignore_if;
+    if (defined $args{ifname} && (grep /$args{ifname}/, @ignore_if)) {
+	warn "ignoring $args{ifname}";
+	return undef;
+    }
+    
     unless (defined $args{source} && ($args{source} eq 'whois' || $args{source} eq 'host')) {
 	warn "missing source";
 	return undef;
