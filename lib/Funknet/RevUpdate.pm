@@ -69,9 +69,9 @@ sub check_delegate {
     for my $ns (@ns) {
 
 	# check we've been given a valid-looking nameserver - mustn't be numeric.
-	unless ($ns =~ /^[-a-z.]$/) {
-	    push @errors, "nameserver $ns doesn't look right";
-	}
+	#unless ($ns =~ /^[-a-z0-9.]$/) {
+	#    push @errors, "nameserver $ns doesn't look right";
+	#}
 
 	# query the nameservers we've been given for the zone we've been asked to 
 	# delegate to them. 
