@@ -44,7 +44,7 @@ vi zebra.conf
 
 # important lines being: (BEGIN_EXAMPLE)
 !
-hostname blank
+hostname katgate
 password zebra
 enable password zebra
 !
@@ -97,6 +97,7 @@ vi funknet.conf-KATGATE
 rootdo perl config.pl -a -f funknet.conf-KATGATE 
 
 # if cool:
+ln -s funknet.conf-KATGATE funknet.conf
 reboot
 
 # youre done, skin up.
