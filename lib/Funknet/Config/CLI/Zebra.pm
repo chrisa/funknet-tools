@@ -35,14 +35,9 @@ sub get_bgp {
 	}
     }
 
-    my $bgp = Funknet::Config::BGP->new( local_as => $self->{_local_as},
-					 local_router => $self->{_local_router},
-					 routes  => \@networks,
-					 source => 'host');
-
     @output = $t->cmd('show ip bgp neighbors');
     
-    my ($neighbors, $current_neighbor);
+    my ($neighbors, $current_neighbor, $local_as);
     foreach my $line (@output) {
 	if ($line =~ /^BGP neighbor is (\d+\.\d+\.\d+\.\d+), +remote AS (\d+)/) {
 	    $neighbors->{$1}->{remote_as} = $2;
@@ -55,7 +50,16 @@ sub get_bgp {
 	if ($line =~ /^ Description: (.+)/ && $current_neighbor) {
 	    $neighbors->{$current_neighbor}->{description} = $1;
 	}
+	if ($line =~ /local AS (\d+)/) {
+	    $local_as = "AS$1";
+	}
     }
+
+    my $bgp = Funknet::Config::BGP->new( local_as => $local_as,
+					 local_router => $self->{_local_router},
+					 routes  => \@networks,
+					 source => 'host');
+
     for my $peer (keys %$neighbors) {
 	$bgp->add_session(
 	    description => $neighbors->{$peer}->{description},
