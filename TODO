@@ -1,5 +1,9 @@
 === Configuration
 
+* path preference - do we respect what people put in their RPSL? 
+  -- probably not, as we don't let RtConfig generate our route-map, 
+     and maybe we should.
+
 * diffing access-lists isn't done yet. this might turn out to be hard,
   or we might just replace the existing one with the whois one...
     -- changed - we now at least look to see if the access list
@@ -13,16 +17,14 @@
 
 * Privilege in general needs thinking about - the program only needs
   root to alter tunnels. Is userv portable enough? 
+  -- fix up F::C::Root.pm
 
 * Lots of little BGP statements are missing. There needs to be a way
   to put arbitrary extra commands in there -- soft reconfig is done. 
 
 * iBGP sessions, random other bits of BGP.
-    -- this should probably be covered by the 'ignore' concept. 
-       ignore_neighbor, etc. 
-
-* some network statements in the BGP configs aren't visible in 
-  'sho ip bgp', so we miss them. -- is this still true?
+  -- this should probably be covered by the 'ignore' concept. 
+     ignore_neighbor, etc. 
 
 * tests!
   -- started, in t/. 
@@ -35,7 +37,8 @@
   here as tunnels do.
 
 * soft-reconfig -- this is applied to every neighbor, but the diff
-  code doesn't yet know how to use it. -- done - does it work?
+  code doesn't yet know how to use it. 
+  -- done - does it work?
 
 * check_login doesn't work -- just returns 1.
 
@@ -46,6 +49,9 @@
 * should be doing an SOA check?
 
 * should have some sort of human intervention mode?
+
+* do we actually need this? can it just be done like RIPE are going to
+  do it?
 
 === Web Services
 
