@@ -5,17 +5,16 @@ use Funknet::Config::Tunnel;
 use Funknet::Config::TunnelSet;
 use Funknet::Config::BGP;
 
+
+use Data::Dumper;
+
 =head1 NAME
 
 Funknet::Config::Whois
 
 =head1 SYNOPSIS
 
-my $whois = Funknet::Config::Whois->new( local_as => 'AS65002',
-					 local_os => 'ios',
-					 local_router => 'ios',
-					 local_host => '10.1.45.1',
-				       );
+my $whois = Funknet::Config::Whois->new();
 my $whois_tun = $whois->tunnels;
 my $whois_bgp = $whois->sessions;
 
@@ -29,7 +28,7 @@ system it is supposed to work with - both in terms of the networking
 which Autonomous System the host is in, and an address where the
 router interface may be found.
 
-These parameters are passed to the constructor. Valid values for
+These parameters are picked up from the config file Valid values for
 local_os are 'bsd', 'solaris', 'linux' and 'ios'. Valid values for
 local_router are 'ios' and 'zebra'.
 
@@ -70,29 +69,19 @@ sub new {
     my ($class, %args) = @_;
     my $self = bless {}, $class;
     $self->{_net_whois_ripe} = Net::Whois::RIPE->new( 'whois.funknet.org' );
+    unless (defined $self->{_net_whois_ripe}) {
+	die "couldn't get a Net::Whois::RIPE object";
+    }
     $self->{_net_whois_ripe}->source('FUNKNET');
-
-    if (defined $args{local_as}) {
-	$self->{_local_as} = $args{local_as};
-    }
-    if (defined $args{local_os}) {
-	$self->{_local_os} = $args{local_os};
-    }
-    if (defined $args{local_router}) {
-	$self->{_local_router} = $args{local_router};
-    }
-    if (defined $args{local_host}) {
-	$self->{_local_host} = $args{local_host};
-    }
-
     return $self;
 }
 
 sub tunnels {
     my ($self) = @_;
     my $w = $self->{_net_whois_ripe};
+    my $l = Funknet::Config::ConfigFile->local;
     $w->type('aut-num');
-    my $as = $w->query($self->{_local_as});
+    my $as = $w->query($l->{as});
     
     my @local_tun;
     
@@ -101,15 +90,14 @@ sub tunnels {
 	$w->type('tunnel');
 	my $tun = $w->query($tun_name);
 	
-	# check that the tunnel endpoint matches the local_host param here?
-	# to allow for multiple routers in an AS?
-
 	for my $i ( 0..1 ) {
 	    my @as = $tun->as;
 	    my @ep = $tun->endpoint;
 	    my @ad = $tun->address;
 	    
-	    if ($as[$i] eq $self->{_local_as}) {
+	    # check this tunnel is to our AS and the current endpoint.
+	    
+	    if ($as[$i] eq $l->{as} && $ep[$i] eq $l->{endpoint}) {
 		push @local_tun, 
 		Funknet::Config::Tunnel->new(
 		    name => $tun_name,
@@ -118,8 +106,8 @@ sub tunnels {
 		    local_endpoint => $ep[$i],
 		    remote_endpoint => $ep[1-$i],
 		    type => $tun->type,
-		    local_os => $self->{_local_os},
 		    source => 'whois',
+		    proto => '4',
 		);
 	    }
 	}
@@ -131,10 +119,16 @@ sub tunnels {
 sub sessions {
     my ($self) = @_;
     my $w = $self->{_net_whois_ripe};
-
+    my $l = Funknet::Config::ConfigFile->local;
+    
     $w->type('route');
     $w->inverse_lookup('origin');
-    my $routes = $w->query_iterator($self->{_local_as});
+
+    print Dumper $w;
+
+    print Dumper $l;
+
+    my $routes = $w->query_iterator($l->{as});
     my @routes;
     while (my $obj = $routes->next) {
         if (my $route = $obj->route) {
@@ -144,12 +138,14 @@ sub sessions {
 
     $w->type('aut-num');
     $w->{FLAG_i} = '';
-    my $as = $w->query($self->{_local_as});
+    my $as = $w->query($l->{as});
 
-    my $bgp = Funknet::Config::BGP->new( local_as => $self->{_local_as},
-					 local_router => $self->{_local_router},
-                                         routes  => \@routes,
-					 source => 'whois');
+    
+
+    my $bgp = Funknet::Config::BGP->new( 
+	local_as => $l->{as},
+	routes  => \@routes,
+	source => 'whois');
     
     for my $tun_name ($as->tun) {
 	
@@ -160,7 +156,7 @@ sub sessions {
 	    my @as = $tun->as;
 	    my @ad = $tun->address;
 	    
-	    if ($as[$i] eq $self->{_local_as}) {
+	    if ($as[$i] eq $l->{as}) {
 		
 		my $acl_in = Funknet::Config::AccessList->new( source_as   => $as[$i],
 							       peer_as     => $as[1-$i],

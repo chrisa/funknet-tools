@@ -11,16 +11,10 @@ Funknet::Config::CLI
 
 =head1 SYNOPSIS
 
-    my $cli = Funknet::Config::CLI->new( local_host => $self->{_local_host},
-                                         local_router => $self->{_local_router} 
-				       );
+    my $cli = Funknet::Config::CLI->new();
     @local_tun = $cli->get_interfaces;
 
-        
-    my $cli = Funknet::Config::CLI->new( local_as => $self->{_local_as},
-					 local_host => $self->{_local_host},
-					 local_router => $self->{_local_router} 
-				       );
+    my $cli = Funknet::Config::CLI->new();
     my $bgp = $cli->get_bgp;
 
 =head1 DESCRIPTION
@@ -29,8 +23,7 @@ This module is the base class for the router-specific methods for
 retrieving data from the Zebra and IOS command-line interfaces. The
 constructor returns an object containing all the information required
 to connect to the router (address/username/passwords), blessed into
-the appropriate class depending on the local_router argument passed
-in.
+the appropriate class depending on the local_router config param.
 
 =head1 METHODS
 
@@ -67,27 +60,17 @@ optional?)
 sub new {
     my ($class, %args) = @_;
     my $self = bless {}, $class;
+    my $l = Funknet::Config::ConfigFile->local;
 
-    if (defined $args{local_router}) {
-	$self->{_local_router} = $args{local_router};
-    } else {
-	return undef;
-    }
-    if (defined $args{local_host}) {
-	$self->{_local_host} = $args{local_host};
-    } else {
-	return undef;
-    }
-
-    $self->{_username} = Funknet::Config::CLI::Secrets->username( $self->{_local_host} );
-    $self->{_password} = Funknet::Config::CLI::Secrets->password( $self->{_local_host} );
-    $self->{_enable}   = Funknet::Config::CLI::Secrets->enable(   $self->{_local_host} );
+    $self->{_username} = Funknet::Config::CLI::Secrets->username( $l->{host} );
+    $self->{_password} = Funknet::Config::CLI::Secrets->password( $l->{host} );
+    $self->{_enable}   = Funknet::Config::CLI::Secrets->enable(   $l->{host} );
 
     # rebless into relevant class
 
-    $args{local_router} eq 'ios' and 
+    $l->{router} eq 'ios' and 
 	bless $self, 'Funknet::Config::CLI::IOS';
-    $args{local_router} eq 'zebra' and 
+    $l->{router} eq 'zebra' and 
 	bless $self, 'Funknet::Config::CLI::Zebra';
 
     # check we have the correct details or don't return the object.

@@ -72,8 +72,8 @@ sub new_from_ifconfig {
 	local_endpoint => $local_endpoint,
 	remote_endpoint => $remote_endpoint,
 	type => $type,
-	local_os => 'solaris',
 	source => 'host',
+	proto => '4',
     );
 }
 

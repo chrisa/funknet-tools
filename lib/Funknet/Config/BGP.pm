@@ -9,16 +9,17 @@ use Funknet::Config::BGP::Zebra;
 sub new {
     my ($class, %args) = @_;
     my $self = bless {}, $class;
+    my $l = Funknet::Config::ConfigFile->local;
 
     unless (defined $args{source} && ($args{source} eq 'whois' || $args{source} eq 'host')) {
-	warn "missing source";
+	warn "missing source or invalid";
 	return undef;
     } else {
 	$self->{_source} = $args{source};
     }
 
     unless (defined $args{local_as} && is_valid_as($args{local_as})) {
-	warn "missing local_as";
+	warn "missing or invalid local_as";
 	return undef;
     } else {
         my $asno = $args{local_as};
@@ -33,9 +34,9 @@ sub new {
         $self->{_routes} = $args{routes}; 
     }
 
-    $args{local_router} eq 'ios' and 
+    $l->{router} eq 'ios' and 
 	bless $self, 'Funknet::Config::BGP::IOS';
-    $args{local_router} eq 'zebra' and 
+    $l->{router} eq 'zebra' and 
 	bless $self, 'Funknet::Config::BGP::Zebra';
 
     return $self;

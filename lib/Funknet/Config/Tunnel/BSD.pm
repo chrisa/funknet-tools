@@ -75,8 +75,8 @@ sub new_from_ifconfig {
 	interface => $interface,
 	type => $type,
 	ifname => $ifname,
-	local_os => 'bsd',
 	source => 'host',
+	proto => '4',
     );
 }
 

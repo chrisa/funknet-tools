@@ -1,7 +1,7 @@
 package Funknet::Config::Tunnel;
 use strict;
 
-use Funknet::Config::Validate qw/ is_ipv4 is_ipv6 is_valid_type /;
+use Funknet::Config::Validate qw/ is_ipv4 is_ipv6 is_valid_type is_valid_proto /;
 use Funknet::Config::Tunnel::BSD;
 use Funknet::Config::Tunnel::IOS;
 use Funknet::Config::Tunnel::Linux;
@@ -31,6 +31,7 @@ Funknet::Config::Validate.pm. Implement specific methods in NewOS.pm.
 sub new {
     my ($class, %args) = @_;
     my $self = bless {}, $class;
+    my $l = Funknet::Config::ConfigFile->local;
 
     # is this an interface we should be ignoring?
 
@@ -53,14 +54,15 @@ sub new {
     } else {
 	$self->{_type} = $args{type};
     }
-    
-    if ($self->{_type} eq 'sit') {
-	$self->{_proto} = 'IPv6';
+
+    unless (defined $args{proto} && is_valid_proto($args{proto})) {
+	warn "missing or invalid protocol";
+	return undef;
     } else {
-	$self->{_proto} = 'IPv4';
+	$self->{_proto} = $args{proto};
     }
     
-    if ($self->{_proto} eq 'IPv4') {
+    if ($self->{_proto} eq '4') {
 	for my $addr (qw/ local_address remote_address local_endpoint remote_endpoint / ) {
 	    unless (is_ipv4 ($args{$addr})) {
 		warn "invalid ipv4 address";
@@ -69,7 +71,7 @@ sub new {
 		$self->{"_$addr"} = $args{$addr};
 	    }
 	} 
-    } elsif ($self->{_proto} eq 'IPv6') {
+    } elsif ($self->{_proto} eq '6') {
 	for my $addr (qw/ local_address remote_address / ) {
 	    unless (is_ipv6 ($args{$addr})) {
 		warn "invalid ipv6 address";
@@ -98,13 +100,13 @@ sub new {
     # rebless if we have a specific OS to target 
     # for this tunnel endpoint.
 
-    $args{local_os} eq 'bsd' and 
+    $l->{os} eq 'bsd' and 
 	bless $self, 'Funknet::Config::Tunnel::BSD';
-    $args{local_os} eq 'ios' and 
+    $l->{os} eq 'ios' and 
 	bless $self, 'Funknet::Config::Tunnel::IOS';
-    $args{local_os} eq 'linux' and
+    $l->{os} eq 'linux' and
 	bless $self, 'Funknet::Config::Tunnel::Linux';
-    $args{local_os} eq 'solaris' and
+    $l->{os} eq 'solaris' and
 	bless $self, 'Funknet::Config::Tunnel::Solaris';
 
     return $self;
@@ -129,15 +131,16 @@ sub as_hashkey {
 }
 
 sub new_from_ifconfig {
-    my ($class, $if, $local_os) = @_;
+    my ($class, $if) = @_;
+    my $l = Funknet::Config::ConfigFile->local;
     
-    if ($local_os eq 'bsd') {
+    if ($l->{os} eq 'bsd') {
 	return Funknet::Config::Tunnel::BSD->new_from_ifconfig( $if );
     }
-    if ($local_os eq 'linux') {
+    if ($l->{os} eq 'linux') {
 	return Funknet::Config::Tunnel::Linux->new_from_ifconfig( $if );
     }
-    if ($local_os eq 'solaris') {
+    if ($l->{os} eq 'solaris') {
 	return Funknet::Config::Tunnel::Solaris->new_from_ifconfig( $if );
     }
     return undef;

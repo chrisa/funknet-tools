@@ -9,10 +9,7 @@ Funknet::Config::CLI::IOS;
 
 =head1 SYNOPSIS
 
-    my $cli = Funknet::Config::CLI->new( local_as => 'AS65000',
-					 local_host => '213.210.34.174',
-					 local_router => 'ios',
-				       );
+    my $cli = Funknet::Config::CLI->new();
     my $bgp = $cli->get_bgp;
 
 =head1 DESCRIPTION
@@ -20,7 +17,7 @@ Funknet::Config::CLI::IOS;
 This module provides IOS-specific methods for interacting with the
 router's command line. Objects are instantiated through the
 constructor in CLI.pm which returns an object blessed into this class
-if the 'local_router' argument is 'ios'.
+if the config file specifies a local_router of 'ios'
 
 =head1 METHODS
 
@@ -38,13 +35,14 @@ not needed.
 
 sub get_bgp { 
     my ($self) = @_;
+    my $l = Funknet::Config::ConfigFile->local;
     
     my $t = new Net::Telnet ( Timeout => 10,
 			      Prompt  => '/[\>\#]$/',
 			      Port    => 23,
 			    );
     
-    $t->open($self->{_local_host});
+    $t->open($l->{host});
     $t->cmd($self->{_password});
     $t->cmd('terminal length 0');
     
@@ -103,7 +101,6 @@ sub get_bgp {
     }
     
     my $bgp = Funknet::Config::BGP->new( local_as => $local_as,
-					 local_router => $self->{_local_router},
 					 routes  => \@networks,
 					 source => 'host');
 
@@ -131,8 +128,6 @@ sub get_bgp {
 						       peer_addr   => $neighbors->{$peer}->{remote_addr},
 						       dir         => 'import',
 						       source      => 'host',
-						       local_router => 'ios',
-						       local_host  => $self->{_local_host},
 						     );
 
 	my $acl_out = Funknet::Config::AccessList->new( source_as   => $bgp->{_local_as},
@@ -141,8 +136,6 @@ sub get_bgp {
 							peer_addr   => $neighbors->{$peer}->{remote_addr},
 							dir         => 'export',
 							source      => 'host',
-							local_router => 'ios',
-							local_host  => $self->{_local_host},
 						      );
 
 	$bgp->add_session(
@@ -159,13 +152,14 @@ sub get_bgp {
 
 sub get_access_list {
     my ($self, %args) = @_;
+    my $l = Funknet::Config::ConfigFile->local;
 
     my $t = new Net::Telnet ( Timeout => 10,
 			      Prompt  => '/[\>\#]$/',
 			      Port    => 23,
 			    );
     
-    $t->open($self->{_local_host});
+    $t->open($l->{host});
     $t->cmd($self->{_password});
     $t->cmd('terminal length 0');
 
@@ -215,6 +209,7 @@ sub _to_text {
 	
 sub get_interfaces {
     my ($self) = @_;
+    my $l = Funknet::Config::ConfigFile->local;
 
     my @local_tun;
     my $t = new Net::Telnet ( Timeout => 10,
@@ -222,7 +217,7 @@ sub get_interfaces {
 			      Port    => 23,
 			    );
     
-    $t->open($self->{_local_host});
+    $t->open($l->{host});
     $t->cmd($self->{_password});
     $t->cmd('terminal length 0');
 
@@ -271,8 +266,8 @@ sub get_interfaces {
 		type => $tunnels->{$tun}->{type},
 		ifname => $tun,
 		interface => $tunnels->{$tun}->{interface},
-		local_os => 'ios',
 		source => 'host',
+		proto => '4',
 	    );
 	if (defined $new_tun) {
 	    push @local_tun, $new_tun;
@@ -283,6 +278,7 @@ sub get_interfaces {
 
 sub check_login {
     my ($self) = @_;
+    my $l = Funknet::Config::ConfigFile->local;
 
     return 1;
     
@@ -290,7 +286,7 @@ sub check_login {
 			      Prompt  => '/[\>\#] $/',
 			      Port    => 23,
 			    );
-    $t->open($self->{_local_host});
+    $t->open($l->{host});
     $t->cmd($self->{_password});
     $t->getline;
     $t->cmd('enable');
@@ -305,13 +301,14 @@ sub check_login {
 
 sub exec_enable {
     my ($self, $cmdset) = @_;
-    
+    my $l = Funknet::Config::ConfigFile->local;
+
     my $t = new Net::Telnet ( Timeout => 10,
 			      Prompt  => '/[ \>\#]$/',
 			      Port    => 23,
 			    );
     $t->input_log(\*STDOUT);
-    $t->open($self->{_local_host});
+    $t->open($l->{host});
     $t->cmd($self->{_password});
     $t->cmd('terminal length 0');
     $t->cmd('enable');

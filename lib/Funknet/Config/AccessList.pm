@@ -22,8 +22,6 @@ Funknet::Config::AccessList
                                                    peer_addr   => '10.2.0.38',
 					           dir         => 'import',
 					           source      => 'host',
-					           local_router => 'ios',
-					           local_host  => '213.210.34.174',
 						 );
 
 
@@ -100,10 +98,7 @@ sub new {
 	}
     }
     if ($args{source} eq 'host') {
-	my $cli = Funknet::Config::CLI->new( local_as => $args{source_as},
-					     local_host => $args{local_host},
-					     local_router => $args{local_router}, 
-					   );
+	my $cli = Funknet::Config::CLI->new();
 	my $self = $cli->get_access_list( remote_addr => $args{peer_addr},
 					  dir => $args{dir} );
 	if (defined $self) {

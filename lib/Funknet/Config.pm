@@ -55,11 +55,6 @@ sub new {
 	return undef;
     }
 
-    $self->{_local_as} = $self->{_config}->local_as;
-    $self->{_local_os} = $self->{_config}->local_os;
-    $self->{_local_router} = $self->{_config}->local_router;
-    $self->{_local_host} = $self->{_config}->local_host;
-
     return $self;
 }
 
@@ -81,60 +76,34 @@ sub error {
 sub bgp_diff {
     my ($self) = @_;
     
-    my $whois = Funknet::Config::Whois->new( local_as => $self->{_local_as},
-					     local_router => $self->{_local_router},
-					     local_os => $self->{_local_os},
-					     local_host => $self->{_local_host},
-					   );
-
-    my $host = Funknet::Config::Host->new( local_as => $self->{_local_as},
-					   local_router => $self->{_local_router},
-					   local_os => $self->{_local_os},
-					   local_host => $self->{_local_host},
-					 );
-
+    my $whois = Funknet::Config::Whois->new();
+    my $host = Funknet::Config::Host->new();
     my $whois_bgp = $whois->sessions;
     my $host_bgp = $host->sessions;
     
     my $diff = Funknet::Config::CommandSet->new( cmds => [ $whois_bgp->diff($host_bgp) ],
 					         target => 'cli',
-						 local_router => $self->{_local_router},
-						 local_host => $self->{_local_host},
 					       );
     return $diff;
 }
 
 sub tun_diff {
     my ($self) = @_;
+    my $l = Funknet::Config::ConfigFile->local;
     
-    my $whois = Funknet::Config::Whois->new( local_as => $self->{_local_as},
-					     local_router => $self->{_local_router},
-					     local_os => $self->{_local_os},
-					     local_host => $self->{_local_host},
-					   );
-    
-    my $host = Funknet::Config::Host->new( local_as => $self->{_local_as},
-					   local_router => $self->{_local_router},
-					   local_os => $self->{_local_os},
-					   local_host => $self->{_local_host},
-					 );
+    my $whois = Funknet::Config::Whois->new();
+    my $host = Funknet::Config::Host->new();
     my $whois_tun = $whois->tunnels;
     my $host_tun = $host->tunnels;
     
     my $diff;
-    if ($self->{_local_os} eq 'ios') {
+    if ($l->{os} eq 'ios') {
 	$diff = Funknet::Config::CommandSet->new( cmds => [ $whois_tun->diff($host_tun) ],
 						  target => 'cli',
-						  local_host => $self->{_local_host},
-						  local_os => $self->{_local_os},
-						  local_router => $self->{_local_router},
 						);
     } else {
 	$diff = Funknet::Config::CommandSet->new( cmds => [ $whois_tun->diff($host_tun) ],
 						  target => 'host',
-						  local_host => $self->{_local_host},
-						  local_router => $self->{_local_router},
-						  local_os => $self->{_local_os},
 						);
     }
     return $diff;

@@ -2,7 +2,8 @@ package Funknet::Config::ConfigFile;
 use strict;
 use Data::Dumper;
 use vars qw/ $AUTOLOAD /;
-
+use Carp qw/ cluck /;
+use Funknet::Config::Validate qw / is_ipv4 is_ipv6 is_valid_as is_valid_router is_valid_os /;
 
 =head1 NAME
 
@@ -61,8 +62,45 @@ sub new {
     }
     close CONF;
     $self->{config} = $config;
+
+    unless (defined $config->{local_as} && is_valid_as($config->{local_as})) {
+	warn "missing local_as";
+	return undef;
+    } 
+    unless (defined $config->{local_host} && is_ipv4($config->{local_host})) {
+	warn "missing local_host";
+	return undef;
+    } 
+    unless (defined $config->{local_endpoint} && is_ipv4($config->{local_endpoint})) {
+	warn "missing local_endpoint";
+	return undef;
+    } 
+    unless (defined $config->{local_router} && is_valid_router($config->{local_router})) {
+	warn "missing local_router";
+	return undef;
+    } 
+    unless (defined $config->{local_os} && is_valid_os($config->{local_os})) {
+	warn "missing local_os";
+	return undef;
+    } 
+
     return $self;
 }
+
+sub local {
+    my ($self) = @_;
+    if (ref $self) {
+	$config = $self->{config};
+    }
+    
+    return { as     => $config->{local_as},
+	     os     => $config->{local_os},
+	     host   => $config->{local_host},
+	     router => $config->{local_router},
+	     endpoint => $config->{local_endpoint},
+	   };
+}
+    
 
 sub AUTOLOAD {
     my ($self) = @_;
@@ -83,7 +121,7 @@ sub AUTOLOAD {
 	    return $config->{$key};
 	}
     } else {
-	warn "accessing non existent config param $key";
+	cluck("accessing non existent config param $key");
 	return undef;
     }
 }

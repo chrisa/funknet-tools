@@ -5,8 +5,9 @@ use Network::IPv4Addr qw/ ipv4_cidr2msk /;
 
 sub config {
     my ($self) = @_;
-    
-    my $config = "router bgp $self->{_local_as}\n";
+    my $l = Funknet::Config::ConfigFile->local;
+
+    my $config = "router bgp $l->{as}\n";
 
     if (defined $self->{_routes} && ref $self->{_routes} eq 'ARRAY') {	
         for my $route (@{ $self->{_routes}}) {
@@ -33,6 +34,7 @@ sub config {
 
 sub diff {
     my ($whois, $host) = @_;
+    my $l = Funknet::Config::ConfigFile->local;
     my (@bounce_req, $bounce_all, $bgp_req);
     my @cmds;
 
@@ -89,7 +91,7 @@ sub diff {
     # we're done with bgp, get back to configuration mode
     
     if ($bgp_req) {
-	unshift @cmds, 'router bgp '.$whois->local_as;
+	unshift @cmds, 'router bgp '.$l->{as};
 	push @cmds, 'exit';
     }
 

@@ -1,17 +1,20 @@
 This is the Funknet tools package. 
 
+WARNING - unless you add the local_endpoint param, nothing will work.
+
 To try the code: 
 
 * make sure you have RtConfig available, in /usr/local/bin/RtConfig
   (or wherever you set in lib/Funknet/Config/AccessList.pm).
 
-* run generate-tuns.pl like:
-
-$ ./generate-tuns.pl <as number inc 'AS'> <local_router> <local_os> <local_host>
+Run config.pl as:
+$ ./config.pl -f funknet.conf
 
 valid local_router types: ios, zebra
 valid local_os types: ios, solaris, bsd, linux
 set local_host to your router, which might well be 127.0.0.1
+set local_endpoint to your tunnel endpoint as shown in your
+tunnel objects.
 
 * make sure there's a password set in Funknet::Config::CLI::Secrets.pm
   that matches your local_host.
@@ -24,8 +27,3 @@ generated from the system's internal data structures.
 Finally you'll get a list of commands required to convert one to the
 other, near enough.
 
-There's also a bunch of Data::Dumper output.
-
-I've tried this running on Solaris but against a Cisco, and running on
-BSD against a local Zebra. For the purposes of this program OSX counts
-as BSD. 

@@ -4,8 +4,9 @@ use base qw/ Funknet::Config::BGP /;
 
 sub config {
     my ($self) = @_;
+    my $l = Funknet::Config::ConfigFile->local;
     
-    my $config = "router bgp $self->{_local_as}\n";
+    my $config = "router bgp $l->{as}\n";
 
     if (defined $self->{_routes} && ref $self->{_routes} eq 'ARRAY') {	
         for my $route (@{ $self->{_routes}}) {

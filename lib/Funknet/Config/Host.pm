@@ -11,11 +11,7 @@ Funknet::Config::Host.pm
 
 =head1 SYNOPSIS
 
-my $host = Funknet::Config::Host->new( local_as => 'AS65002',
-				       local_os => 'ios',
-				       local_router => 'ios',
-				       local_host => '10.1.4.5',
-				     );
+my $host = Funknet::Config::Host->new();
 my $host_tun = $host->tunnels;
 my $host_bgp = $host->sessions;
 
@@ -29,7 +25,7 @@ system it is supposed to work with - both in terms of the networking
 which Autonomous System the host is in, and an address where the
 router interface may be found.
 
-These parameters are passed to the constructor. Valid values for
+These parameters are picked up from the config file. Valid values for
 local_os are 'bsd', 'solaris', 'linux' and 'ios'. Valid values for
 local_router are 'ios' and 'zebra'.
 
@@ -85,33 +81,18 @@ massive confusion.
 sub new {
     my ($class, %args) = @_;
     my $self = bless {}, $class;
-
-    if (defined $args{local_as}) {
-	$self->{_local_as} = $args{local_as};
-    }
-    if (defined $args{local_os}) {
-	$self->{_local_os} = $args{local_os};
-    }
-    if (defined $args{local_router}) {
-	$self->{_local_router} = $args{local_router};
-    }
-    if (defined $args{local_host}) {
-	$self->{_local_host} = $args{local_host};
-    }
-
     return $self;
 }
 
 sub tunnels {
     my ($self) = @_;
     my @local_tun;
+    my $l = Funknet::Config::ConfigFile->local;
 
     # special case of cisco needing CLI module
-    if ($self->{_local_os} eq 'ios') {
+    if ($l->{os} eq 'ios') {
 
-	my $cli = Funknet::Config::CLI->new( local_host => $self->{_local_host},
-					     local_router => $self->{_local_router} 
-					   );
+	my $cli = Funknet::Config::CLI->new();
 	@local_tun = $cli->get_interfaces;
 	
     } else {
@@ -125,7 +106,7 @@ sub tunnels {
 	    warn "considering: $if";
 
 	    chomp $if;
-	    my $tun = Funknet::Config::Tunnel->new_from_ifconfig( $if, $self->{_local_os} );
+	    my $tun = Funknet::Config::Tunnel->new_from_ifconfig( $if, $l->{os} );
 	    if (defined $tun) {
 		push @local_tun, $tun;
 	    }
@@ -139,10 +120,7 @@ sub tunnels {
 sub sessions {
     my ($self) = @_;
     
-    my $cli = Funknet::Config::CLI->new( local_as => $self->{_local_as},
-					 local_host => $self->{_local_host},
-					 local_router => $self->{_local_router} 
-				       );
+    my $cli = Funknet::Config::CLI->new();
     my $bgp = $cli->get_bgp;
 }
 
