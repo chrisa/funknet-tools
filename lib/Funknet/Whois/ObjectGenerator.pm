@@ -425,11 +425,12 @@ sub aut_num_assign {
 	return undef;
     }
 
-    my $aut_num = $self->aut_num( 'name' => $args{name},
-				  'tuns' => $args{tuns},
-				  'import' => $args{import},
-				  'export' => $args{export},
-				  'aut_num'   => $as,
+    my $aut_num = $self->aut_num('descr'   => $args{descr}, 
+				 'name'    => $args{name},
+				 'tuns'    => $args{tuns},
+				 'import'  => $args{import},
+				 'export'  => $args{export},
+				 'aut_num' => $as,
 				);
     unless (defined $aut_num) {
 	error("aut_num construct failed");
@@ -460,6 +461,8 @@ sub inetnum {
 	$m->netname($args{name});
 	$m->descr($args{descr});
 
+	$m->status('ASSIGNED PA');
+	$m->country('GB');
 	$m->rev_srv(['ns1.funknet.org', 'ns2.funknet.org']);
 
 	$m->changed($self->{e_mail});
@@ -490,11 +493,12 @@ sub inetnum_assign {
 	return undef;
     }
 
-    my $inetnum = $self->inetnum( 'name' => $args{name},
-				  'network' => $inetnum );
-    if (defined $inetnum) {
-	$inetnum->tunnel();
-	return $inetnum;
+    my $inetnum_obj = $self->inetnum('descr'   => 'tunnel '.$args{name},
+				     'name'    => $args{name},
+				     'network' => $inetnum );
+    if (defined $inetnum_obj) {
+	$inetnum_obj->tunnel();
+	return $inetnum_obj;
     } else {
 	error("inetnum construct failed");
 	return undef;
@@ -508,6 +512,8 @@ sub tunnel {
 	return undef;
     }
     
+    print STDERR Dumper {args => \%args};
+
     if (defined $args{name} &&
 	defined $args{type} &&
 	defined $args{as} &&
@@ -516,7 +522,9 @@ sub tunnel {
 	
 	my $m = parse_object(tmpl('tunnel'));
 
-	$m->tunnel($args{name});
+	print STDERR "name: $args{name}\n";
+
+	$m->xtunnel($args{name});
 	$m->type($args{type});
 	$m->as($args{as});
 	$m->address($args{address});
@@ -528,6 +536,8 @@ sub tunnel {
 	$m->mnt_by($self->{mntner});
 	$m->admin_c($self->{person});
 	$m->tech_c($self->{person});
+
+	print STDERR Dumper { m => $m };
 
 	return $m;
 

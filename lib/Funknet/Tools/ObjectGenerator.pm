@@ -253,6 +253,9 @@ sub node_set {
 			      'type'     => 'ipip',
 			    );
 	if (defined $t) {
+
+	    print STDERR Dumper $t;
+
 	    push @{$ns->{tun_objs}}, $t;
 	    push @{$ns->{tun_inums}}, $t_inetnum;
 	    push @tun_names, $n;
@@ -275,7 +278,8 @@ sub node_set {
     $ns->{as}->ximport(\@imports); # ah man
     $ns->{as}->export(\@exports);
     
-    $ns->{range} = $gen->inetnum('name' => $args{nodename}.'-LAN',
+    $ns->{range} = $gen->inetnum('descr'   => $args{nodename}.' network',
+				 'name'    => $args{nodename}.'-LAN',
 				 'network' => $args{network} );
     unless (defined $ns->{range}) {
 	error("generating local net inetnum: \n".$gen->error);
