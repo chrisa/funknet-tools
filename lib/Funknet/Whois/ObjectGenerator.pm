@@ -434,6 +434,8 @@ sub aut_num_assign {
     unless (defined $aut_num) {
 	error("aut_num construct failed");
 	return undef;
+    } else {
+	return $aut_num;
     }
 }
 
