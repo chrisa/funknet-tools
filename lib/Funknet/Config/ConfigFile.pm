@@ -83,8 +83,30 @@ reference.
 my $config;
 
 sub new {
-    my ($class, $file) = @_;
+    my ($class, $file, $interact) = @_;
     my $self = bless {}, $class;
+    $self->{file} = $file;
+
+    debug("looking for config file '$file'");
+    unless (-f $file) {
+	if ($interact) {
+	    # go interactive.
+	    require Funknet::Config::Interactive;
+	    my $fci = new Funknet::Config::Interactive;
+	    $config = $fci->get_config;
+	    $self->{config} = $config;
+	    if (defined $self->{config}) {
+		$self->write;
+		return $self;
+	    } else {
+		$self->error("didn't get valid data from user in interactive-config mode");
+		return undef;
+	    }
+	} else {
+	    $self->error("config file not found: $file");
+	    return undef;
+	}
+    }
     debug("Reading config file '$file'");
     open CONF, $file
 	or die "Can't open config file $file: $!";
@@ -166,6 +188,25 @@ sub new {
 
     debug("Done parsing config file");
     return $self;
+}
+
+sub write {
+    my ($self) = @_;
+    debug("writing config file $self->{file}");
+    
+    open CONF, ">$self->{file}" 
+      or die "couldn't open $self->{file} for writing: $!";
+    print CONF "# config file written by $0 at ",scalar localtime,"\n";
+
+    for my $key (sort keys %{ $self->{config} }) {
+	
+	if (ref $self->{config}->{$key}) {
+	    print CONF "$key = ",join ', ',@{ $self->{config}->{$key} },"\n";
+	} else {
+	    print CONF "$key = $self->{config}->{$key}\n";
+	}
+    }
+    close CONF;
 }
 
 sub local {
