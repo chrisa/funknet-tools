@@ -30,15 +30,16 @@
 # SUCH DAMAGE.
 
 
-package Funknet::Config::Tunnel::Linux;
+package Funknet::Config::FirewallRule::IPFW;
 use strict;
-use base qw/ Funknet::Config::Tunnel /;
+use base qw/ Funknet::Config::FirewallRule /;
+use Funknet::Config::ConfigFile;
 use Funknet::Debug;
 use Data::Dumper;
 
 =head1 NAME
 
-Funknet::Config::Tunnel::Linux
+Funknet::Config::FirewallRule::IPTables
 
 =head1 DESCRIPTION
 
@@ -78,61 +79,33 @@ the 'down' state.
 
 =cut
 
-sub config {
-    my ($self) = @_;
-
-    return 
-	"Linux\n" .
-	"$self->{_type}:\n" .
-	"$self->{_local_endpoint} -> $self->{_remote_endpoint}\n" . 
-	"$self->{_local_address} -> $self->{_remote_address}\n";
-}
-
-sub new_from_ifconfig {
-    my ($class, $if) = @_;
-
-    my ($type, $interface, $ifname);
-    if ($if =~ /^(tunl)(\d+)/) {
-	$type = 'ipip';
-	$interface = $2;
-	$ifname = "$1$2";
-    }
-    defined $type or return undef;
-
-    my ($local_address, $remote_address)   = $if =~ /inet addr:(\d+\.\d+\.\d+\.\d+)\s+P-t-P:(\d+\.\d+\.\d+\.\d+)\s+Mask/;
-
-    # bloody linux makes us run 'ip link show $if'
-    my $iplink = `/sbin/ip link show $ifname`;
-    my ($local_endpoint, $remote_endpoint) = $iplink =~ /ipip (\d+\.\d+\.\d+\.\d+) peer (\d+\.\d+\.\d+\.\d+)/;
-
-    return Funknet::Config::Tunnel->new(
- 	name => 'none',
- 	local_address => $local_address,
- 	remote_address => $remote_address,
- 	local_endpoint => $local_endpoint,
- 	remote_endpoint => $remote_endpoint,
- 	type => $type,
-	interface => $interface,
-	ifname => $ifname,
- 	source => 'host',
-	proto => '4' 
-    );
-}
-
 sub delete {
     my ($self) = @_;
-    return "ip tunnel del tunl$self->{_interface}";
+
+    debug("arrived in Config/FirewallRule/IPFW.pm delete");
+    my $whois_source = Funknet::Config::ConfigFile->whois_source || 'FUNKNET';
+
+ #   return ("#ipfw del $self->{_rule_num} allow $self->{_proto} from $self->{_source_address} to $self->{_destination_address}");
+    return ("ipfw del $self->{_rule_num}");
 }
 
 sub create {
-    my ($self, $inter) = @_;
-    return ("ip tunnel add tunl$inter mode ipip local $self->{_local_endpoint} remote $self->{_remote_endpoint} ttl 64",
-	    "ip addr add $self->{_local_address}/30 peer $self->{_remote_address} dev tunl$inter",
-	    "ip link set tunl$inter up" );
+    debug("arrived in Config/FirewallRule/IPFW.pm create");
+    my ($self, $rule_num) = @_;
+
+    my $proto = $self->{_proto};
+    my $whois_source = Funknet::Config::ConfigFile->whois_source || 'FUNKNET';
+
+    return ("ipfw add $rule_num allow $proto from $self->{_source_address} to $self->{_destination_address}");
 }
 
-sub ifsym {
-    return 'tunl';
+sub as_hashkey {
+    my ($self) = @_;
+
+    debug("in FirewallRule::IPFW as_hashkey");
+    return
+        "$self->{_type}-" .
+        "$self->{_source_address}-$self->{_destination_address}-";
 }
 
 1;

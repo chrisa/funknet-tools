@@ -30,9 +30,9 @@
 # SUCH DAMAGE.
 
 
-package Funknet::Config::Tunnel::Linux;
+package Funknet::Config::FirewallRuleSet::IPTables;
 use strict;
-use base qw/ Funknet::Config::Tunnel /;
+use base qw/ Funknet::Config::FirewallRuleSet /;
 use Funknet::Debug;
 use Data::Dumper;
 
@@ -78,61 +78,55 @@ the 'down' state.
 
 =cut
 
-sub config {
-    my ($self) = @_;
+sub new {
+    my ($class, %args) = @_;
+    debug("arrived in IPTables.pm new");
+    my $self = bless {}, $class;
 
-    return 
-	"Linux\n" .
-	"$self->{_type}:\n" .
-	"$self->{_local_endpoint} -> $self->{_remote_endpoint}\n" . 
-	"$self->{_local_address} -> $self->{_remote_address}\n";
+    $self->{_source} = $args{source};
+    $self->{_firewall} = $args{firewall};
+
+    return($self);
 }
 
-sub new_from_ifconfig {
-    my ($class, $if) = @_;
+sub local_firewall_rules {
 
-    my ($type, $interface, $ifname);
-    if ($if =~ /^(tunl)(\d+)/) {
-	$type = 'ipip';
-	$interface = $2;
-	$ifname = "$1$2";
+    my $l = Funknet::Config::ConfigFile->local;
+    my $chain = Funknet::Config::ConfigFile->whois_source || 'FUNKNET';
+    debug("arrived in IPTables.pm local_firewall_rules whois_src is $chain");
+
+    my $whole_set = `iptables -n -L $chain` ;
+    my @rules = split ('\n', $whole_set);
+    my @rules_out;
+
+
+    foreach my $rule (@rules) {
+
+	my ($src, $dest, $proto, $policy);
+	my $type;
+	chomp($rule);
+	next if $rule =~ /^Chain/;
+	next if $rule =~ /^target/;
+	debug("$rule");
+	$src = $dest = $proto = $policy = $rule;
+	$policy =~ s/^(\w+).*/$1/;
+	$proto =~ s/^\w+\s+(\w+).*/$1/;
+	$src =~ s/^\w+\s+\w+\s+--\s+(\d+\.\d+\.\d+\.\d+).*/$1/;
+	$dest =~ s/^\w+\s+\w+\s+--\s+\d+\.\d+\.\d+\.\d+\s+(\d+\.\d+\.\d+\.\d+).*/$1/;
+	debug("proto is $proto");
+	my $new_rule_object = Funknet::Config::FirewallRule->new(
+						source => 'host',
+						source_address => $src,
+						destination_address => $dest,
+						proto => $proto );
+	debug("new_rule_object");
+	print Dumper $new_rule_object;
+	
+	push (@rules_out, $new_rule_object);
     }
-    defined $type or return undef;
-
-    my ($local_address, $remote_address)   = $if =~ /inet addr:(\d+\.\d+\.\d+\.\d+)\s+P-t-P:(\d+\.\d+\.\d+\.\d+)\s+Mask/;
-
-    # bloody linux makes us run 'ip link show $if'
-    my $iplink = `/sbin/ip link show $ifname`;
-    my ($local_endpoint, $remote_endpoint) = $iplink =~ /ipip (\d+\.\d+\.\d+\.\d+) peer (\d+\.\d+\.\d+\.\d+)/;
-
-    return Funknet::Config::Tunnel->new(
- 	name => 'none',
- 	local_address => $local_address,
- 	remote_address => $remote_address,
- 	local_endpoint => $local_endpoint,
- 	remote_endpoint => $remote_endpoint,
- 	type => $type,
-	interface => $interface,
-	ifname => $ifname,
- 	source => 'host',
-	proto => '4' 
-    );
-}
-
-sub delete {
-    my ($self) = @_;
-    return "ip tunnel del tunl$self->{_interface}";
-}
-
-sub create {
-    my ($self, $inter) = @_;
-    return ("ip tunnel add tunl$inter mode ipip local $self->{_local_endpoint} remote $self->{_remote_endpoint} ttl 64",
-	    "ip addr add $self->{_local_address}/30 peer $self->{_remote_address} dev tunl$inter",
-	    "ip link set tunl$inter up" );
-}
-
-sub ifsym {
-    return 'tunl';
+    return (Funknet::Config::FirewallRuleSet::IPTables->new(
+						firewall => \@rules_out,
+						source => 'host'));
 }
 
 1;

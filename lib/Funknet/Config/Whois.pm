@@ -43,7 +43,10 @@ use Funknet::Config::TunnelSet;
 use Funknet::Config::BGP;
 use Funknet::Config::Encryption;
 use Funknet::Config::EncryptionSet;
+use Funknet::Config::FirewallRule;
+use Funknet::Config::FirewallRuleSet;
 use Funknet::Debug;
+use Data::Dumper;
 
 =head1 NAME
 
@@ -55,6 +58,7 @@ my $whois = Funknet::Config::Whois->new();
 my $whois_tun = $whois->tunnels;
 my $whois_bgp = $whois->sessions;
 my $whois_enc = $whois->encryption;
+my $whois_fwall = $whois->firewall;
 
 =head1 DESCRIPTION
 
@@ -103,8 +107,6 @@ local_os flag passed to the constructor.
 
 =cut
 
-use Data::Dumper;
-
 sub new {
     my ($class, %args) = @_;
     my $self = bless {}, $class;
@@ -115,7 +117,7 @@ sub new {
     unless (defined $self->{_net_whois_ripe}) {
 	die "couldn't get a Net::Whois::RIPE object";
     }
-    $self->{_net_whois_ripe}->source('FUNKNET');
+    $self->{_net_whois_ripe}->source(Funknet::Config::ConfigFile->whois_source || 'FUNKNET');
     debug("Done creating a Net::Whois::RIPE object");
     return $self;
 }
@@ -198,6 +200,30 @@ sub tunnels {
 					    source  => 'whois' );
 }
 
+sub firewall {
+    my ($self, $tun_set) = @_;
+    debug("Creating Firewall config from Whois data");
+
+    my $w = $self->{_net_whois_ripe};
+    my $l = Funknet::Config::ConfigFile->local;
+    $w->type('aut-num');
+    my $as = $w->query($l->{as});
+    
+    my @local_fwallrule;
+    
+    foreach my $tun ($tun_set->tunnels) {
+	
+	my $tun_name = $tun->name;
+	my (@fwall_objs);
+
+	@fwall_objs = $tun->firewall_rules;
+
+	if (defined @fwall_objs) {push @local_fwallrule, @fwall_objs};
+    }
+    return Funknet::Config::FirewallRuleSet->new( firewall => \@local_fwallrule,
+					    	  source  => 'whois' );
+}
+	
 sub sessions {
     my ($self) = @_;
     my $w = $self->{_net_whois_ripe};
@@ -320,6 +346,5 @@ sub encryption {
 						   source      => 'whois' );
     return $set;
 }
-
 
 1;

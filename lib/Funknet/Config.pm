@@ -43,6 +43,7 @@ use Funknet::Config::Host;
 use Funknet::Config::CommandSet;
 use Funknet::Config::SystemFileSet;
 use Funknet::Config::ConfigFile;
+use Data::Dumper;
 
 =head1 NAME
 
@@ -161,6 +162,30 @@ sub tun_diff {
     return ($diff, $whois_tun, $host_tun);
 }
 
+sub fwall_diff {
+    my ($self, $tun_set) = @_;
+    debug("arrived in Config.pm  fwall_diff");
+    my $l = Funknet::Config::ConfigFile->local;
+    
+    my $whois = Funknet::Config::Whois->new();
+    my $host = Funknet::Config::Host->new();
+    my $whois_fwall = $whois->firewall ( $tun_set );
+
+    my $host_fwall = $host->firewall( $tun_set );
+    
+    my $diff;
+    if ($l->{os} eq 'ios') {
+	$diff = Funknet::Config::CommandSet->new( cmds => [ $whois_fwall->diff($host_fwall) ],
+						  target => 'cli',
+						);
+    } else {
+	$diff = Funknet::Config::CommandSet->new( cmds => [ $whois_fwall->diff($host_fwall) ],
+						  target => 'host',
+						);
+    }
+    return ($diff, $whois_fwall, $host_fwall);
+}
+
 sub enc_diff {
     my ($self, $whois_tun, $host_tun) = @_;
     my $l = Funknet::Config::ConfigFile->local;
@@ -213,6 +238,28 @@ sub tun_config {
 						  );
     }
     return ($config, $whois_tun);
+}
+
+sub fwall_config {
+    debug("arrived in Config.pm fwall_config");
+    my ($self, $tun_set) = @_;
+
+    my $l = Funknet::Config::ConfigFile->local;
+    my $whois = Funknet::Config::Whois->new();
+    my $whois_fwall = $whois->firewall( $tun_set );
+
+    my $config;
+    if ($l->{os} eq 'ios') {
+	$config = Funknet::Config::CommandSet->new( cmds => [ $whois_fwall->config ],
+						    target => 'cli',
+						  );
+    } else {
+	$config = Funknet::Config::CommandSet->new( cmds => [ $whois_fwall->config ],
+						    target => 'host',
+						  );
+    }
+
+    return ($config, $whois_fwall);
 }
 
 sub enc_config {

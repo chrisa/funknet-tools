@@ -38,7 +38,7 @@ package Funknet::Config::ConfigFile;
 use strict;
 use vars qw/ $AUTOLOAD @ISA /;
 use Carp qw/ cluck /;
-use Funknet::Config::Validate qw / is_ipv4 is_ipv6 is_valid_as is_valid_router is_valid_os /;
+use Funknet::Config::Validate qw / is_ipv4 is_ipv6 is_valid_as is_valid_router is_valid_os is_valid_firewall/;
 use Funknet::Debug;
 use Funknet::Config::Interactive;
 
@@ -206,6 +206,12 @@ sub new {
 	return undef;
     } 
 
+    debug("Testing firewall_type");
+    unless (defined $config->{firewall_type} && is_valid_firewall($config->{firewall_type})) {
+	$self->warn("missing or invalid 'firewall_type' in $file");
+	return undef;
+    } 
+
     debug("Done parsing config file");
     return $self;
 }
@@ -244,6 +250,9 @@ sub local {
              public_endpoint => $config->{local_public_endpoint},
 	     ipsec           => $config->{local_ipsec},
 	     bgpd_vty        => $config->{local_bgpd_vty},
+	     firewall_type   => $config->{firewall_type},
+	     min_ipfw_rule   => $config->{min_ipfw_rule},
+	     max_ipfw_rule   => $config->{max_ipfw_rule},
 	   };
 }
 

@@ -36,6 +36,7 @@ use Funknet::Config::Tunnel;
 use Funknet::Config::TunnelSet;
 use Funknet::Config::BGP;
 use Funknet::Config::CLI;
+use Funknet::Debug;
 
 use Data::Dumper;
 
@@ -157,6 +158,28 @@ sub tunnels {
 					    source => 'host' );
 }
 
+sub firewall {
+    my ($self, $tun_set) = @_;
+    debug("Creating firewall config from Host data");
+
+    my @local_fwall;
+    my $fwall_obj;
+    my $fwall_set;
+    my $l = Funknet::Config::ConfigFile->local;
+
+    # special case of cisco needing CLI module
+    if ($l->{os} eq 'ios') {
+
+#	my $cli = Funknet::Config::CLI->new();
+#	@local_fwall = $cli->local_firewall_rules;
+
+    } else {
+	$fwall_obj = Funknet::Config::FirewallRuleSet->new(source => 'host');
+	$fwall_set = $fwall_obj->local_firewall_rules;
+    }
+    return($fwall_set);
+}
+
 sub encryption {
     my ($self, $tun_set) = @_;
     my @local_enc;
@@ -174,7 +197,6 @@ sub encryption {
 						   source      => 'host' );
     return $set;
 }
-
 
 sub sessions {
     my ($self) = @_;

@@ -16,6 +16,16 @@ local_os = bsd
 local_router = zebra
 local_bgpd_vty = /var/run/quagga/bgpd.vty
 
+whois_host = whois.funknet.org
+whois_port = 4343
+whois_source = FUNKNET
+
+# can be ipfw, iptables
+firewall_type = iptables
+
+min_ipfw_rule = 10000
+max_ipfw_rule = 20000
+
 # if you want encryption with ipsec, you need to set this
 # 'kame' is *BSD and Linux 2.6
 # 'freeswan' is Linux 2.4

@@ -39,6 +39,8 @@ use Funknet::Config::Tunnel::BSD;
 use Funknet::Config::Tunnel::IOS;
 use Funknet::Config::Tunnel::Linux;
 use Funknet::Config::Tunnel::Solaris;
+use Funknet::Debug;
+use Data::Dumper;
 
 use base qw/ Funknet::Config /;
 
@@ -170,6 +172,35 @@ sub new {
 	bless $self, 'Funknet::Config::Tunnel::Solaris';
 
     return $self;
+}
+
+sub firewall_rules {
+    my ($self) = @_;
+    my @rules_out;
+    my $proto;
+
+    debug("arrived in Tunnel firewall_rules");
+
+    if ($self->{_type} eq 'ipip') { $proto = 'ipencap' };
+
+    push (@rules_out, Funknet::Config::FirewallRule->new(
+                            proto => $proto,
+                            source_address => $self->{_local_endpoint},
+                            destination_address => $self->{_remote_endpoint},
+                            source_port => ($self->{_source_port} || undef),
+                            destination_port => ($self->{_destination_port} || undef),
+                            source => $self->{_source},));
+    push (@rules_out, Funknet::Config::FirewallRule->new(
+                            proto => $proto,
+                            source_address => $self->{_remote_endpoint},
+                            destination_address => $self->{_local_endpoint},
+                            source_port => ($self->{_destination_port} || undef)
+,
+                            destination_port => ($self->{_source_port} || undef)
+,
+                            source => $self->{_source},));
+
+    return (@rules_out);
 }
 
 sub encryption {
