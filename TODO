@@ -12,8 +12,7 @@
        Funknet::Config::AccessList::, but based on Net::ACL. 
 
 * Privilege in general needs thinking about - the program only needs
-  root to alter tunnels. Is userv portable enough? Secrets.pm should
-  also pick up usernames and passwords from ConfigFile.pm
+  root to alter tunnels. Is userv portable enough? 
 
 * Lots of little BGP statements are missing. There needs to be a way
   to put arbitrary extra commands in there, as well as things like
