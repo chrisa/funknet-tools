@@ -159,10 +159,10 @@ import:       from AS65016 action pref=100; accept AS65016
 export:       to AS65016 announce AS-FUNKTRANSIT
 tun:          BLANK-KATGATE
 
-# ...then get the following lines added to AS-FUNKTRANSIT object:
+# ...then get the following line added to AS-FUNKTRANSIT object:
 members:	AS65016
 
-# ( you will need to ask a central-nerd MNTer to do that for you... )
+# ( these steps need doing on all central nodes you might be connecting to )
 
 # ...sign and send to auto-dbm@funknet.org
 # otherwise, you will have to ask the central nerd maintainer to do it.
