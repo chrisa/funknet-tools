@@ -1,0 +1,189 @@
+# INSTALL_NOTES based on creation of blank.netdotnet.net
+# should serve as pace notes for funknet-central-nerd deployment
+#
+# http://www.funknet.org
+#
+# note: blank.netdotnet.net is a FreeBSD 5.1-RELEASE machine
+#	installed with all distribution sets, freebsd ports,
+#	and the following port tree:
+#
+# http://zero.lemonia.org/cgi-bin/cvsweb.cgi/zero-lemon-ports
+#
+# the only really important task this tree provides is that of ensuring
+# versions and applied patches are correct, so you could just use that info
+#
+# this tree assumes you have ssh-keyed cvs access, so many of the scripts
+# in tools/ will fail, however, some minor edits should be enuff for here
+#
+# set PORTSDIR DISTDIR and (not importantly) PACKAGES to suit yerself
+cd PORTSDIR/../
+vi zero-lemon-ports/common/lemon.port.mk
+
+# >>>>WARNING<<<< to avoid adding some root/user ssh accounts, knock out
+# the lemon/sysadmin-* and lemon/user-* BUILD_DEPENDS lines...
+vi zero-lemon-ports/meta/server-tarball/Makefile
+
+# server-tarball is a dependency of natd-firewall-tarball, but the install
+# targets for natd-firewall-tarball arent needed in this case.
+# only the DEPENDS are, hence the need to be run as root...
+
+cd zero-lemon-ports/natd-firewall-tarball
+
+# edit Makefile so FUNKNET is enabled, and SPEEDTOUCH isnt...
+vi Makefile
+rootdo make
+
+# bsd port of IRRtools failed so i copied the RtConfig binary from booyaka :/
+# really this should lemon-ported or summat cos only RtConfig is neccessary...
+
+# create zebra files
+cd /usr/local/etc/zebra
+cp bgpd.conf.sample bgpd.conf
+cp zebra.conf.sample zebra.conf
+
+# edit zebra files for hostname, passwords, and vty restrictions
+vi bgpd.conf
+vi zebra.conf
+
+# important lines being: (BEGIN_EXAMPLE)
+!
+hostname blank
+password zebra
+enable password zebra
+!
+access-list term permit 127.0.0.1/32
+access-list term permit 10.2.0.0/24
+access-list term deny any
+!
+line vty
+!
+(END_EXAMPLE)
+
+# run daemons (add similar to boot chain when cool)
+zebra -d
+bgpd -d
+
+# neaten boot stuff (not funknet relevant, mostly a note to self, mostly)
+cd /usr/local/etc/rc.d/
+chmod -x *
+chmod +x 000.pkgtools.sh local.sh sshd.sh
+chmod u+w *
+chmod o-x *
+chmod o+r *
+
+# checkout anoncvs.aldigital.co.uk-funknet-tools
+cd ~software/unpacked/
+cvs -d :ext:anoncvs.aldigital.co.uk:/home/cvsroot \
+	co anoncvs.aldigital.co.uk-funknet-tools
+
+# sent this mail, signed with my funknet-whois-db-registered key,
+# ( see http://www.funknet.org/doc/routing/whois.html ),
+# to auto-dbm@funknet.org : (BEGIN_MAIL)
+
+aut-num:      AS65023
+as-name:      BLANK
+descr:        Blank Central Node
+import:       from AS65000 action pref=100; accept AS-FUNKTRANSIT
+import:       from AS65001 action pref=100; accept AS65001
+import:       from AS65002 action pref=100; accept AS-NODNOL
+import:       from AS65003 action pref=100; accept AS65003
+import:       from AS65004 action pref=100; accept AS65004
+import:       from AS65005 action pref=100; accept AS65005
+import:       from AS65006 action pref=100; accept AS65006
+import:       from AS65007 action pref=100; accept AS65007
+import:       from AS65008 action pref=100; accept AS65008
+import:       from AS65009 action pref=100; accept AS65009
+import:       from AS65010 action pref=100; accept AS65010
+import:       from AS65011 action pref=100; accept AS65011
+import:       from AS65012 action pref=100; accept AS65012
+import:       from AS65013 action pref=100; accept AS65013
+import:       from AS65014 action pref=100; accept AS65014
+import:       from AS65015 action pref=100; accept AS65015
+import:       from AS65016 action pref=100; accept AS65016
+import:       from AS65017 action pref=100; accept AS65017
+import:       from AS65018 action pref=100; accept AS65018
+import:       from AS65019 action pref=100; accept AS65019
+import:       from AS65020 action pref=100; accept AS65020
+import:       from AS65021 action pref=100; accept AS65021
+import:       from AS65022 action pref=100; accept AS65022
+export:       to AS65000 announce AS-FUNKTRANSIT
+export:       to AS65001 announce AS-FUNKTRANSIT
+export:       to AS65002 announce AS-FUNKTRANSIT
+export:       to AS65003 announce AS-FUNKTRANSIT
+export:       to AS65004 announce AS-FUNKTRANSIT
+export:       to AS65005 announce AS-FUNKTRANSIT
+export:       to AS65006 announce AS-FUNKTRANSIT
+export:       to AS65007 announce AS-FUNKTRANSIT
+export:       to AS65008 announce AS-FUNKTRANSIT
+export:       to AS65009 announce AS-FUNKTRANSIT
+export:       to AS65010 announce AS-FUNKTRANSIT
+export:       to AS65011 announce AS-FUNKTRANSIT
+export:       to AS65012 announce AS-FUNKTRANSIT
+export:       to AS65013 announce AS-FUNKTRANSIT
+export:       to AS65014 announce AS-FUNKTRANSIT
+export:       to AS65015 announce AS-FUNKTRANSIT
+export:       to AS65016 announce AS-FUNKTRANSIT
+export:       to AS65017 announce AS-FUNKTRANSIT
+export:       to AS65018 announce AS-FUNKTRANSIT
+export:       to AS65019 announce AS-FUNKTRANSIT
+export:       to AS65020 announce AS-FUNKTRANSIT
+export:       to AS65021 announce AS-FUNKTRANSIT
+export:       to AS65022 announce AS-FUNKTRANSIT
+tun:          BLANK-SPLURBY
+tun:          BLANK-MUNKY
+tun:          NODNOL-BLANK
+tun:          BLANK-RATS
+tun:          BLANK-BRADDON
+tun:          BLANK-BOLINET
+tun:          BLANK-PHUQ
+tun:          BLANK-WOODYLAND
+tun:          BLANK-WHITNET
+tun:          BLANK-FATNET
+tun:          BLANK-PHALLUS
+tun:          BLANK-COLONDOT
+tun:          BLANK-SHEEPY
+tun:          BLANK-PAGETNET
+tun:          BLANK-WOOD2NET
+tun:          BLANK-COWFRENZY
+tun:          BLANK-KATGATE
+tun:          BLANK-RAVENSHEAD
+tun:          BLANK-DEXNET
+tun:          BLANK-WHIT-TEST
+tun:          BLANK-LESICAN
+tun:          BLANK-HUCKVALE
+tun:          BLANK-ANDES
+admin-c:      CA1-FUNKNET
+tech-c:       CA1-FUNKNET
+mnt-by:       DOUG-MNT
+notify:       doug@netdotnet.net
+changed:      doug@lemonia.org
+source:       FUNKNET
+
+(END_MAIL)
+
+# configure funknet
+cd ~software/unpacked/anoncvs.aldigital.co.uk-funknet-tools/
+cp funknet.conf.dist funknet.conf-BLANK
+vi funknet.conf-BLANK
+
+# edit funknet.conf-BLANK for AS etc, then:
+rootdo perl config.pl -a -f funknet.conf-BLANK 
+
+# if joy, add to boot chain
+cat - >> /usr/local/etc/rc.d/local.sh << EOF
+
+# funknet
+/usr/local/sbin/zebra -d
+/usr/local/sbin/bgpd -d
+/usr/local/sbin/racoon -l /var/log/racoon.log
+sleep 2
+
+# FIXME when funknet-tools gets a lemon-port
+(
+cd /home/software/unpacked/anoncvs.aldigital.co.uk-funknet-tools
+perl config.pl -a -f funknet.conf-BLANK   
+)
+EOF
+
+# youre done, skin up.
+
