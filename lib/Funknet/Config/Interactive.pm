@@ -63,6 +63,7 @@ sub new {
 	require Term::Interact;
     };
     unless ($@) {
+	$self->{interact_p} = 1;
 	return $self;
     } else {
 	return undef;
