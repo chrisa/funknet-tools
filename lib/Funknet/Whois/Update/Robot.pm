@@ -47,6 +47,8 @@ use strict;
 use Email::Robot;
 use base qw/ Email::Robot /;
 
+use Data::Dumper;
+
 sub success_text {
     my ($self, $keyid, $header, @objects) = @_;
 
@@ -63,7 +65,16 @@ The following objects were processed.
 MAILTEXT
 
     for my $object (@objects) {
-	$text .= "Update OK: [".($object->type)."] ".($object->name)."\n";
+
+	my $type = $object->{_order}->[0];
+	my $name;
+	{
+	    no strict 'refs';
+	    # fucking yuck
+	    $name = &{"Net::Whois::RIPE::Object::$type"}($object);
+	}
+	
+	$text .= "Update OK: [$type] $name\n";
     }
 
     $text .= << "MAILTEXT";

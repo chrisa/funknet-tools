@@ -124,6 +124,7 @@ sub update {
 	}
     }
     if (scalar @objects == 0) {
+	warn "no objects";
 	$robot->fatalerror("couldn't convert the signed message into any Net::WHOIS::RIPE::Objects");	
     }
 
@@ -132,12 +133,19 @@ sub update {
     my (@ok, @noauth, @nosource);
     for my $object (@objects) {
 	if ($object->source ne $self->{_source}) {
+	    warn "no source";
 	    push @nosource, $object;
 	    next;
 	}
-	if (check_auth($object, $pgp->keyid)) {
+
+	# de-MBM the key id (we do *not* want 64 bit keyids, tyvm)
+	my $keyid64 = $pgp->keyid;
+	my ($keyid32) = $keyid64 =~ /([A-Z0-9]{8})$/i;
+
+	if (check_auth($object, $keyid32)) {
 	    push @ok, $object;
 	} else {
+	    warn "auth fail";
 	    $robot->error("hierarchical authorisation failed for object ".$object->object);
 	    push @noauth, $object;
 	}
