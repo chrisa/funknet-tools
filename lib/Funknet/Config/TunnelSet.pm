@@ -33,7 +33,6 @@
 package Funknet::Config::TunnelSet;
 use strict;
 use base qw/ Funknet::Config /;
-use Data::Dumper;
 
 =head1 NAME
 
@@ -82,11 +81,14 @@ sub tunnels {
 
 sub config {
     my ($self) = @_;
-    
-    for my $tun (@{$self->{_tunnels}}) {
-	print $tun->config;
-	print "\n";
+
+    my @cmds;
+    my $i = 0;
+    for my $tun ($self->tunnels) {
+        push @cmds, $tun->create($i);
+	$i++;
     }
+    return @cmds;
 }
 
 sub source {
