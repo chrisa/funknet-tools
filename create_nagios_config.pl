@@ -6,7 +6,7 @@ use lib './lib';
 
 use Funknet::Whois;
 use Net::Whois::RIPE;
-use Nagios::Config;
+#use Nagios::Config; # no need for this yet
 use Data::Dumper;
 
 my @ass;
