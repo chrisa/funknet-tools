@@ -116,15 +116,21 @@ sub new_from_ifconfig {
 
 sub delete {
     my ($self) = @_;
-    return "ifconfig ip.tun$self->{_interface} inet unplumb";
+    return Funknet::Config::CommandSet->new( cmds => [ "ifconfig ip.tun$self->{_interface} inet unplumb" ],
+					     target => 'host',
+					   );
 }
 
 sub create {
     my ($self, $inter) = @_;
-    return (
-	"ifconfig ip.tun$inter inet plumb",
-	"ifconfig ip.tun$inter inet tsrc $self->{_local_endpoint} tdst $self->{_remote_endpoint}",
-	"ifconfig ip.tun$inter inet $self->{_local_address} $self->{_remote_address} netmask 255.255.255.252 up" );
+
+    my @cmds = (
+		"ifconfig ip.tun$inter inet plumb",
+		"ifconfig ip.tun$inter inet tsrc $self->{_local_endpoint} tdst $self->{_remote_endpoint}",
+		"ifconfig ip.tun$inter inet $self->{_local_address} $self->{_remote_address} netmask 255.255.255.252 up" );
+    return Funknet::Config::CommandSet->new( cmds => \@cmds,
+					     target => 'host',
+					   );
 }
 
 sub ifsym {

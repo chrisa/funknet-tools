@@ -180,27 +180,21 @@ sub new {
 sub firewall_rules {
     my ($self) = @_;
     my @rules_out;
-    my $proto;
-
-    debug("arrived in Tunnel firewall_rules");
-
-    my $proto = $self->tunnel_proto();
 
     push (@rules_out, Funknet::Config::FirewallRule->new(
-                            proto => $proto,
+                            proto => $self->tunnel_proto(),
                             source_address => $self->{_local_endpoint},
                             destination_address => $self->{_remote_endpoint},
-                            source_port => ($self->{_source_port} || undef),
-                            destination_port => ($self->{_destination_port} || undef),
+                            source_port => $self->can("tunnel_source_port") ? $self->tunnel_source_port() : undef,
+                            destination_port => $self->can("tunnel_destination_port") ? $self->tunnel_destination_port() : undef,
                             source => $self->{_source},));
+
     push (@rules_out, Funknet::Config::FirewallRule->new(
-                            proto => $proto,
+                            proto => $self->tunnel_proto(),
                             source_address => $self->{_remote_endpoint},
                             destination_address => $self->{_local_endpoint},
-                            source_port => ($self->{_destination_port} || undef)
-,
-                            destination_port => ($self->{_source_port} || undef)
-,
+                            destination_port => $self->can("tunnel_source_port") ? $self->tunnel_source_port() : undef,
+                            source_port => $self->can("tunnel_destination_port") ? $self->tunnel_destination_port() : undef,
                             source => $self->{_source},));
 
     return (@rules_out);

@@ -85,25 +85,34 @@ sub config {
 
 sub delete {
     my ($self) = @_;
-    return (
-	"configure terminal",
-	"no interface Tunnel$self->{_interface}",
-	"exit" );
+    my @cmds = (
+		"configure terminal",
+		"no interface Tunnel$self->{_interface}",
+		"exit" 
+	       );
+
+    return Funknet::Config::CommandSet->new( cmds => \@cmds,
+					     target => 'cli',
+					   );
 }
 
 sub create {
     my ($self, $inter) = @_;
     
-    return (
-	    "configure terminal",
-	    "interface Tunnel$inter",
-	    "tunnel mode $self->{_type}", 
-	    "tunnel source $self->{_local_endpoint}",
-	    "tunnel destination $self->{_remote_endpoint}",
-	    "ip address $self->{_local_address} 255.255.255.252",
-	    "exit",
-	    "exit",
-	 );
+    my @cmds = (
+		"configure terminal",
+		"interface Tunnel$inter",
+		"tunnel mode $self->{_type}", 
+		"tunnel source $self->{_local_endpoint}",
+		"tunnel destination $self->{_remote_endpoint}",
+		"ip address $self->{_local_address} 255.255.255.252",
+		"exit",
+		"exit",
+	       );
+
+    return Funknet::Config::CommandSet->new( cmds => \@cmds,
+					     target => 'cli',
+					   );
 }
 
 sub ifsym {

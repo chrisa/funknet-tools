@@ -2,6 +2,7 @@ package Funknet::Whois::Server;
 use strict;
 use Net::TCP::Server;
 use Data::Dumper;
+use Funknet::Config::Util qw/ dq_to_int /;
 
 =head1 NAME
 
@@ -205,7 +206,7 @@ sub go {
 	    
 	} elsif (defined $opts->{inverse} && $opts->{inverse} eq 'origin' && defined $self->{_index}->{origin}->{$query}) {
 	    
-	    for my $object (sort { _dq_to_int(_route($a)) <=> _dq_to_int(_route($b)) } 
+	    for my $object (sort { dq_to_int(_route($a)) <=> dq_to_int(_route($b)) } 
 	                        @{ $self->{_index}->{origin}->{$query} }) {
 		print $sh $object, "\n";
 		$self->_log("object found via inverse lookup\n");
@@ -232,16 +233,6 @@ sub _log {
     if ($self->{_verbose}) {
 	print STDERR "whoisd: $msg";
     }
-}
-
-sub _dq_to_int {
-    my ($dq) = @_;
-    my @octets = $dq =~ /^(\d+)\.(\d+)\.(\d+)\.(\d+)/;
-    my $int = (($octets[0] << 24) + 
-               ($octets[1] << 16) +
-	       ($octets[2] << 8)  +
-	       $octets[3]);
-    return $int;
 }
 
 sub _route {

@@ -61,8 +61,13 @@ sub config {
 	    push @cmds, $n_obj->{_acl_out}->config;
 	}
     }
-
-    return @cmds;
+    
+    my $cmdset = Funknet::Config::CommandSet->new( cmds => \@cmds,
+						   target => 'cli',
+						 );
+    
+    return Funknet::Config::ConfigSet->new( cmds => [ $cmdset ] );
+    
 }
     
 
@@ -234,7 +239,11 @@ sub diff {
 	push @cmds, map { "clear ip bgp $_ soft in" } keys %$bounce_req_soft;
     }
 
-    return @cmds;
+    my $cmdset = Funknet::Config::CommandSet->new( cmds => \@cmds,
+						   target => 'cli',
+						 );
+    
+    return Funknet::Config::ConfigSet->new( cmds => [ $cmdset ] );
 }
 
 1;

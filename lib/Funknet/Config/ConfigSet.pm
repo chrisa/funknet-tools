@@ -1,4 +1,8 @@
-# Copyright (c) 2003
+#!/usr/bin/perl -w
+#
+# $Id$
+#
+# Copyright (c) 2005
 #	The funknet.org Group.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -30,72 +34,71 @@
 # SUCH DAMAGE.
 
 
-package Funknet::Config::FirewallRule::IPTables;
+package Funknet::Config::ConfigSet;
 use strict;
-use base qw/ Funknet::Config::FirewallRule /;
-use Funknet::ConfigFile::Tools;
-use Funknet::Debug;
 
 =head1 NAME
 
-Funknet::Config::FirewallRule::IPTables
+Funknet::Config::ConfigSet
 
 =head1 DESCRIPTION
 
-This class contains methods for creating and deleting rules in IPTables
+A container class for SystemFiles and CommandSets
 
 =head1 METHODS
 
-=head2 create
-
-Returns a list of strings containing commands to configure a single
-IPTables rule, in a chain with the same as the whois_source name.
-The required rule details are passed in as part of $self.
-
-=head2 delete
-
-Returns a list of strings containing commands to delete an IPTables
-rule from the chain named the same as the whois_source name.
+=head2 new
 
 =cut
 
-sub delete {
-    my ($self) = @_;
+sub new {
+    my ($class, %args) = @_;
+    my $self = bless {}, $class;
 
-    my $whois_source = Funknet::ConfigFile::Tools->whois_source || 'FUNKNET';
-    my $port_str = _ports($self);
+    if (defined $args{files}) {
+	$self->{_files} = $args{files};
+    }
+    if (defined $args{cmds}) {
+	$self->{_cmds} = $args{cmds};
+    }
 
-    return ("iptables -D $whois_source -t filter -p $self->{_proto} -s $self->{_source_address} " .
-	    "-d $self->{_destination_address}".$port_str."-j ACCEPT");
+    return $self;
 }
 
-sub create {
-    my ($self) = @_;
-
-    my $whois_source = Funknet::ConfigFile::Tools->whois_source || 'FUNKNET';
-    my $port_str = _ports($self);
-
-    return ("iptables -A $whois_source -t filter -p $self->{_proto} -s $self->{_source_address} " .
-	    "-d $self->{_destination_address}".$port_str."-j ACCEPT");
-}
-
-sub create_chain {
-    my ($class, $chain) = @_;
-
-    return("iptables -N $chain");
-}
-
-sub _ports {
+sub as_text {
     my ($self) = @_;
     
-    my $port_str = " ";
-    if (defined $self->{_source_port}) {
-	$port_str .= "--sport $self->{_source_port} ";
+    my $text = "";
+
+    if (defined $self->{_files}) {
+	for my $file (@{ $self->{_files} }) {
+	    $text .= $file->as_text;
+	}
     }
-    if (defined $self->{_destination_port}) {
-	$port_str .= "--dport $self->{_destination_port} ";
+
+    if (defined $self->{_cmds}) {
+	for my $cmd (@{ $self->{_cmds} }) {
+	    $text .= $cmd->as_text;
+	}
     }
-    return $port_str;
+    
+    return $text;
+}
+
+sub apply {
+    my ($self) = @_;
+    
+    if (defined $self->{_files}) {
+	for my $file (@{ $self->{_files} }) {
+	    $file->apply;
+	}
+    }
+
+    if (defined $self->{_cmds}) {
+	for my $cmd (@{ $self->{_cmds} }) {
+	    $cmd->apply;
+	}
+    }
 }
 
 1;

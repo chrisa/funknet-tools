@@ -42,6 +42,7 @@ use Funknet::Config::Whois;
 use Funknet::Config::Host;
 use Funknet::Config::CommandSet;
 use Funknet::Config::SystemFileSet;
+use Funknet::Config::ConfigSet;
 use Funknet::ConfigFile;
 use Data::Dumper;
 
@@ -129,66 +130,41 @@ sub bgp_diff {
     my $whois = Funknet::Config::Whois->new();
     my $host = Funknet::Config::Host->new();
 
-    debug("Creating BGP session from whois data");
     my $whois_bgp = $whois->sessions;
-    debug("Creating BGP session from host data");
     my $host_bgp = $host->sessions;
     
-    my $diff = Funknet::Config::CommandSet->new( cmds => [ $whois_bgp->diff($host_bgp) ],
-					         target => 'cli',
-					       );
+    my $diff = $whois_bgp->diff($host_bgp);
     return $diff;
 }
 
 sub tun_diff {
     my ($self) = @_;
-    my $l = Funknet::ConfigFile::Tools->local;
     
     my $whois = Funknet::Config::Whois->new();
     my $host = Funknet::Config::Host->new();
+
     my $whois_tun = $whois->tunnels;
     my $host_tun = $host->tunnels;
     
-    my $diff;
-    if ($l->{os} eq 'ios') {
-	$diff = Funknet::Config::CommandSet->new( cmds => [ $whois_tun->diff($host_tun) ],
-						  target => 'cli',
-						);
-    } else {
-	$diff = Funknet::Config::CommandSet->new( cmds => [ $whois_tun->diff($host_tun) ],
-						  target => 'host',
-						);
-    }
+    my $diff = $whois_tun->diff($host_tun);
     return ($diff, $whois_tun, $host_tun);
 }
 
 sub fwall_diff {
     my ($self, $tun_set) = @_;
-    debug("arrived in Config.pm  fwall_diff");
-    my $l = Funknet::ConfigFile::Tools->local;
     
     my $whois = Funknet::Config::Whois->new();
     my $host = Funknet::Config::Host->new();
-    my $whois_fwall = $whois->firewall ( $tun_set );
 
+    my $whois_fwall = $whois->firewall ( $tun_set );
     my $host_fwall = $host->firewall( $tun_set );
     
-    my $diff;
-    if ($l->{os} eq 'ios') {
-	$diff = Funknet::Config::CommandSet->new( cmds => [ $whois_fwall->diff($host_fwall) ],
-						  target => 'cli',
-						);
-    } else {
-	$diff = Funknet::Config::CommandSet->new( cmds => [ $whois_fwall->diff($host_fwall) ],
-						  target => 'host',
-						);
-    }
+    my $diff = $whois_fwall->diff($host_fwall);
     return ($diff, $whois_fwall, $host_fwall);
 }
 
 sub enc_diff {
     my ($self, $whois_tun, $host_tun) = @_;
-    my $l = Funknet::ConfigFile::Tools->local;
     
     my $whois = Funknet::Config::Whois->new();
     my $host = Funknet::Config::Host->new();
@@ -196,14 +172,7 @@ sub enc_diff {
     my $whois_enc = $whois->encryption( $whois_tun );
     my $host_enc = $host->encryption( $host_tun );
     
-    my $diff;
-    if ($l->{os} eq 'ios') {
-	$diff = Funknet::Config::CommandSet->new( cmds => [ $whois_enc->config ],
-						  target => 'cli',
-						);
-    } else {
-	$diff = Funknet::Config::SystemFileSet->new( files => [ $whois_enc->diff($host_enc) ] );
-    }
+    my $diff = $whois_enc->diff($host_enc);
     return $diff;
 }
 
@@ -211,72 +180,39 @@ sub bgp_config {
     my ($self) = @_;
     
     my $whois = Funknet::Config::Whois->new();
-    debug("Creating BGP session from whois data");
     my $whois_bgp = $whois->sessions;
     
-    my $config = Funknet::Config::CommandSet->new( cmds => [ $whois_bgp->config ],
-						   target => 'cli',
-						 );
+    my $config = $whois_bgp->config();
     return ($config, $whois_bgp);
 }
 
 sub tun_config {
     my ($self) = @_;
-    my $l = Funknet::ConfigFile::Tools->local;
 
     my $whois = Funknet::Config::Whois->new();
     my $whois_tun = $whois->tunnels;
 
-    my $config;
-    if ($l->{os} eq 'ios') {
-	$config = Funknet::Config::CommandSet->new( cmds => [ $whois_tun->config ],
-						    target => 'cli',
-						  );
-    } else {
-	$config = Funknet::Config::CommandSet->new( cmds => [ $whois_tun->config ],
-						    target => 'host',
-						  );
-    }
+    my $config = $whois_tun->config();
     return ($config, $whois_tun);
 }
 
 sub fwall_config {
-    debug("arrived in Config.pm fwall_config");
     my ($self, $tun_set) = @_;
 
-    my $l = Funknet::ConfigFile::Tools->local;
     my $whois = Funknet::Config::Whois->new();
     my $whois_fwall = $whois->firewall( $tun_set );
 
-    my $config;
-    if ($l->{os} eq 'ios') {
-	$config = Funknet::Config::CommandSet->new( cmds => [ $whois_fwall->config ],
-						    target => 'cli',
-						  );
-    } else {
-	$config = Funknet::Config::CommandSet->new( cmds => [ $whois_fwall->config ],
-						    target => 'host',
-						  );
-    }
-
+    my $config = $whois_fwall->config();
     return ($config, $whois_fwall);
 }
 
 sub enc_config {
     my ($self, $tun_set) = @_;
-    my $l = Funknet::ConfigFile::Tools->local;
 
     my $whois = Funknet::Config::Whois->new();
     my $whois_enc = $whois->encryption( $tun_set );
 
-    my ($config, $diff);
-    if ($l->{os} eq 'ios') {
-	$config = Funknet::Config::CommandSet->new( cmds => [ $whois_enc->config ],
-						    target => 'cli',
-						  );
-    } else {
-	$config = Funknet::Config::SystemFileSet->new( files => [ $whois_enc->config ] );
-    }
+    my $config = $whois_enc->config();
     return ($config, $whois_enc);
 }
 

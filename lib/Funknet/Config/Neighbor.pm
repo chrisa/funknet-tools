@@ -97,6 +97,7 @@ sub config {
     if (defined $self->{_acl_in} || defined $self->{_acl_out}) {
 	push @cmds, "neighbor $self->{_remote_addr} soft-reconfiguration inbound";
     }
+
     return @cmds;
 }
 

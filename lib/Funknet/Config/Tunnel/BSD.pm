@@ -131,7 +131,9 @@ sub delete {
 	elsif (/gre/) {$tun_type = 'gre';}
     }
 
-    return "ifconfig $tun_type$self->{_interface} destroy";
+    return Funknet::Config::CommandSet->new( cmds => [ "ifconfig $tun_type$self->{_interface} destroy" ],
+					     target => 'host',
+					   );
 }
 
 sub create {
@@ -144,11 +146,14 @@ sub create {
 	elsif (/gre/) {$tun_type = 'gre';}
     }
      
-    return (
-	"ifconfig $tun_type$inter create mtu 1480",
-	"ifconfig $tun_type$inter tunnel $self->{_local_endpoint} $self->{_remote_endpoint}",
-	"ifconfig $tun_type$inter inet $self->{_local_address} $self->{_remote_address} netmask 255.255.255.252"
-     );
+    my @cmds = 	( "ifconfig $tun_type$inter create mtu 1480",
+		  "ifconfig $tun_type$inter tunnel $self->{_local_endpoint} $self->{_remote_endpoint}",
+		  "ifconfig $tun_type$inter inet $self->{_local_address} $self->{_remote_address} netmask 255.255.255.252"
+		);
+    
+    return Funknet::Config::CommandSet->new( cmds => \@cmds,
+					     target => 'host',
+					   );
 }
 
 sub ifsym {

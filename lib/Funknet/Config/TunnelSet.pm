@@ -82,16 +82,34 @@ sub tunnels {
 sub config {
     my ($self) = @_;
 
-    my @cmds;
+    my (@cmds, @files);
 
     # tunl0 never works properly on linux
     my $i = 1;
 
+    # ->create could return a SystemFile object or a 
+    # CommandSet object here, deal with either. 
+
     for my $tun ($self->tunnels) {
-        push @cmds, $tun->create($i);
+	my $create_obj = $tun->create($i);
+	if ($create_obj->isa('Funknet::Config::SystemFile')) {
+	    push @files, $create_obj;
+	} 
+	if ($create_obj->isa('Funknet::Config::CommandSet')) {
+	    push @cmds, $create_obj;
+	} 
 	$i++;
     }
-    return @cmds;
+
+    my $fileset = Funknet::Config::SystemFileSet->new(
+						      files => \@files,
+						     );
+
+    my $cs = Funknet::Config::ConfigSet->new(
+					     files => [ $fileset ],
+					     cmds  => \@cmds,
+					    );
+    return $cs;
 }
 
 sub source {
@@ -101,7 +119,7 @@ sub source {
 
 sub diff {
     my ($whois, $host) = @_;
-    my (@cmds, $if_num);
+    my (@cmds, @files, $if_num);
     $if_num = 0;
 
     # first check we have the objects the right way around.
@@ -138,11 +156,29 @@ sub diff {
 	    while ( scalar( grep /$if_sym$if_num/, @ignore_if ) >0 ) {
 		$if_num++;
 	    }
-	    push @cmds, $w->create($if_num);
+
+	    my $create_obj = $w->create($if_num);
+
+	    if ($create_obj->isa('Funknet::Config::SystemFile')) {
+		push @files, $create_obj;
+	    } 
+	    if ($create_obj->isa('Funknet::Config::CommandSet')) {
+		push @cmds, $create_obj;
+	    } 
+
 	    $if_num++;
 	}
     }
-    return @cmds;
+
+    my $fileset = Funknet::Config::SystemFileSet->new(
+						      files => \@files,
+						     );
+
+    my $cs = Funknet::Config::ConfigSet->new(
+					     files => [ $fileset ],
+					     cmds  => \@cmds,
+					    );
+    return $cs;
 }
 
 1;

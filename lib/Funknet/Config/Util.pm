@@ -1,4 +1,4 @@
-# Copyright (c) 2003
+# Copyright (c) 2005
 #	The funknet.org Group.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -30,72 +30,33 @@
 # SUCH DAMAGE.
 
 
-package Funknet::Config::FirewallRule::IPTables;
+package Funknet::Config::Util;
 use strict;
-use base qw/ Funknet::Config::FirewallRule /;
-use Funknet::ConfigFile::Tools;
-use Funknet::Debug;
+use Exporter;
 
 =head1 NAME
 
-Funknet::Config::FirewallRule::IPTables
+Funknet::Config::Util
 
 =head1 DESCRIPTION
 
-This class contains methods for creating and deleting rules in IPTables
-
-=head1 METHODS
-
-=head2 create
-
-Returns a list of strings containing commands to configure a single
-IPTables rule, in a chain with the same as the whois_source name.
-The required rule details are passed in as part of $self.
-
-=head2 delete
-
-Returns a list of strings containing commands to delete an IPTables
-rule from the chain named the same as the whois_source name.
+Random useful subs.
 
 =cut
 
-sub delete {
-    my ($self) = @_;
+use vars qw/ @EXPORT_OK /;
+@EXPORT_OK = qw/ dq_to_int /;
+use Exporter;
+use base qw/ Exporter /;
 
-    my $whois_source = Funknet::ConfigFile::Tools->whois_source || 'FUNKNET';
-    my $port_str = _ports($self);
-
-    return ("iptables -D $whois_source -t filter -p $self->{_proto} -s $self->{_source_address} " .
-	    "-d $self->{_destination_address}".$port_str."-j ACCEPT");
-}
-
-sub create {
-    my ($self) = @_;
-
-    my $whois_source = Funknet::ConfigFile::Tools->whois_source || 'FUNKNET';
-    my $port_str = _ports($self);
-
-    return ("iptables -A $whois_source -t filter -p $self->{_proto} -s $self->{_source_address} " .
-	    "-d $self->{_destination_address}".$port_str."-j ACCEPT");
-}
-
-sub create_chain {
-    my ($class, $chain) = @_;
-
-    return("iptables -N $chain");
-}
-
-sub _ports {
-    my ($self) = @_;
-    
-    my $port_str = " ";
-    if (defined $self->{_source_port}) {
-	$port_str .= "--sport $self->{_source_port} ";
-    }
-    if (defined $self->{_destination_port}) {
-	$port_str .= "--dport $self->{_destination_port} ";
-    }
-    return $port_str;
+sub dq_to_int {
+    my ($dq) = @_;
+    my @octets = $dq =~ /^(\d+)\.(\d+)\.(\d+)\.(\d+)/;
+    my $int = (($octets[0] << 24) + 
+               ($octets[1] << 16) +
+	       ($octets[2] << 8)  +
+	       $octets[3]);
+    return $int;
 }
 
 1;

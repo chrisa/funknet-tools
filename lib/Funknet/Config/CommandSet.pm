@@ -88,6 +88,16 @@ sub cmds {
     return @{ $self->{_cmds} };
 }
 
+sub as_text {
+    my ($self) = @_;
+    return join "\n", $self->cmds();
+}
+
+sub apply {
+    my ($self) = @_;
+    # should warn here.
+}
+
 package Funknet::Config::CommandSet::CLI;
 use base qw/ Funknet::Config::CommandSet /;
 

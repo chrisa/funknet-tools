@@ -241,7 +241,12 @@ sub config {
 	    die("ran out of available firewall entries");
 	}
     }
-    return @cmds;
+
+    my $cmdset = Funknet::Config::CommandSet->new( cmds => \@cmds,
+						   target => 'cli',
+						 );
+    
+    return Funknet::Config::ConfigSet->new( cmds => [ $cmdset ] );
 }
 
 

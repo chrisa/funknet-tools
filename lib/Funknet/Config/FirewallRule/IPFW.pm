@@ -74,16 +74,16 @@ sub create {
 
     my $proto = $self->{_proto};
     my $whois_source = Funknet::ConfigFile::Tools->whois_source || 'FUNKNET';
-
-    return ("ipfw add $rule_num allow $proto from $self->{_source_address} to $self->{_destination_address}");
-}
-
-sub as_hashkey {
-    my ($self) = @_;
-
-    return
-        "$self->{_type}-" .
-        "$self->{_source_address}-$self->{_destination_address}-";
+    
+    my $port_str = " ";
+    if (defined $self->{_source_port}) {
+	$port_str .= "$self->{_source_port} ";
+    }
+    if (defined $self->{_destination_port}) {
+	$port_str .= "$self->{_destination_port} ";
+    }
+    
+    return ("ipfw add $rule_num allow $proto from $self->{_source_address} to $self->{_destination_address} $port_str");
 }
 
 1;

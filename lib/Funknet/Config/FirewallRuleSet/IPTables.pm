@@ -117,9 +117,8 @@ sub config {
 
     my @cmds;
     my $whois_source = Funknet::ConfigFile::Tools->whois_source;
-    debug("whois source is $whois_source\n");
     my $first_rule = Funknet::Config::FirewallRule::IPTables->create_chain($whois_source);
-    debug("first rule is $first_rule\n");
+
     push (@cmds, $first_rule);
 
     for my $fwallrule ($self->firewall) {
@@ -127,7 +126,12 @@ sub config {
 	    push @cmds, $fwallrule->create();
 	}
     }
-    return @cmds;
+
+    my $cmdset = Funknet::Config::CommandSet->new( cmds => \@cmds,
+						   target => 'cli',
+						 );
+    
+    return Funknet::Config::ConfigSet->new( cmds => [ $cmdset ] );
 }
 
 1;
