@@ -73,10 +73,7 @@ sub get_bgp {
 			      Prompt  => '/[\>\#]$/',
 			      Port    => 23,
 			    );
-    
-    $t->open($l->{host});
-    $t->cmd($self->{_password});
-    $t->cmd('terminal length 0');
+    _login($self,$t);
     
     my @output = $t->cmd('show ip bgp');
 
@@ -195,9 +192,7 @@ sub get_access_list {
 			      Port    => 23,
 			    );
     
-    $t->open($l->{host});
-    $t->cmd($self->{_password});
-    $t->cmd('terminal length 0');
+    _login($self,$t);
 
     my @output = $t->cmd("show ip bgp neighbor $args{remote_addr}");
     
@@ -252,11 +247,8 @@ sub get_interfaces {
 			      Prompt  => '/[\>\#]$/',
 			      Port    => 23,
 			    );
+    _login($self,$t);
     
-    $t->open($l->{host});
-    $t->cmd($self->{_password});
-    $t->cmd('terminal length 0');
-
     my @output = $t->cmd('show interfaces');
     
     my $tunnels;
@@ -322,8 +314,7 @@ sub check_login {
 			      Prompt  => '/[\>\#] $/',
 			      Port    => 23,
 			    );
-    $t->open($l->{host});
-    $t->cmd($self->{_password});
+    _login($self,$t);
     $t->getline;
     $t->cmd('enable');
     $t->cmd($self->{_enable});
@@ -335,6 +326,11 @@ sub check_login {
     }
 }
 
+# another way of doing this would be to make our config changes available 
+# on a tftp server, log into the router and merge them into the running-config.
+
+# note well how we don't do a write mem here. 
+
 sub exec_enable {
     my ($self, $cmdset) = @_;
     my $l = Funknet::Config::ConfigFile->local;
@@ -344,9 +340,7 @@ sub exec_enable {
 			      Port    => 23,
 			    );
     $t->input_log(\*STDOUT);
-    $t->open($l->{host});
-    $t->cmd($self->{_password});
-    $t->cmd('terminal length 0');
+    _login($self,$t);
     $t->cmd('enable');
     $t->cmd($self->{_enable});
     for my $cmd ($cmdset->cmds) {
@@ -359,4 +353,22 @@ sub exec_enable {
     $t->close;
 }
 
+# utility sub, takes a $t Net::Telnet object and logs into a Cisco
+# given that we don't know whether to use a username or not.
+
+# plan: try username, then password. 
+
+sub _login {
+    my ($self, $t) = @_;
+    my $l = Funknet::Config::ConfigFile->local;
+
+    $t->open($l->{host});
+    eval {
+	$t->cmd(String  => $self->{_username},
+	        Timeout => 2);
+    };
+    $t->cmd($self->{_password});
+    $t->cmd('terminal length 0');
+}
+    
 1;
