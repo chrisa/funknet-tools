@@ -34,7 +34,6 @@
 
 package Funknet::Config::Interactive;
 use strict;
-use Term::Interact;
 use Funknet::Config::Validate qw/ is_ipv4 is_valid_as is_valid_router is_valid_os /;
 use base qw/ Funknet::Config /;
 
@@ -58,6 +57,14 @@ Just a constructor. Might do slightly more at some point.
 sub new {
     my ($class,%args) = @_;
     my $self = bless {}, $class;
+    
+    # see if Term::Interact is available
+    eval {
+	require Term::Interact;
+    };
+    unless ($@) {
+	$self->{interact_p} = 1;
+    }
     return $self;
 }
 
@@ -77,6 +84,11 @@ sub get_config {
     
     unless (-t STDOUT && -t STDIN) {
 	$self->error('interactive config requested but stdin/out are not a tty.');
+	return undef;
+    }
+
+    unless ($self->{interact_p}) {
+	$self->error('interactive config requested but Term::Interact not available.');
 	return undef;
     }
 
