@@ -71,8 +71,6 @@ sub new {
     my $self = bless {}, $class;
     my $l = Funknet::ConfigFile::Tools->local;
 
-#    print STDERR Dumper \%args;
-
     unless (defined $args{source} && ($args{source} eq 'whois' || $args{source} eq 'host')) {
 	$self->warn("tunnel: missing or invalid source");
 	return undef;
@@ -203,22 +201,28 @@ sub firewall_rules {
     my ($self) = @_;
     my @rules_out;
 
-    push (@rules_out, Funknet::Config::FirewallRule->new(
-                            proto => $self->tunnel_proto(),
-                            source_address => $self->{_local_endpoint},
-                            destination_address => $self->{_remote_endpoint},
-                            source_port => $self->can("tunnel_source_port") ? $self->tunnel_source_port() : undef,
-                            destination_port => $self->can("tunnel_destination_port") ? $self->tunnel_destination_port() : undef,
-                            source => $self->{_source},));
+    my $proto = $self->tunnel_proto();
+    my $source_port      = $self->can("tunnel_source_port") ? $self->tunnel_source_port() : undef;
+    my $destination_port = $self->can("tunnel_destination_port") ? $self->tunnel_destination_port() : undef;
 
-    push (@rules_out, Funknet::Config::FirewallRule->new(
-                            proto => $self->tunnel_proto(),
-                            source_address => $self->{_remote_endpoint},
-                            destination_address => $self->{_local_endpoint},
-                            destination_port => $self->can("tunnel_source_port") ? $self->tunnel_source_port() : undef,
-                            source_port => $self->can("tunnel_destination_port") ? $self->tunnel_destination_port() : undef,
-                            source => $self->{_source},));
-
+    push (@rules_out, 
+	  Funknet::Config::FirewallRule->new(
+					     proto               => $proto,
+					     source_address      => $self->{_local_endpoint},
+					     destination_address => $self->{_remote_endpoint},
+					     source_port         => $source_port,
+					     destination_port    => $destination_port,
+					     source              => $self->{_source},));
+    
+    push (@rules_out, 
+	  Funknet::Config::FirewallRule->new(
+					     proto               => $proto,
+					     source_address      => $self->{_remote_endpoint},
+					     destination_address => $self->{_local_endpoint},
+					     destination_port    => $source_port,
+					     source_port         => $destination_port,
+					     source              => $self->{_source},));
+    
     return (@rules_out);
 }
 
