@@ -49,6 +49,9 @@ sub config {
     my ($self) = @_;
 
     my $config = " neighbor $self->{_remote_addr} remote-as $self->{_remote_as}\n";
+    if (defined $self->{_description}) {
+        $config .= " neighbor $self->{_remote_addr} description $self->{_description}\n";
+    }
     if (defined $self->{_acl_in}) {
 	$config .= " neighbor $self->{_remote_addr} route-map $self->{_acl_in} in\n";
     }
