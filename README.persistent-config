@@ -1,0 +1,20 @@
+Tunnel config persistence. 
+
+At the moment, we have two sets of configs generated - tunnels and
+routing. The routing config is persistent, because Zebra or IOS stores
+it for us. Tunnel config is not (on Unix at least -- IOS also stores
+the tunnels for us), because all we do is make the changes to the
+running system. We need a configuration file to which we can write
+out the tunnel configs.
+
+A related problem is bootstrapping. Without a persistent record of
+tunnel config, we must use the Whois database to configure our
+tunnels, and without any tunnels we may not be able to reach it.
+
+We already generate the list of commands required to configure the
+tunnels. We can write out these commands to an rcfile, and arrange
+for it to be run on boot as part of the system startup. 
+
+This rcfile will be run as root and therefore needs to be writable
+only by root, and so the RCFile module will need to use Root.pm to
+gain root privileges.
