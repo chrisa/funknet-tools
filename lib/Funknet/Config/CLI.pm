@@ -35,6 +35,7 @@ use strict;
 use Funknet::Config::CLI::Secrets;
 use Funknet::Config::CLI::Zebra;
 use Funknet::Config::CLI::IOS;
+use Funknet::Config::ConfigFile;
 use Net::Telnet;
 
 =head1 NAME
@@ -97,6 +98,14 @@ sub new {
     $self->{_username} = Funknet::Config::CLI::Secrets->username( $l->{host} );
     $self->{_password} = Funknet::Config::CLI::Secrets->password( $l->{host} );
     $self->{_enable}   = Funknet::Config::CLI::Secrets->enable(   $l->{host} );
+    
+    # see if the caller wants a persistent connection to zebra 
+    # (this is used by Funknet::Tools::Traceroute and probably
+    # should be elsewhere).
+    
+    if ($args{Persist}) {
+	$self->{_persist} = 1;
+    }
 
     # rebless into relevant class
 

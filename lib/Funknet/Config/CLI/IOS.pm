@@ -68,14 +68,9 @@ not needed.
 sub get_bgp { 
     my ($self) = @_;
     my $l = Funknet::Config::ConfigFile->local;
-    
-    my $t = new Net::Telnet ( Timeout => 10,
-			      Prompt  => '/[\>\#]$/',
-			      Port    => 23,
-			    );
-    _login($self,$t);
-    
-    my @output = $t->cmd('show ip bgp');
+
+    $self->login;
+    my @output = $self->{t}->cmd('show ip bgp');
 
     my @networks;
     my ($current,$go);
@@ -115,7 +110,7 @@ sub get_bgp {
 	
     }
     
-    @output = $t->cmd('show ip bgp sum');
+    @output = $self->{t}->cmd('show ip bgp sum');
     my $local_as;
     foreach my $line (@output) {
 	if ($line =~ /local AS number (\d+)/) {
@@ -133,7 +128,7 @@ sub get_bgp {
 					 routes  => \@networks,
 					 source => 'host');
 
-    @output = $t->cmd('show ip bgp neighbors');
+    @output = $self->{t}->cmd('show ip bgp neighbors');
     
     my ($neighbors, $current_neighbor);
     foreach my $line (@output) {
@@ -180,21 +175,16 @@ sub get_bgp {
 	    acl_out => $acl_out,
 	);
     }
+    $self->logout;
     return $bgp;
 }
 
 sub get_access_list {
     my ($self, %args) = @_;
     my $l = Funknet::Config::ConfigFile->local;
-
-    my $t = new Net::Telnet ( Timeout => 10,
-			      Prompt  => '/[\>\#]$/',
-			      Port    => 23,
-			    );
     
-    _login($self,$t);
-
-    my @output = $t->cmd("show ip bgp neighbor $args{remote_addr}");
+    $self->login;
+    my @output = $self->{t}->cmd("show ip bgp neighbor $args{remote_addr}");
     
     my ($acl_in, $acl_out);
     foreach my $line (@output) {
@@ -208,16 +198,17 @@ sub get_access_list {
 
     my $acl;
     if ($args{dir} eq 'import' && $acl_in) {
-	@output = $t->cmd("sho ip prefix-list $acl_in");
+	@output = $self->{t}->cmd("sho ip prefix-list $acl_in");
 	$acl->{_name} = $acl_in;
 	$acl->{_acl_text} = _to_text(@output);
     }
     if ($args{dir} eq 'export' && $acl_out) {
-	@output = $t->cmd("sho ip prefix-list $acl_out");
+	@output = $self->{t}->cmd("sho ip prefix-list $acl_out");
 	$acl->{_name} = $acl_out;
 	$acl->{_acl_text} = _to_text(@output);
     }
-
+    
+    $self->logout;
     return $acl;
 }
 
@@ -243,13 +234,9 @@ sub get_interfaces {
     my $l = Funknet::Config::ConfigFile->local;
 
     my @local_tun;
-    my $t = new Net::Telnet ( Timeout => 10,
-			      Prompt  => '/[\>\#]$/',
-			      Port    => 23,
-			    );
-    _login($self,$t);
-    
-    my @output = $t->cmd('show interfaces');
+
+    $self->login;
+    my @output = $self->{t}->cmd('show interfaces');
     
     my $tunnels;
     my $current;
@@ -301,6 +288,8 @@ sub get_interfaces {
 	    push @local_tun, $new_tun;
 	}
     }
+
+    $self->logout;
     return @local_tun;
 }
 
@@ -309,22 +298,44 @@ sub check_login {
     my $l = Funknet::Config::ConfigFile->local;
 
     return 1;
-    
-    my $t = new Net::Telnet ( Timeout => 10,
-			      Prompt  => '/[\>\#] $/',
-			      Port    => 23,
-			    );
-    _login($self,$t);
-    $t->getline;
-    $t->cmd('enable');
-    $t->cmd($self->{_enable});
-    my $p = $t->getline;
+   
+    $self->login;
+    $self->{t}->getline;
+    $self->{t}->cmd('enable');
+    $self->{t}->cmd($self->{_enable});
+    my $p = $self->{t}->getline;
+    $self->logout;
     if ($p =~ /#/) {
 	return 1;
     } else {
 	return undef;
     }
 }
+
+=head2 get_as
+
+Get the asn for an ip address from our local funknet router. Inspired
+by ztraceroute.
+
+=cut
+
+sub get_as {
+    my ($self, $address) = @_;
+    defined ($self->{t}) or return undef;
+
+    my @output = $self->{t}->cmd("sho ip bgp $address");
+
+    for my $line (@output) {
+	chomp $line;
+	my ($asnum) = $line =~ /^[\d\s]*\s(\d+),/;
+	return $asnum if $asnum;
+	
+	($asnum) = $line =~ /aggregated by (\d+) /;
+	return $asnum if $asnum;
+    }
+    return undef;
+}
+
 
 # another way of doing this would be to make our config changes available 
 # on a tftp server, log into the router and merge them into the running-config.
@@ -333,24 +344,18 @@ sub check_login {
 
 sub exec_enable {
     my ($self, $cmdset) = @_;
-    my $l = Funknet::Config::ConfigFile->local;
-
-    my $t = new Net::Telnet ( Timeout => 10,
-			      Prompt  => '/[ \>\#]$/',
-			      Port    => 23,
-			    );
-    $t->input_log(\*STDOUT);
-    _login($self,$t);
-    $t->cmd('enable');
-    $t->cmd($self->{_enable});
+    $self->login;
+    $self->{t}->input_log(\*STDOUT);
+    $self->{t}->cmd('enable');
+    $self->{t}->cmd($self->{_enable});
     for my $cmd ($cmdset->cmds) {
 	for my $cmd_line (split /\n/, $cmd) {
-	    $t->cmd($cmd_line);
+	    $self->{t}->cmd($cmd_line);
 	    sleep 2;
 	}
     }
-    $t->cmd('disable');
-    $t->close;
+    $self->{t}->cmd('disable');
+    $self->logout;
 }
 
 # utility sub, takes a $t Net::Telnet object and logs into a Cisco
@@ -358,15 +363,32 @@ sub exec_enable {
 
 # plan: try username, then password. 
 
-sub _login {
-    my ($self, $t) = @_;
+sub login {
+    my ($self) = @_;
     my $l = Funknet::Config::ConfigFile->local;
-
-    $t->open($l->{host});
-    $t->print($self->{_username});
-    my $r = $t->getline;
-    $t->cmd($self->{_password});
-    $t->cmd('terminal length 0');
+    
+    unless (defined $self->{t}) {
+	$self->{t} = new Net::Telnet ( Timeout => 10,
+				       Prompt  => '/[\>\#]$/',
+				       Port    => 23,
+				     );
+	
+	$self->{t}->open($l->{host});
+	$self->{t}->print($self->{_username});
+	my $r = $self->{t}->getline;
+	$self->{t}->cmd($self->{_password});
+	$self->{t}->cmd('terminal length 0');
+    }
 }
+
+sub logout {
+    my ($self) = @_;
+    if (defined $self->{t}) {
+	$self->{t}->close;
+	$self->{t} = undef;
+    }
+}
+
+
     
 1;
