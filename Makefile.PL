@@ -14,7 +14,7 @@ WriteMakefile(
 				    'bin/funknet-config',
 				    'bin/dynamic-update',
 				   ],
-	      INSTALLSCRIPT     => '$(PREFIX)/usr/bin',
+	      INSTALLSCRIPT     => '/usr/bin',
 	      ($] >= 5.005 ?     
 	       (AUTHOR         => 'chris <chris@nodnol.org>') : ()),
 	     );
