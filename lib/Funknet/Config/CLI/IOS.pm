@@ -38,6 +38,8 @@ use base qw/ Funknet::Config::CLI /;
 use Net::Telnet;
 use Network::IPv4Addr qw/ ipv4_network /;
 
+use Funknet::Config::ConfigFile;
+
 =head1 NAME
 
 Funknet::Config::CLI::IOS;
@@ -150,7 +152,15 @@ sub get_bgp {
 	    $neighbors->{$current_neighbor}->{soft_reconfig} = 1;
 	}
     }
-    for my $peer (keys %$neighbors) {
+
+  SESSION: for my $peer (keys %$neighbors) {
+	
+	# ignore_neighbor
+	my @ign = Funknet::Config::ConfigFile->ignore_neighbor();
+	
+	for my $ign (@ign) {
+	    next SESSION if ($ign eq $neighbors->{$peer}->{remote_addr});	    
+	}
 
 	my $acl_in = Funknet::Config::AccessList->new( source_as   => $bgp->{_local_as},
 						       peer_as     => $neighbors->{$peer}->{remote_as},

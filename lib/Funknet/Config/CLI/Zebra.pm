@@ -39,6 +39,8 @@ use Net::Telnet;
 use Data::Dumper;
 use Network::IPv4Addr qw/ ipv4_network /;
 
+use Funknet::Config::ConfigFile;
+
 =head1 NAME
 
 Funknet::Config::CLI::Zebra;
@@ -161,7 +163,14 @@ sub get_bgp {
     }
 
 
-    for my $peer (keys %$neighbors) {
+  SESSION: for my $peer (keys %$neighbors) {
+
+	# ignore_neighbor
+	my @ign = Funknet::Config::ConfigFile->ignore_neighbor();
+	
+	for my $ign (@ign) {
+	    next SESSION if ($ign eq $neighbors->{$peer}->{remote_addr});	    
+	}
 
 	my $acl_in = Funknet::Config::AccessList->new( source_as   => $bgp->{_local_as},
 						       peer_as     => $neighbors->{$peer}->{remote_as},
