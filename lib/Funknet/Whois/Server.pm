@@ -1,6 +1,7 @@
 package Funknet::Whois::Server;
 use strict;
 use Net::TCP::Server;
+use Data::Dumper;
 
 =head1 NAME
 
@@ -28,7 +29,7 @@ Yeah, yeah, it sets SIGCHLD to SIG_IGN. WorksForMe(tm).
 $SIG{CHLD} = 'IGNORE';
 
 sub new {
-    my ($class, $source) = @_;
+    my ($class, $source, $verbose) = @_;
     my $self = bless {}, $class;
     
     unless (defined $source) {
@@ -36,6 +37,7 @@ sub new {
 	return undef;
     }
 
+    $self->{_verbose} = $verbose;
     $self->{_source} = $source;
     $self->{_objects} = {};
     
@@ -79,7 +81,7 @@ sub load {
 	    
 	} else {
 
-	    $self->{_objects}->{$currobj->{name}} = $currobj->{text};
+	    $self->{_objects}->{$currobj->{type}}->{$currobj->{name}} = $currobj->{text};
 
 	    if ($currobj->{type} eq 'route') {
 		push @{ $self->{_index}->{origin}->{$currobj->{origin}} }, $currobj->{text};
@@ -123,25 +125,56 @@ sub go {
 
 	# remove network line-ending
 	chop $query;
-	chop $query;
+	chomp $query;
 	
 	# sanitize query
-	if ($query =~ /^([A-Za-z0-9- ]+)$/) {
+	if ($query =~ /^([A-Za-z0-9-. ]+)$/) {
 	    $query = $1;
+	    $self->_log("query: $query\n");
 	} else {
-	    warn "evil query";
+	    $self->_log("evil query: $query\n");
 	    exit;
 	}
 
-	if (defined $self->{_objects}->{$query}) {
+	# parse options from query:
+	my $opts;
+		
+	# client version 
+	if ($query =~ s/-v ?([^ ]+)//i) {
+	    $opts->{client_version} = $1;
+	}
 
-	    print $sh $self->{_objects}->{$query};
+	# source
+	if ($query =~ s/-s ?([^ ]+)//i) {
+	    $opts->{source} = $1;
+	}
+
+	# object type
+	if ($query =~ s/-t ?([^ ]+)//i) {
+	    $opts->{type} = $1;
+	}
+	
+	# inverse, origin
+	if ($query =~ s/-i ?([^ ]+)//i) {
+	    $opts->{inverse} = $1;
+	}
+
+	# trim query of spaces, now it has no options
+	# all spaces? or just at start/end?
+	$query =~ s/ //g;
+
+	# attempt to answer query
+	if (defined $opts->{type} && defined $self->{_objects}->{$opts->{type}}->{$query}) {
+
+	    print $sh $self->{_objects}->{$opts->{type}}->{$query};
 	    print $sh "\n";
+	    $self->_log("object:\n$self->{_objects}->{$opts->{type}}->{$query}\n");
 	    
-	} elsif ($query =~ s/^-i origin // && defined $self->{_index}->{origin}->{$query}) {
+	} elsif (defined $opts->{inverse} && $opts->{inverse} eq 'origin' && defined $self->{_index}->{origin}->{$query}) {
 	    
 	    for my $object (@{ $self->{_index}->{origin}->{$query} }) {
 		print $sh $object, "\n";
+		$self->_log("object:\n$object\n");
 	    }
 	    
 	} else {
@@ -151,6 +184,13 @@ sub go {
 	}
 	
         exit;
+    }
+}
+
+sub _log {
+    my ($self, $msg) = @_;
+    if ($self->{_verbose}) {
+	print STDERR "whoisd: $msg";
     }
 }
 
