@@ -2,19 +2,17 @@
 use strict;
 use lib './lib';
 use Funknet::Config;
+use Getopt::Std;
 
-unless (scalar @ARGV == 4) {
-    print STDERR "usage: $0 local_as local_router local_os local_host\n";
+my %opt;
+getopt('f', \%opt);
+
+unless ($opt{f}) {
+    print STDERR "usage: $0 -f path_to_config_file\n";
     exit(1);
 }
 
-# Create a Config object, giving it the details of our 
-# local system.
-my $config = Funknet::Config->new( local_as => $ARGV[0],
-				   local_router => $ARGV[1],
-				   local_os => $ARGV[2],
-				   local_host => $ARGV[3],
-				 );
+my $config = Funknet::Config->new( configfile => $opt{f} );
 
 # Generate the changes between current (host) and desired (whois) config.
 my $bgp = $config->bgp_diff or die "bgp_diff failed: ".$config->error;
