@@ -148,8 +148,10 @@ sub new {
 sub _get_whois {
     my (%args) = @_;
 
+    my $rtconfig_path = Funknet::Config::ConfigFile->rtconfig_path;
+
     my $rtconfig = 
-	'/usr/local/bin/RtConfig -h whois.funknet.org -p 43 -s FUNKNET -protocol ripe ' . 
+	$rtconfig_path . ' -h whois.funknet.org -p 43 -s FUNKNET -protocol ripe ' . 
 	'-config cisco -cisco_use_prefix_lists';
 
     my $command = 
