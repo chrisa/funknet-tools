@@ -116,7 +116,7 @@ sub new_from_ifconfig {
 
 sub delete {
     my ($self) = @_;
-    return "ifconfig $self->{_interface} inet unplumb";
+    return "ifconfig ip.tun$self->{_interface} inet unplumb";
 }
 
 sub create {
