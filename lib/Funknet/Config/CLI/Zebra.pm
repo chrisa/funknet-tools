@@ -75,29 +75,59 @@ sub get_bgp {
     my @output = $t->cmd('show ip bgp');
 
     my @networks;
-    my ($current,$go);
-    foreach my $line (@output) {
+    my ($current,$go,$index);
+  PREFIX: foreach my $line (@output) {
 	if ($line =~ /Network/) {
 	    $go = 1;
 	    next;
 	}
 	next unless $go;
-	if ($line =~ /^\*?\>?\s+(\d+\.\d+\.\d+\.\d+)(\/\d+)?\s+0\.0\.0\.0/) {
-		if(!defined($2))
-		{
-	    		push @networks, scalar ipv4_network("$1");
+
+	# is this a prefix line (^*)?
+
+	my $prefix;
+
+	if ($line =~ s/^\*//) {
+	    # we have a route 
+	    # grab the prefix itself
+
+	    if ($line =~ m!>? (\d+\.\d+\.\d+\.\d+)/?(\d+)?!) {
+                if (defined $2) {
+		    $prefix = scalar ipv4_network("$1/$2");
+                } else {
+                    $prefix = scalar ipv4_network("$1");
+                }
+		
+	    } else {
+	    
+		# ah. where's the prefix?
+		$prefix = undef;
+		next PREFIX;
+	    }
+
+	    # check if it's local
+
+	    my $pt = new Net::Telnet ( Timeout => 10,
+				       Prompt  => '/[\>\#] $/',
+				       Port    => 2605,
+				     );
+	    
+	    $pt->open($l->{host});
+	    $pt->cmd($self->{_password});
+	    $pt->cmd('terminal length 0');
+	    
+	    my @output = $pt->cmd("show ip bgp $prefix");
+	    
+	    for my $line (@output) {
+		if ($line =~ /Local/) {
+		    push @networks, $prefix;
 		}
-		else
-		{
-	    		push @networks, scalar ipv4_network("$1$2");
-		}
-	}
-	if ($line =~ /^\*?\>?\s+(\d+\.\d+\.\d+\.\d+)(\/\d+)?\s+\d+\.\d+\.\d+\.\d+/) {
-	    $current = "$1$2";
-	}
-	if ($line =~ /0\.0\.0\.0/ && $current) {
-	    push @networks, $current;
-	    undef $current;
+	    }
+	    
+	} else {
+	    
+	    # this is a continuation
+
 	}
     }
 
