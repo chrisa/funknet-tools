@@ -41,17 +41,79 @@ auto-inaddr.pl
 
 Implement the auto-inaddr@funknet.org reverse delegation robot.
 
+* parse mail - check sig, extract object.
+* extract the zone and nameservers from the object
+* check the keyid is listed on the mntner of the inetnum to which
+  this reverse delegation applies.
+* check the new nameservers have the relevant zone
+* do the delegation
+
 =cut
 
 use Funknet::RevUpdate qw/ do_update check_delegate /;
+use Funknet::Whois     qw/ parse_object check_auth /;
+use PGP::Mail;
 
-my ($zone, @ns) = @ARGV;
 
-if (check_delegate($zone, @ns) ) {
+my $keyring = '/home/funknet/.gnupg/keyring';
 
-    print "updating zone $zone to nameservers: ", join ',',@ns;
-    print "\n";
-    
-    do_update($zone, @ns);
+# parse mail, check sig.
+
+my $data;
+my $line = <STDIN>;
+if($line && $line !~ /^From /) {
+    $data .= $line;
+}
+while(read(STDIN, $line, 8192)) {
+    $data .= $line;
 }
 
+$pgpargs =
+{
+    "no_options" => 1,
+    "extra_args" =>
+	[
+	 "--no-default-keyring",
+	 "--no-auto-check-trustdb",
+	 "--keyring" => $keyring,
+	 "--secret-keyring" => $keyring.".sec",
+	 "--keyserver-options" => "no-auto-key-retrieve",
+	],
+	"always_trust" => 1,
+};
+
+my $pgp = new PGP::Mail($data, $pgpargs);
+unless ($pgp->status eq "good") {
+    error("no valid and known signature found");
+}
+
+my $keyid = $pgp->keyid;
+my $object_text = $pgp->data;
+my $object = parse_object($object_text);
+
+# check authorisation against whois.
+
+unless (check_auth($object->domain, $pgp->keyid)) {
+    error("hierarchical authorisation failed");
+}
+
+# extract zone, nameservers from object.
+
+my $zone = $object->domain;
+my @ns = $object->rev_srv;
+
+# check delegation, do update.
+
+unless (check_delegate($zone, @ns) ) {
+    error ("delegation check failed: " . Funknet::RevUpdate::errors );
+}
+
+do_update($zone, @ns);
+
+
+sub error {
+    my ($error_text) = @_;
+
+    # send mail with error_text, log problem. 
+
+}
