@@ -1,0 +1,43 @@
+"Funknet" or "Dr VPN" feature/spec list
+
+* Secure IP connectivity between Internet-connected sites
+* Automatic provisioning of VPN tunnels among large numbers of nodes
+* Detailed monitoring of network activity
+* Redundant routing among nodes, with automatic failover
+* Encryption and authentication of all traffic
+* Central management of cryptographic keys and certificates
+* Safe updating of node operating system
+
+Secure IP connectivity via VPN: virtual private network using existing
+Internet connections or dedicated lines provides a single IP network
+across multiple sites.
+
+Automatic provisioning tool: based on a single central configuration
+held in a simple textual format, performs setup of all software
+required on a node (tunnels, routing, monitoring, firewalling,
+encryption).
+
+Updating config: directly, or by email. Email updates provide strong
+authentication and auditing of updates.
+
+Monitoring: based on core Internet technology, network traffic,
+availability and routing changes are monitored. 
+
+Redundant routing: multiple paths are provided between nodes, and
+routing software automatically selects the best path betweeen nodes,
+updated constantly as availability changes. 
+
+Encryption: using either industry-standard IPSec or efficient open
+source encryption software "OpenVPN" provides interoperability between
+existing equipment and ability to deal with difficult network
+situations.
+
+Central encryption management: keys are managed centrally and
+provisioned to nodes as necessary.
+
+Updating software: fully-tested images may be deployed to nodes, with
+the ability to roll back to previous versions, and fall back to a
+known-working setup in case of problems. 
+
+
+
