@@ -142,6 +142,10 @@ sub update {
 	$robot->fatalerror("no valid and known signature found");
     }
 
+    # de-MBM the key id (we do *not* want 64 bit keyids, tyvm)
+    my $keyid64 = $pgp->keyid;
+    my ($keyid32) = $keyid64 =~ /([A-Z0-9]{8})$/i;
+
     # attempt to create a Funknet::Whois::Object
 
     my @objects;
@@ -167,10 +171,6 @@ sub update {
 	    push @nosource, $object;
 	    next;
 	}
-
-	# de-MBM the key id (we do *not* want 64 bit keyids, tyvm)
-	my $keyid64 = $pgp->keyid;
-	my ($keyid32) = $keyid64 =~ /([A-Z0-9]{8})$/i;
 
 	if ($client->check_auth($object, $keyid32)) {
 	    push @ok, $object;
@@ -243,7 +243,7 @@ sub update {
     my @failed = (@noauth, @nosource);
 
     if (scalar (@failed)) {
-	my $mail_text = $robot->failure_text($pgp->keyid, $robot->header_text, @objects);
+	my $mail_text = $robot->failure_text($keyid32, $robot->header_text, @objects);
 	unless (my $res = $robot->reply_mail( $mail_text, subject => 'FAILED: ' )) {
 	    errorlog("error sending mail: $res");
 	    exit 1;
@@ -251,7 +251,7 @@ sub update {
     }
 
     if (scalar (@ok)) {
-	my $mail_text = $robot->success_text($pgp->keyid, $robot->header_text, @objects);
+	my $mail_text = $robot->success_text($keyid32, $robot->header_text, @objects);
 	unless (my $res = $robot->reply_mail( $mail_text, subject => 'SUCCEEDED: ' )) {
 	    errorlog("error sending mail: $res");
 	    exit 1;
