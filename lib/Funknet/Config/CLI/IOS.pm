@@ -269,6 +269,7 @@ sub get_interfaces {
 		local_endpoint => $tunnels->{$tun}->{local_endpoint},
 		remote_endpoint => $tunnels->{$tun}->{remote_endpoint},
 		type => $tunnels->{$tun}->{type},
+		ifname => $tun,
 		interface => $tunnels->{$tun}->{interface},
 		local_os => 'ios',
 		source => 'host',
