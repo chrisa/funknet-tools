@@ -97,7 +97,7 @@ vi funknet.conf-KATGATE
 rootdo perl config.pl -a -f funknet.conf-KATGATE 
 
 # if cool:
-ln -s funknet.conf-KATGATE funknet.conf
+cp funknet.conf-KATGATE funknet.conf
 reboot
 
 # youre done, skin up.
