@@ -34,7 +34,6 @@ package Funknet::Config::FirewallRuleSet::IPTables;
 use strict;
 use base qw/ Funknet::Config::FirewallRuleSet /;
 use Funknet::Debug;
-use Data::Dumper;
 
 =head1 NAME
 
@@ -120,8 +119,6 @@ sub local_firewall_rules {
 						destination_address => $dest,
 						proto => $proto );
 	debug("new_rule_object");
-	print Dumper $new_rule_object;
-	
 	push (@rules_out, $new_rule_object);
     }
     return (Funknet::Config::FirewallRuleSet::IPTables->new(

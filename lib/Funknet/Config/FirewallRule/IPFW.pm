@@ -35,7 +35,6 @@ use strict;
 use base qw/ Funknet::Config::FirewallRule /;
 use Funknet::Config::ConfigFile;
 use Funknet::Debug;
-use Data::Dumper;
 
 =head1 NAME
 
@@ -82,15 +81,13 @@ the 'down' state.
 sub delete {
     my ($self) = @_;
 
-    debug("arrived in Config/FirewallRule/IPFW.pm delete");
     my $whois_source = Funknet::Config::ConfigFile->whois_source || 'FUNKNET';
 
- #   return ("#ipfw del $self->{_rule_num} allow $self->{_proto} from $self->{_source_address} to $self->{_destination_address}");
     return ("ipfw del $self->{_rule_num}");
 }
 
 sub create {
-    debug("arrived in Config/FirewallRule/IPFW.pm create");
+
     my ($self, $rule_num) = @_;
 
     my $proto = $self->{_proto};
@@ -102,7 +99,6 @@ sub create {
 sub as_hashkey {
     my ($self) = @_;
 
-    debug("in FirewallRule::IPFW as_hashkey");
     return
         "$self->{_type}-" .
         "$self->{_source_address}-$self->{_destination_address}-";

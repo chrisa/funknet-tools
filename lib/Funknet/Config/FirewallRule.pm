@@ -40,7 +40,6 @@ use Funknet::Config::FirewallRule::IPFW;
 
 use base qw/ Funknet::Config /;
 use Funknet::Debug;
-use Data::Dumper;
 
 =head1 NAME
 
@@ -70,16 +69,18 @@ sub new {
     my $self = bless {}, $class;
     my $l = Funknet::Config::ConfigFile->local;
 
-    unless (defined $args{source} && ($args{source} eq 'whois' || $args{source} eq 'host')) {
+    unless (defined $args{source} && 
+	    ($args{source} eq 'whois' || $args{source} eq 'host')) {
 	$self->warn("firewall_rule: missing or invalid source");
 	return undef;
     } else {
-	$self->{_source} = $args{source};
-	$self->{_source_address} = $args{source_address};
+	$self->{_source}              = $args{source};
+	$self->{_source_address}      = $args{source_address};
 	$self->{_destination_address} = $args{destination_address};
-	$self->{_source_port} = $args{source_port};
-	$self->{_destination_port} = $args{destination_port};
-	$self->{_proto} = $args{proto};
+	$self->{_source_port}         = $args{source_port};
+	$self->{_destination_port}    = $args{destination_port};
+	$self->{_proto}               = $args{proto};
+
 	if(defined($args{rule_num})) {
 	    $self->{_rule_num} = $args{rule_num};
 	}
@@ -90,7 +91,10 @@ sub new {
     # ipv4 address, then replace $self->{_local_endpoint} with it, and 
     # move existing value to $self->{_local_public_endpoint}
 
-    if (exists $l->{source} && defined $l->{source} && is_ipv4($l->{source})) {
+    if (exists $l->{source} && 
+	defined $l->{source} && 
+	is_ipv4($l->{source})) {
+
 	$self->{_local_public_endpoint} = $self->{_local_endpoint};
 	$self->{_local_endpoint} = $l->{source};
     }

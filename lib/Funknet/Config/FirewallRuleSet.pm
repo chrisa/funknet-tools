@@ -36,7 +36,6 @@ use base qw/ Funknet::Config /;
 use Funknet::Config::FirewallRuleSet::IPTables;
 use Funknet::Config::FirewallRuleSet::IPFW;
 use Funknet::Debug;
-use Data::Dumper;
 
 =head1 NAME
 
@@ -70,17 +69,21 @@ sub new
     my $l = Funknet::Config::ConfigFile->local;
 
     $self->{_firewall} = $args{firewall};
-    $self->{_source} = $args{source};
-    $self->{_cmds} = $args{cmds};
+    $self->{_source}   = $args{source};
+    $self->{_cmds}     = $args{cmds};
+
     if (($self->{_source} eq 'whois') or ($self->{_source} eq 'host')) {
 	my $subtype;
 	my $firewall_type = $l->{firewall_type};
-    
-	if ($firewall_type eq 'iptables') { $subtype = 'IPTables' }; 
-	if ($firewall_type eq 'ipfw') { $subtype = 'IPFW' }; 
-
+	
+	if ($firewall_type eq 'iptables') {
+	    $subtype = 'IPTables';
+	} 
+	if ($firewall_type eq 'ipfw') { 
+	    $subtype = 'IPFW';
+	} 
+	
 	my $full_object_name = "Funknet::Config::FirewallRuleSet::$subtype";
-
 	debug("my firewall type is $full_object_name");
 
 	bless $self, $full_object_name;
@@ -125,7 +128,6 @@ sub diff {
     }    
     
     # create hashes
-
     my ($whois_fwall, $host_fwall);
     for my $fwall ($whois->firewall) {
 	$whois_fwall->{$fwall->as_hashkey} = 1;

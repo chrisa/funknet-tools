@@ -34,7 +34,6 @@ package Funknet::Config::FirewallRuleSet::IPFW;
 use strict;
 use base qw/ Funknet::Config::FirewallRuleSet /;
 use Funknet::Debug;
-use Data::Dumper;
 
 =head1 NAME
 
@@ -133,8 +132,6 @@ sub local_firewall_rules {
 						proto => $proto,
 						rule_num => $rule_num );
 	debug("new_rule_object");
-	print Dumper $new_rule_object;
-	
 	push (@rules_out, $new_rule_object);
 
     }
@@ -209,7 +206,6 @@ sub add {
 	die("ran out of free firewall rules");
     } else {
 	$rule->rule_num($next_rule_num);
-	print Dumper $rule;
 	push (@rules, $rule);
     }
 
