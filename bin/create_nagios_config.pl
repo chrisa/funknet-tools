@@ -18,6 +18,7 @@ my %as_names;
 my %as_nums;
 my %endpoints;
 my %nerd_tunnels;
+my $confdir = "/usr/local/funknet-tools";
 my $hosts;
 my $services;
 my $hosts_inside;
@@ -164,14 +165,14 @@ define contactgroup{
 }
 ];
 
-open(HOSTS,">hosts.cfg"); print HOSTS qq[$hosts]; close(HOSTS);
-open(SERVICES,">services.cfg"); print SERVICES qq[$services]; close(SERVICES);
-open(CONTACTGROUPS,">contactgroups.cfg"); print CONTACTGROUPS qq[$contactgroups]; close(CONTACTGROUPS);
-open(HOSTGROUPS,">hostgroups.cfg"); print HOSTGROUPS qq[$hostgroups_inside\n$hostgroups_outside]; close(HOSTS);
+open(HOSTS,">$confdir/hosts.cfg"); print HOSTS qq[$hosts]; close(HOSTS);
+open(SERVICES,">$confdir/services.cfg"); print SERVICES qq[$services]; close(SERVICES);
+open(CONTACTGROUPS,">$confdir/contactgroups.cfg"); print CONTACTGROUPS qq[$contactgroups]; close(CONTACTGROUPS);
+open(HOSTGROUPS,">$confdir/hostgroups.cfg"); print HOSTGROUPS qq[$hostgroups_inside\n$hostgroups_outside]; close(HOSTS);
 
 # add conf for non-whois hosts, or exit if there is none
 
-opendir(DIR, "./nagios") || usage();
+opendir(DIR, "$confdir/nagios") || usage();
 my $d_ent;
 my @d_ents;
 while(defined($d_ent=readdir(DIR))) {
@@ -193,9 +194,9 @@ define contactgroup{
 }
 ];
 
-    open(CONTACTGROUPS,">>contactgroups.cfg"); print CONTACTGROUPS qq[$contactgroups]; close(CONTACTGROUPS);
+    open(CONTACTGROUPS,">>$confdir/contactgroups.cfg"); print CONTACTGROUPS qq[$contactgroups]; close(CONTACTGROUPS);
 
-    open(NAGIOSCONF,"<./nagios/$network") || usage();
+    open(NAGIOSCONF,"<$confdir/nagios/$network") || usage();
     $hosts = "";
     $services = "";
     while (<NAGIOSCONF>) {
@@ -235,9 +236,9 @@ define hostgroup{
 }
 ];
 
-    open(HOSTGROUPS,">>hostgroups.cfg"); print HOSTGROUPS qq[$hostgroups_inside\n]; close(HOSTS);
-    open(HOSTS,">>hosts.cfg"); print HOSTS qq[$hosts\n]; close(HOSTS);
-    open(SERVICES,">>services.cfg"); print SERVICES qq[$services\n]; close(SERVICES);
+    open(HOSTGROUPS,">>$confdir/hostgroups.cfg"); print HOSTGROUPS qq[$hostgroups_inside\n]; close(HOSTS);
+    open(HOSTS,">>$confdir/hosts.cfg"); print HOSTS qq[$hosts\n]; close(HOSTS);
+    open(SERVICES,">>$confdir/services.cfg"); print SERVICES qq[$services\n]; close(SERVICES);
     
 }
 
