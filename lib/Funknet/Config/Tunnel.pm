@@ -11,7 +11,7 @@ sub new {
     my ($class, %args) = @_;
     my $self = bless {}, $class;
 
-    unless (defined $args{source} && ($args{source} eq 'whois' || $args{source} eq 'ifconfig')) {
+    unless (defined $args{source} && ($args{source} eq 'whois' || $args{source} eq 'host')) {
 	warn "missing source";
 	return undef;
     } else {
@@ -97,5 +97,6 @@ sub new_from_ifconfig {
     }
     return undef;
 }
+
 
 1;

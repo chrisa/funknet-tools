@@ -1,6 +1,8 @@
 package Funknet::Config::CLI;
 use strict;
 use Funknet::Config::CLI::Secrets;
+use Funknet::Config::CLI::Zebra;
+use Funknet::Config::CLI::IOS;
 use Net::Telnet;
 
 my $prompts = { 
@@ -31,18 +33,28 @@ sub new {
 	return undef;
     }
 
-    $self->{_username} = Funknet::Config::CLI::Secret->username( $self->{_local_host} );
-    $self->{_password} = Funknet::Config::CLI::Secret->password( $self->{_local_host} );
-    $self->{_enable}   = Funknet::Config::CLI::Secret->enable(   $self->{_local_host} );
+    $self->{_username} = Funknet::Config::CLI::Secrets->username( $self->{_local_host} );
+    $self->{_password} = Funknet::Config::CLI::Secrets->password( $self->{_local_host} );
+    $self->{_enable}   = Funknet::Config::CLI::Secrets->enable(   $self->{_local_host} );
 
     $self->check_login
 	or return undef;
     
+    # rebless into relevant class
+
+    $args{local_router} eq 'ios' and 
+	bless $self, 'Funknet::Config::CLI::IOS';
+    $args{local_router} eq 'zebra' and 
+	bless $self, 'Funknet::Config::CLI::Zebra';
+
     return $self;
 }
 
 sub check_login {
     my ($self) = @_;
+
+    return 1;
+    
     my $t = new Net::Telnet ( Timeout => 10,
 			      Prompt  => $prompts->{$self->{_local_router}},
 			      Port    => $if_ports->{$self->{_local_router}},

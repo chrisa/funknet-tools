@@ -34,23 +34,8 @@ sub tunnels {
 	my $cli = Funknet::Config::CLI->new( local_host => $self->{_local_host},
 					     local_router => $self->{_local_router} 
 					   );
-	$cli->get_interfaces;
+	@local_tun = $cli->get_interfaces;
 	
-	for my $if ($cli->interfaces) {
-	    next unless $if->is_tun;
-	    push @local_tun,
-	    Funknet::Config::Tunnel->new(
-		name => $if->description,
-		local_address => $if->local_address,
-		remote_address => $if->remote_address,
-		local_endpoint => $if->local_endpoint,
-		remote_endpoint => $if->remote_endpoint,
-		type => $if->type,
-		local_os => $self->{_local_os},
-		source => 'host',
-	    );
-	}
-
     } else {
 	
 	# list of interface specs -- actually portable!
@@ -75,25 +60,11 @@ sub tunnels {
 sub sessions {
     my ($self) = @_;
     
-    my $cli = Funknet::Config::CLI->new( local_host => $self->{_local_host},
+    my $cli = Funknet::Config::CLI->new( local_as => $self->{_local_as},
+					 local_host => $self->{_local_host},
 					 local_router => $self->{_local_router} 
 				       );
-    $cli->get_bgp;
-    
-    my $bgp = Funknet::Config::BGP->new( local_as => $self->{_local_as},
-					 local_router => $self->{_local_router},
-                                         routes  => $cli->networks,
-					 source => 'host');
-
-    for my $neighbor ($cli->neighbors) {
-	$bgp->add_session(
-	    description => $neighbor->description,
-	    remote_as => $neighbor->remote_as,
-	    local_addr => $cli->router_id, # not going to work quite right
-	    remote_addr => $cli->peer_addr,
-	);
-    }
-    return $bgp;
+    my $bgp = $cli->get_bgp;
 }
 
 1;
