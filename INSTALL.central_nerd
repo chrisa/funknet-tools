@@ -29,7 +29,9 @@ vi zero-lemon-ports/meta/server-tarball/Makefile
 
 cd zero-lemon-ports/natd-firewall-tarball
 
-# edit Makefile so FUNKNET is enabled, and SPEEDTOUCH isnt...
+# edit Makefile so FUNKNET_ENABLE is enabled,
+# and SPEEDTOUCH_ENABLE and FUNKNET_GPGKEY arent...
+# (you really should not host a central-nerd on a dyn-ip modem connection)
 vi Makefile
 rootdo make
 
