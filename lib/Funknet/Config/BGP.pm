@@ -121,6 +121,7 @@ sub route_set {
 sub neighbors {
     my ($self) = @_;
     my @n = map { $self->{_neighbors}->{$_} } keys %{ $self->{_neighbors} };
+    return @n;
 }
 sub neighbor_set {
     my ($self, $neighbor) = @_;
