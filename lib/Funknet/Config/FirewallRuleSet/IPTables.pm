@@ -92,7 +92,7 @@ sub local_firewall_rules {
 
 	    ($first_half, $second_half) = split ('--', $rule);
 
-	    $first_half =~ s/^\s+\d+\s+\d+\s+(\w+)\s+(\w+).*/$1,$2/;
+	    $first_half =~ s/^\s+[0-9KMG]+\s+[0-9KMG]+\s+(\w+)\s+(\w+).*/$1,$2/;
 	    $second_half =~ s/^\s+([a-z0-9]+|\*)\s+([a-z0-9]+|\*)\s+(\d+\.\d+\.\d+\.\d+)(?:\/\d+)?\s+(\d+\.\d+\.\d+\.\d+)(?:\/\d+)?.*/$1,$2,$3,$4/;
 
 	    ($policy, $proto) = split(',',$first_half);
