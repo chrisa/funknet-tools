@@ -43,7 +43,9 @@ Routines for dealing with whois objects.
 =cut
 
 use vars qw/ @EXPORT_OK @ISA /;
-@EXPORT_OK = qw/ parse_object check_auth object_exists get_object pretty_object /;
+@EXPORT_OK = qw/ parse_object check_auth 
+                 object_exists get_object 
+                 pretty_object get_object_inverse /;
 @ISA = qw/ Exporter /;
 use Exporter; 
 
@@ -134,6 +136,13 @@ sub object_exists {
     return 1;
 }
 
+=head2 get_object
+
+Takes a type string and a primary key, returns the object as a
+Net::Whois::RIPE::Object
+
+=cut
+
 sub get_object {
     my ($type, $name) = @_;
     my $w = Net::Whois::RIPE->new( 'whois.funknet.org' );
@@ -145,5 +154,26 @@ sub get_object {
 	return undef;
     }
 }
+
+=head2 get_object_inverse
+
+Takes a type string, inverse key name and inverse key data, returns
+the object as a Net::Whois::RIPE::Object.
+
+=cut
+
+sub get_object_inverse {
+    my ($type, $key, $value) = @_;
+    my $w = Net::Whois::RIPE->new( 'whois.funknet.org' );
+    $w->type($type);
+    $w->inverse_lookup($key);
+    my $obj = $w->query($value);
+    if (defined $obj && scalar @{ $obj->{_order} }) {
+        return $obj;
+    } else { 
+	return undef;
+    }
+}
+
 
 1;
