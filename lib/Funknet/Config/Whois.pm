@@ -159,21 +159,20 @@ sub tunnels {
 	    my @ep = $tun->endpoint;
 	    my @ad = $tun->address;
 
-	    # check this tunnel is to our AS and the current endpoint.
+	    # check this tunnel is to our AS and one of the current endpoints.
 	    
 	    my $tun_obj;
-	    if ($as[$i] eq $l->{as} && $ep[$i] eq $l->{endpoint}) {
-
+	    if ($as[$i] eq $l->{as} && _is_current_endpoint($l, $ep[$i])) {
 		$tun_obj = Funknet::Config::Tunnel->new(
-		    name => $tun_name,
-		    local_address => $ad[$i],
-		    remote_address => $ad[1-$i],
-		    local_endpoint => $ep[$i],
-		    remote_endpoint => $ep[1-$i],
-		    type => $tun->type,
-		    source => 'whois',
-		    proto => '4',
-		);
+							name => $tun_name,
+							local_address => $ad[$i],
+							remote_address => $ad[1-$i],
+							local_endpoint => $ep[$i],
+							remote_endpoint => $ep[1-$i],
+							type => $tun->type,
+							source => 'whois',
+							proto => '4',
+						       );
 
             # handle the case where we have a local_public_endpoint parameter
 
@@ -263,7 +262,7 @@ sub sessions {
 
 		# check this is a session for our router 
 		# by comparing endpoint.
-		next SESSION unless ($l->{endpoint} eq $ep[$i]);
+		next SESSION unless (_is_current_endpoint($l, $ep[$i]));
 		
 		my $acl_in = Funknet::Config::AccessList->new( source_as   => $as[$i],
 							       peer_as     => $as[1-$i],
@@ -345,6 +344,23 @@ sub encryption {
     my $set = Funknet::Config::EncryptionSet->new( encryptions => \@local_enc,
 						   source      => 'whois' );
     return $set;
+}
+
+sub _is_current_endpoint {
+    my ($l, $ep) = @_;
+    
+    my @endpoints;
+    if (ref $l->{endpoint}) {
+	@endpoints = @{ $l->{endpoint} };
+    } else {
+	@endpoints = ($l->{endpoint});
+    }
+    for my $endpoint (@endpoints) {
+	if ($endpoint eq $ep) {
+	    return 1;
+	}
+    }
+    return undef;
 }
 
 1;
