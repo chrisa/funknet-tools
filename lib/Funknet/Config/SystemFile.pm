@@ -154,5 +154,12 @@ sub diff {
     $diff = Text::Diff::diff \$self->{_old}, \$self->{_text}, { STYLE => "Unified" };
     return $diff;
 }
+
+sub delete {
+    my ($self) = @_;
+    return Funknet::Config::CommandSet->new( cmds => [ "rm $self->{_path}" ],
+					     target => 'host',
+					   );
+}
     
 1;
