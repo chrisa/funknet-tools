@@ -155,8 +155,8 @@ sub local_firewall_rules {
 					destination_port     => $dst_port,
 
 					proto                => $proto,
-                                        in_interface         => $in_if,
-                                        out_interface        => $out_if,
+					in_interface         => $in_if,
+					out_interface        => $out_if,
 					rule_num             => $rule_num );
 	debug("new_rule_object");
 	push (@rules_out, $new_rule_object);
