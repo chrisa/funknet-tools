@@ -48,21 +48,33 @@ use Email::Robot;
 use base qw/ Email::Robot /;
 
 sub success_text {
-    my ($self, $zone, @ns) = @_;
-    my $ns_list = join "\n", @ns;
+    my ($self, $keyid, $header, @objects) = @_;
 
-    return << "MAILTEXT";
+    my $text = << "MAILTEXT";
 
-Funknet Whois Update result:
+Your update was SUCCESSFUL.
 
-The zone $zone has been successfully delegated to:
-$ns_list
+$header
 
-Regards,
-Dennis
+The following objects were processed.
+
+==== BEGIN PGP SIGNED PART (keyID(s): $keyid) ====
 
 MAILTEXT
 
+    for my $object (@objects) {
+	$text .= "Update OK: [".($object->type)."] ".($object->name)."\n";
+    }
+
+    $text .= << "MAILTEXT"
+
+==== END PGP SIGNED PART ====
+
+FUNKNET Database Maintenance Department (Perl Section)
+
+MAILTEXT
+
+      return $text;
 }
 
 sub failure_text {
@@ -72,16 +84,31 @@ sub failure_text {
     
     return << "MAILTEXT";
 
-Funknet Reverse Delegation result:
+Part of your update FAILED.
 
-Your request for the delegation of $zone to:
-$ns_list
+$header
 
-has failed for the following reason(s):
-$errorlist
+For help see <http://www.funknet.org/db/> or
+send a message to auto-dbm@funknet.org
+ with 'help' in the subject line
 
-Commiserations,
-Dennis
+Objects without errors have been processed.
+
+==== BEGIN PGP SIGNED PART (keyID(s): $keyid) ====
+
+MAILTEXT
+
+    for my $object (@objects) {
+	$text .= "Update FAILED: ".($object->error)."\n";
+	$text .= $object->text;
+	$text .= "\n";
+    }
+
+    $text .= << "MAILTEXT"
+
+==== END PGP SIGNED PART ====
+
+FUNKNET Database Maintenance Department (Perl Section)
 
 MAILTEXT
 
@@ -91,7 +118,7 @@ sub fatalerror_text {
     my ($self, $error_text) = @_;
     return <<"MAILTEXT";
 
-An error occurred processing your reverse delegation request:
+An error occurred processing your update request.
 $error_text
 
 Regards,

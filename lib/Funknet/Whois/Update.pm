@@ -181,25 +181,30 @@ sub update {
 	    print $objects->{$type}->{$name}, "\n";
 	}
     }
-
+    
     $fh->lock_un;
     close $fh;
 
     # reply.
-    my $mail_text;
-    if ($robot->error) {
-	$mail_text = $robot->failure_text(@objects);
-    } else {
-	$mail_text = $robot->success_text(@objects);
+
+    my @failed = (@noauth, @nosource);
+
+    if (scalar (@failed) {
+	my $mail_text = $robot->failure_text($pgp->keyid, $robot->header, @objects);
+	unless (my $res = $robot->reply_mail( $mail_text, subject => 'Reverse Delegation results' )) {
+	    errorlog("error sending mail: $res");
+	    exit 1;
+	}
     }
 
-    # reply 
-
-    unless (my $res = $robot->reply_mail( $mail_text, subject => 'Reverse Delegation results' )) {
-	errorlog("error sending mail: $res");
-	exit 1;
+    if (scalar (@ok) {
+	my $mail_text = $robot->success_text($pgp->keyid, $robot->header, @objects);
+	unless (my $res = $robot->reply_mail( $mail_text, subject => 'Reverse Delegation results' )) {
+	    errorlog("error sending mail: $res");
+	    exit 1;
+	}
     }
-
+	
 }
 
 sub errorlog {
