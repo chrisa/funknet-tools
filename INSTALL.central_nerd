@@ -77,6 +77,10 @@ chmod u+w *
 chmod o-x *
 chmod o+r *
 
+# move sshd.sh to an alphabetically earlier name to ensure it is run before
+# local.sh, because otherwise it will take ages before you can login...
+mv sshd.sh 001.sshd.sh
+
 # checkout anoncvs.aldigital.co.uk-funknet-tools
 cd ~software/unpacked/
 cvs -d :ext:anoncvs.aldigital.co.uk:/home/cvsroot \
