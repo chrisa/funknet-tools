@@ -90,8 +90,21 @@ sub diff {
 	    push @cmds, $h->delete;
 	}
     }
+    my @ignore_if = Funknet::Config::ConfigFile->ignore_if;
+    my $local_os_type = Funknet::Config::ConfigFile->local_os;
+
     for my $w ($whois->tunnels) {
 	unless ($host_tuns->{$w->as_hashkey}) {
+
+	    my $tun_type = $w->type;
+	    if($local_os_type eq 'bsd' && $tun_type eq 'ipip') 
+	    {
+		$tun_type = 'gif';
+	    }
+	    while((scalar(grep /$tun_type$next_inter/,@ignore_if))>0 )
+	    {
+		$next_inter++;
+	    }
 	    push @cmds, $w->create($next_inter);
 	    $next_inter++;
 	}
