@@ -67,6 +67,11 @@ sub text {
     for my $line (@lines) {
 	$text .= $line->{key} . ': ' . (' ' x ($maxkey - length $line->{key})) . $line->{val} . "\n";
     }
+    
+    # delete trailing spaces, so they don't get QP-ed 
+    # applies to key-cert: mostly.
+    $text =~ s/ +$//g;
+
     return $text;
 }
 
