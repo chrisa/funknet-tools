@@ -74,20 +74,22 @@ my $robot = Funknet::RevUpdate::Robot->new( envfrom => 'auto-inaddr@funknet.org'
 					    testing => $testing,
 					  );
 
-unless ($self->process_header($data)) {
-    log("error reading header -- a bounce?");
+unless ($robot->process_header($data)) {
+    errorlog("error reading header -- a bounce?");
     exit 0;    
 }
 
 # check pgp sig
 
-unless (my $pgp = $self->check_sig($data)) {
+my $pgp;
+unless ($pgp = $robot->check_sig($data)) {
     $robot->error("no valid and known signature found");
 }
 
 # attempt to create a Net::Whois::RIPE::Object
 
-unless (my $object = parse_object($pgp->data)) {
+my $object;
+unless ($object = parse_object($pgp->data)) {
     $robot->error("couldn't convert the signed message into a Net::WHOIS::RIPE::Object");
 }
 
@@ -123,13 +125,13 @@ if ($robot->error) {
 
 # reply 
 
-unless (my $res = $self->reply_mail( $mail_text, subject => 'Reverse Delegation results' )) {
-    log("error sending mail: $res");
+unless (my $res = $robot->reply_mail( $mail_text, subject => 'Reverse Delegation results' )) {
+    errorlog("error sending mail: $res");
     exit 1;
 }
 
 
-sub log {
+sub errorlog {
     my ($log_text) = @_;
     print STDERR $log_text;
 }

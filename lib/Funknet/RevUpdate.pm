@@ -181,10 +181,11 @@ Returns the error stack.
 =cut
 
 sub errors {
-    if (wantarrary) {
+    if (wantarray) {
 	return @errors;
     } else {
 	return join ',',@errors;
     }
 }
 
+1;
