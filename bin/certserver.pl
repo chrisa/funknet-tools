@@ -39,7 +39,7 @@ use Funknet::ConfigFile::CertServer;
 use Getopt::Std;
 
 my %opt;
-getopts('gwsc:o:p:f:', \%opt);
+getopts('gwusc:o:p:f:', \%opt);
 
 my $config = Funknet::ConfigFile::CertServer->new($opt{f});
 my $l = $config->local();
@@ -66,6 +66,12 @@ if ($opt{g}) {
     if ($opt{w}) {
 	my $object = $cs->object($newcert);
 	print "$object\n";
+    }
+    if ($opt{u}) {
+	my $unkey = $cs->nodes( key        => $newkey,
+				passphrase => $opt{p}
+			      );
+	print "$unkey\n";
     }
 }
 

@@ -313,6 +313,8 @@ sub sign {
     # put the req in the workdir
     unless (open REQ, ">$workdir/newreq.pem") {
         warn "can't open $workdir/newreq.pem for writing: $!";
+	system("rm -Rf $workdir");
+	chdir $old;
         return undef;
     }
     print REQ $args{req};
@@ -324,6 +326,8 @@ sub sign {
     my $ret = $exp->spawn("openssl ca -config $self->{_config} -policy policy_anything -out $workdir/newcert.pem -infiles $workdir/newreq.pem");
     unless ($ret) {
         warn "can't spawn sign $!";
+	system("rm -Rf $workdir");
+	chdir $old;
         return undef;
     }
 
@@ -366,6 +370,8 @@ sub sign {
     my $certfile = "$workdir/newcert.pem";
     unless (open CERT, $certfile) {
         warn "couldn't open $certfile: $!";
+	system("rm -Rf $workdir");
+	chdir $old;
         return undef;
     }
     my $certtext;
@@ -376,6 +382,8 @@ sub sign {
     close CERT;
     unless (defined $certtext) {
         warn "0 length newcert.pem";
+	system("rm -Rf $workdir");
+	chdir $old;
         return undef;
     }
     
@@ -439,6 +447,8 @@ sub pkcs12 {
     # put the key in the workdir
     unless (open KEY, ">$workdir/new.key") {
         warn "can't open $workdir/new.key for writing: $!";
+	system("rm -Rf $workdir");
+	chdir $old;
         return undef;
     }
     print KEY $args{key};
@@ -447,6 +457,8 @@ sub pkcs12 {
     # put the cert in the workdir
     unless (open CERT, ">$workdir/new.cert") {
         warn "can't open $workdir/new.cert for writing: $!";
+	system("rm -Rf $workdir");
+	chdir $old;
         return undef;
     }
     print CERT $args{cert};
@@ -458,6 +470,8 @@ sub pkcs12 {
     my $ret = $exp->spawn("openssl pkcs12 -export -in $workdir/new.cert -inkey $workdir/new.key -certfile $self->{_ca}/cacert.pem -out $workdir/new.p12"); 
     unless ($ret) {
         warn "can't spawn pkcs12: $!";
+	system("rm -Rf $workdir");
+	chdir $old;
         return undef;
     }
 
@@ -492,6 +506,8 @@ sub pkcs12 {
     my $pkcs12file = "$workdir/new.p12";
     unless (open PKCS, $pkcs12file) {
         warn "couldn't open $pkcs12file: $!";
+	system("rm -Rf $workdir");
+	chdir $old;
         return undef;
     }
     my $pkcs12text;
@@ -501,8 +517,10 @@ sub pkcs12 {
     }
     close PKCS;
     unless (defined $pkcs12text) {
-        warn "0 length new.p12";
-        return undef;
+        warn "0 length new.p12"; 
+	system("rm -Rf $workdir");
+	chdir $old;
+	return undef;
     }
     
     # clear up. we don't keep track of cert output; that's the caller's job.
@@ -529,6 +547,14 @@ sub object {
     my ($self, $cert) = @_;
     my $object;
     
+    # change into the correct directory for the CA
+    my $old = `pwd`;
+    chop $old;
+    unless (chdir $self->{_path}) {
+        warn "couldn't chdir to $self->{_path}: $!";
+        return undef;
+    }
+
     # make a work directory for openssl
     my $workdir = "ca_tmp_$$";
     system("mkdir $workdir");
@@ -536,6 +562,8 @@ sub object {
     # put the cert in the workdir
     unless (open CERT, ">$workdir/whois.cert") {
         warn "can't open $workdir/whois.cert for writing: $!";
+	system("rm -Rf $workdir");
+	chdir $old;
         return undef;
     }
     print CERT $cert;
@@ -545,6 +573,8 @@ sub object {
     my @output = `openssl x509 -in $workdir/whois.cert -subject`;
     unless (scalar @output) {
 	warn "openssl x509 failed: $!";
+	system("rm -Rf $workdir");
+	chdir $old;
 	return undef;
     }
     my $dn = $output[0];
@@ -555,6 +585,8 @@ sub object {
     my ($cn) = $dn =~ m!CN=([^/]+)!i;
     unless (defined $cn) {
 	warn "couldn't parse cn from $dn";
+	system("rm -Rf $workdir");
+	chdir $old;
 	return undef;
     }
 
@@ -575,8 +607,110 @@ OBJ
 
     # clear up. we don't keep track of cert output; that's the caller's job.
     system("rm -Rf $workdir");
+    chdir $old;
     
     return $object;
 }
 
+=head2 nodes
+
+Takes an encrypted key and returns it unencrypted.
+
+Params: 
+    key: the certificate in PEM format
+    passphrase: the key passphrase
+
+Returns: 
+    the unencrypted key
+
+=cut
+
+
+sub nodes {
+    my ($self, %args) = @_;
+
+    unless (defined $args{passphrase}) {
+        warn "no passphrase specified in sign";
+        return undef;
+    }
+    unless (defined $args{key}) {
+        warn "no key specified in sign";
+        return undef;
+    }
+
+    # change into the correct directory for the CA
+    my $old = `pwd`;
+    chomp $old;
+    unless (chdir $self->{_path}) {
+        warn "couldn't chdir to $self->{_path}: $!";
+        return undef;
+    }
+
+    # make a work directory for openssl
+    my $workdir = "ca_tmp_$$";
+    system("mkdir $workdir");
+
+    # put the key in the workdir
+    unless (open KEY, ">$workdir/new.key") {
+        warn "can't open $workdir/new.key for writing: $!";
+	system("rm -Rf $workdir");
+	chdir $old;
+        return undef;
+    }
+    print KEY $args{key};
+    close KEY;
+
+    my $exp = new Expect;
+    $exp->raw_pty(0);
+    $exp->log_stdout(0);
+    my $ret = $exp->spawn("openssl rsa -in $workdir/new.key -out $workdir/new.key.un"); 
+    unless ($ret) {
+        warn "can't spawn openssl rsa: $!";
+        return undef;
+    }
+
+    $exp->expect(
+                 60,
+                 [
+                  qr'Enter pass phrase for .*/new.key:',
+                  sub {
+                      my $fh = shift;
+                      $fh->send("$args{passphrase}\n");
+                      exp_continue;
+                  }
+                 ],
+                 [
+                  timeout =>
+                  sub {
+                      warn "timeout.\n";
+                  }
+                 ]
+                );
+
+    # unencrypted key is now in path/ca_tmp_$$/new.key.un
+    my $unkeyfile = "$workdir/new.key.un";
+    unless (open KEY, $unkeyfile) {
+        warn "couldn't open $unkeyfile: $!";
+	system("rm -Rf $workdir");
+	chdir $old;
+        return undef;
+    }
+    my $keytext;
+    {
+        local $/ = undef;
+        $keytext = <KEY>;
+    }
+    close KEY;
+    unless (defined $keytext) {
+        warn "0 length new.key.un";
+	system("rm -Rf $workdir");
+	chdir $old;
+        return undef;
+    }
+    
+    system("rm -Rf $workdir");
+    chdir $old;
+    return $keytext;
+}
+    
 1;
