@@ -116,10 +116,7 @@ sub as_hashkey {
     
     my $hash =  "$self->{_proto}-" .
 		"$self->{_source_address}-$self->{_source_port}-" .
-		"$self->{_destination_address}-$self->{_destination_port}-";
-    if(defined($self->{_rule_num})) {
-            $hash = $hash . $self->{_rule_num};
-    }
+		"$self->{_destination_address}-$self->{_destination_port}";
     return $hash;
 }
 
