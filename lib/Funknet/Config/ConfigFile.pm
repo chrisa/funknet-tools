@@ -16,10 +16,13 @@ Funknet::Config::ConfigFile
 
 =head1 DESCRIPTION
 
-  An abstraction over a simple test config file. Syntax is:
+An abstraction over a simple test config file. Syntax is:
 
     key = value
     key = value, value, value
+
+A repeated key causes the values to be added to the existing values
+rather than overwriting.
 
 =head1 METHODS
 
@@ -55,10 +58,24 @@ sub new {
 	$key =~ s/\s+$//;
 	$values =~ s/^\s+//;
 	$values =~ s/\s+$//;
-	if ($values =~ /,/) {
-	    $config->{$key} = [ split /\s*,\s*/,$values ];
+	if (exists $config->{$key}) {
+	    my @values;
+	    if ($values =~ /,/) {
+		@values = split /\s*,\s*/,$values;
+	    } else {
+		@values = ($values);
+	    }
+	    if (ref $config->{key} eq 'ARRAY') {
+		push @{ $config->{key} }, @values;
+	    } else {
+		$config->{key} = [ $config->{key}, @values ];
+	    }
 	} else {
-	    $config->{$key} = $values;
+	    if ($values =~ /,/) {
+		$config->{$key} = [ split /\s*,\s*/,$values ];
+	    } else {
+		$config->{$key} = $values;
+	    }
 	}
     }
     close CONF;
