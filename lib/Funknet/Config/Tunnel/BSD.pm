@@ -79,12 +79,34 @@ sub new_from_ifconfig {
 sub delete {
     my ($self) = @_;
     return "a list of commands to delete $self->{_interface} on BSD go here";
+#     my $tun_type;
+#     for ($self->{_type})
+#     {
+#        if    (/ipip/) {$tun_type = 'gif';}
+#        elsif (/gre/) {$tun_type = 'gre';}
+#     }
+#
+
+#     return "heres the deletey bit";
+#	return "$self->{_interface}";
+#	return "ifconfig $tun_type$inter destroy";
 }
 
 sub create {
     my ($self, $inter) = @_;
-    # details are in $self, see Solaris.pm
-    return "a list of commands to create a tunnel interface numbered $inter on BSD go here";
+
+    my $tun_type;
+    for ($self->{_type})
+    {
+	if    (/ipip/) {$tun_type = 'gif';}
+	elsif (/gre/) {$tun_type = 'gre';}
+    }
+     
+    return (
+	"ifconfig $tun_type$inter create",
+	"ifconfig $tun_type$inter tunnel $self->{_local_endpoint} $self->{_remote_endpoint}",
+	"ifconfig $tun_type$inter inet $self->{_local_address} $self->{_remote_address} netmask 255.255.255.252"
+     );
 }
 
 1;
