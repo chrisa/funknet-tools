@@ -20,16 +20,13 @@ unless (-f $opt{f}) {
 
 my $config = new Funknet::ConfigFile::Whois($opt{f});
 
-$s = new Funknet::Whois::Server($config->whois_source,1);
-my $num = $s->load($config->objects_file);
-print STDERR "loaded $num objects from ".($config->objects_file)."\n";
+$s = new Funknet::Whois::Server($config->whois_source, $config->objects_file, 1);
+my $num = $s->load();
 
-$SIG{HUP} = \&reload;
+$SIG{HUP} = \&main::reload;
 sub reload {
-	my $num = $s->load($config->objects_file);
-	print STDERR "reloaded $num objects\n";
-	$SIG{HUP} = \&reload;
-	$s->go();
+    $Funknet::Whois::Server::reload = 1;
+    $SIG{HUP} = \&main::reload;
 }	
 
 $s->start($config->listen_address(), $config->listen_port());

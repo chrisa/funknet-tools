@@ -29,8 +29,11 @@ Yeah, yeah, it sets SIGCHLD to SIG_IGN. WorksForMe(tm).
 
 $SIG{CHLD} = 'IGNORE';
 
+use vars qw/ $reload /;
+$reload = 0;
+
 sub new {
-    my ($class, $source, $verbose) = @_;
+    my ($class, $source, $file, $verbose) = @_;
     my $self = bless {}, $class;
     
     unless (defined $source) {
@@ -38,19 +41,20 @@ sub new {
 	return undef;
     }
 
+    $self->{_file}    = $file;
     $self->{_verbose} = $verbose;
-    $self->{_source} = $source;
+    $self->{_source}  = $source;
     $self->{_objects} = {};
     
     return $self;
 }
 
 sub load {
-    my ($self, $file) = @_;
+    my ($self) = @_;
     
-    open DATA, "$file"
-      or die "can't open $file: $!";
-
+    open DATA, $self->{_file}
+      or die "can't open $self->{_file}: $!";
+    
     $self->{_objects} = {};
     
     my $currobj;
@@ -101,6 +105,7 @@ sub load {
 	    $self->_log("$type: $name\n");
 	}
     }
+    $self->_log("loaded $num objects from $self->{_file}\n");
 
     return $num;
 }
@@ -120,6 +125,14 @@ sub start {
 
 sub go {
     my ($self) = @_;
+
+    # are we supposed to be reloading?
+    if ($reload) {
+	my $num = $self->load();
+	$self->_log("reloaded $num objects\n");
+	$reload = 0;
+    }
+    
     while (my $sh = $self->{_lh}->accept) {
         defined (my $pid = fork) or die "fork: $!\n";
 	
@@ -226,6 +239,9 @@ sub go {
 	}
 	
         exit;
+    }
+    if ($!{EINTR}) {
+	$self->go();
     }
 }
 
