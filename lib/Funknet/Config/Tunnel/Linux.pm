@@ -15,6 +15,8 @@ sub config {
 sub new_from_ifconfig {
     my ($class, $if) = @_;
 
+# this needs writing for linux - this code was pinched from BSD.pm
+
 #     my $type;
 #     $if =~ /^gif/ && $type = 'ipip';
 #     $if =~ /^gre/ && $type = 'gre';
@@ -36,5 +38,16 @@ sub new_from_ifconfig {
     return undef;
 }
 
+
+sub delete {
+    my ($self) = @_;
+    return "a list of commands to delete $self->{_interface} on Linux go here";
+}
+
+sub create {
+    my ($self, $inter) = @_;
+    # details are in $self, see Solaris.pm
+    return "a list of commands to create a tunnel interface numbered $inter on Linux go here";
+}
 
 1;

@@ -35,4 +35,15 @@ sub new_from_ifconfig {
     );
 }
 
+sub delete {
+    my ($self) = @_;
+    return "a list of commands to delete $self->{_interface} on BSD go here";
+}
+
+sub create {
+    my ($self, $inter) = @_;
+    # details are in $self, see Solaris.pm
+    return "a list of commands to create a tunnel interface numbered $inter on BSD go here";
+}
+
 1;
