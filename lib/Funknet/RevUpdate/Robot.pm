@@ -225,7 +225,7 @@ The zone $zone has been successfully delegated to:
 $ns_list
 
 Regards,
-NotMarvin
+Dennis
 
 MAILTEXT
 
@@ -247,14 +247,14 @@ has failed for the following reason(s):
 $errorlist
 
 Comiserations,
-NotMarvin
+Dennis
 
 MAILTEXT
 
 }
 
 sub error {
-    my ($error_text) = @_;
+    my ($self, $error_text) = @_;
     if ($error_text) {
 	push @error, $error_text;
     } else {
@@ -264,6 +264,23 @@ sub error {
 	    return join ', ',@error;
 	}
     }
+}
+
+sub fatalerror {
+    my ($self, $error_text) = @_;
+    my $text = <<"MAILTEXT";
+
+An error occurred processing your reverse delegation request:
+$error_text
+
+Sorry it didn't work out.
+
+Regards,
+Dennis
+
+MAILTEXT
+
+    $self->reply_mail( $text, subject => "Reverse Delegation error" );
 }
 
 1;

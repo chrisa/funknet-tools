@@ -83,14 +83,14 @@ unless ($robot->process_header($data)) {
 
 my $pgp;
 unless ($pgp = $robot->check_sig($data)) {
-    $robot->error("no valid and known signature found");
+    $robot->fatalerror("no valid and known signature found");
 }
 
 # attempt to create a Net::Whois::RIPE::Object
 
 my $object;
 unless ($object = parse_object($pgp->data)) {
-    $robot->error("couldn't convert the signed message into a Net::WHOIS::RIPE::Object");
+    $robot->fatalerror("couldn't convert the signed message into a Net::WHOIS::RIPE::Object");
 }
 
 # check authorisation against whois.
