@@ -184,7 +184,7 @@ sub firewall_rules {
 
     debug("arrived in Tunnel firewall_rules");
 
-    if ($self->{_type} eq 'ipip') { $proto = 'ipencap' };
+    my $proto = $self->tunnel_proto();
 
     push (@rules_out, Funknet::Config::FirewallRule->new(
                             proto => $proto,

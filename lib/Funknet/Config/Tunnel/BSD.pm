@@ -155,4 +155,8 @@ sub ifsym {
     return 'gif';
 }
 
+sub tunnel_proto {
+    return 'ipencap';
+}
+
 1;

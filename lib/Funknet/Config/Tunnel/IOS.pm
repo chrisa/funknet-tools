@@ -110,4 +110,8 @@ sub ifsym {
     return 'Tunnel';
 }
 
+sub tunnel_proto {
+    return '4';
+}
+
 1;

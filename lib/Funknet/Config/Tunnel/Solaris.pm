@@ -131,4 +131,8 @@ sub ifsym {
     return 'ip.tun';
 }
 
+sub tunnel_proto {
+    return '4';
+}
+
 1;

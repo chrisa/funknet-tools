@@ -135,4 +135,8 @@ sub ifsym {
     return 'tunl';
 }
 
+sub tunnel_proto {
+    return 'ipencap';
+}
+
 1;
