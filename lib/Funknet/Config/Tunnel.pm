@@ -69,7 +69,7 @@ sub new {
     my $l = Funknet::Config::ConfigFile->local;
 
     unless (defined $args{source} && ($args{source} eq 'whois' || $args{source} eq 'host')) {
-	$self->warn("$args{ifname}: missing or invalid source address");
+	$self->warn("tunnel: missing or invalid source");
 	return undef;
     } else {
 	$self->{_source} = $args{source};
@@ -85,7 +85,10 @@ sub new {
 	unless (defined $args{ifname} && is_valid_ifname($args{ifname})) {
 	    $self->warn("missing or invalid ifname: $args{ifname}");
 	    return undef;
+	} else {
+	    $self->{_ifname} = $args{ifname};
 	}
+
 	# is this an interface we should be ignoring?
 	my @ignore_if = Funknet::Config::ConfigFile->ignore_if;
 	if (defined $args{ifname} && (grep /$args{ifname}/, @ignore_if)) {
