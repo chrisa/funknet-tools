@@ -43,7 +43,7 @@ Routines for dealing with whois objects.
 =cut
 
 use vars qw/ @EXPORT_OK @ISA /;
-@EXPORT_OK = qw/ parse_object check_auth /;
+@EXPORT_OK = qw/ parse_object check_auth object_exists /;
 @ISA = qw/ Exporter /;
 use Exporter; 
 
@@ -115,3 +115,17 @@ sub check_auth {
     return $auth_ok;
 }
     
+sub object_exists {
+    my ($object) = @_;
+    ref $object eq 'Net::Whois::RIPE::Object' or return undef;
+
+    # check type, extract primary key.
+
+    # do lookup
+
+    # prune whitespace
+
+    # compare
+
+    return 1;
+}
