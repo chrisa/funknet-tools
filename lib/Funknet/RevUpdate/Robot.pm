@@ -1,5 +1,4 @@
 #!/usr/local/bin/perl
-# Copyright (c) 2003
 #	The funknet.org Group.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -32,7 +31,7 @@
 
 =head1 NAME
 
-Funknet::Robot
+Funknet::RevUpdate::Robot
 
 =head1 DESCRIPTION
 
@@ -47,6 +46,7 @@ update code.
 package Funknet::RevUpdate::Robot;
 use strict;
 
+use Data::Dumper;
 use PGP::Mail;
 use IPC::Open3;
 
@@ -150,14 +150,15 @@ sub check_sig {
 	    [
 	     "--no-default-keyring",
 	     "--no-auto-check-trustdb",
-	     "--keyring" => $self->{_keyring},
-	     "--secret-keyring" => $self->{_keyring}.".sec",
+	     "--keyring" => $self->{_pubring},
+	     "--secret-keyring" => $self->{_secring},
 	     "--keyserver-options" => "no-auto-key-retrieve",
 	    ],
 	    "always_trust" => 1,
     };
-    
+
     my $pgp = new PGP::Mail($data, $pgpargs);
+
     if ($pgp->status eq "good") {
 	return $pgp;
     } else {
@@ -247,7 +248,7 @@ $ns_list
 has failed for the following reason(s):
 $errorlist
 
-Comiserations,
+Commiserations,
 Dennis
 
 MAILTEXT
@@ -273,8 +274,6 @@ sub fatalerror {
 
 An error occurred processing your reverse delegation request:
 $error_text
-
-Sorry it didn't work out.
 
 Regards,
 Dennis
