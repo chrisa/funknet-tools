@@ -177,23 +177,41 @@ cp funknet.conf.dist funknet.conf-BLANK
 vi funknet.conf-BLANK
 
 # edit funknet.conf-BLANK for AS etc, make sure root = runas
+# to ensure a meaningful /var/log/tunnelup make sure debug = 1
 # then test with:
 rootdo perl config.pl -a -f funknet.conf-BLANK 
 
-# if joy, add to boot chain
+# put that in a script...
+# see zero-lemon-ports/meta/natd-firewall-tarball/files/tunnelup.sh
+# note the firewall stuff if you want that, otherwise:
+cat - >> /etc/tunnelup.sh << EOF
+#!/bin/sh
+
+# funknet
+# FIXME when funknet-tools gets a lemon-port
+(
+cd /home/software/unpacked/anoncvs.aldigital.co.uk-funknet-tools
+perl config.pl -a -f funknet.conf-BLANK 
+)
+EOF
+
+# add to boot chain
 cat - >> /usr/local/etc/rc.d/local.sh << EOF
 
 # funknet
 /usr/local/sbin/zebra -d
 /usr/local/sbin/bgpd -d
 sleep 2
-
-# FIXME when funknet-tools gets a lemon-port
-(
-cd /home/software/unpacked/anoncvs.aldigital.co.uk-funknet-tools
-perl config.pl -a -f funknet.conf-BLANK   
-)
+sh /etc/tunnelup.sh
 EOF
+
+# add cronjob, this is would be better done with a gpgmail invoked push/pull
+# operation, but for now this will do, as /etc/tunnelup.sh only acts if necc.
+# see zero-lemon-ports/meta/natd-firewall-tarball/files/crontab-FUNKNET
+crontab -u root -e
+# funknet
+0 * * * * /bin/sh /etc/tunnelup.sh 2>&1 >/var/log/tunnelup &
+:wq
 
 # youre done, skin up.
 

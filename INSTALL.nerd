@@ -93,11 +93,22 @@ cp funknet.conf.dist funknet.conf-KATGATE
 vi funknet.conf-KATGATE
 
 # edit funknet.conf-KATGATE for AS etc, make sure root = runas
+# to ensure a meaningful /var/log/tunnelup make sure debug = 1
 # then test with:
 rootdo perl config.pl -a -f funknet.conf-KATGATE 
 
 # if cool:
 cp funknet.conf-KATGATE funknet.conf
+
+# add cronjob, this is would be better done with a gpgmail invoked push/pull
+# operation, but for now this will do, as /etc/tunnelup.sh only acts if necc.
+# see zero-lemon-ports/meta/natd-firewall-tarball/files/crontab-FUNKNET
+crontab -u root -e
+# funknet
+0 * * * * /bin/sh /etc/tunnelup.sh 2>&1 >/var/log/tunnelup &
+:wq
+
+# bounce test
 reboot
 
 # youre done, skin up.
