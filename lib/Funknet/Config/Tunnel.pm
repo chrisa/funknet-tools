@@ -39,6 +39,7 @@ use Funknet::Config::Tunnel::BSD;
 use Funknet::Config::Tunnel::IOS;
 use Funknet::Config::Tunnel::Linux;
 use Funknet::Config::Tunnel::Solaris;
+use Funknet::Config::Tunnel::OpenVPN;
 use Funknet::Debug;
 use Data::Dumper;
 
@@ -170,6 +171,8 @@ sub new {
 	bless $self, 'Funknet::Config::Tunnel::Linux';
     $l->{os} eq 'solaris' and
 	bless $self, 'Funknet::Config::Tunnel::Solaris';
+    $l->{os} eq 'openvpn' and
+	bless $self, 'Funknet::Config::Tunnel::OpenVPN';
 
     return $self;
 }
@@ -242,6 +245,9 @@ sub new_from_ifconfig {
     }
     if ($l->{os} eq 'solaris') {
 	return Funknet::Config::Tunnel::Solaris->new_from_ifconfig( $if );
+    }
+    if ($l->{os} eq 'openvpn') {
+	return Funknet::Config::Tunnel::OpenVPN->new_from_ifconfig( $if );
     }
     return undef;
 }

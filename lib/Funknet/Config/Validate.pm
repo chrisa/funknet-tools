@@ -79,6 +79,8 @@ sub is_valid_type {
     my ($type) = @_;
 
     if ($type eq 'sit'  ||
+	$type eq 'tun' ||
+	$type eq 'tap' ||
 	$type eq 'ipip' ||
 	$type eq 'gre') {
 	return 1;
@@ -104,6 +106,7 @@ sub is_valid_os {
     if ($os eq 'linux'   ||
 	$os eq 'bsd'     ||
 	$os eq 'ios'     ||
+	$os eq 'openvpn'     ||
 	$os eq 'solaris' ) {
 	return 1;
     } else {
