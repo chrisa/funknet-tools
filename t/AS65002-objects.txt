@@ -1,0 +1,161 @@
+aut-num:      AS65002
+as-name:      NODNOL
+descr:        nodnol.org systems
+import:       from AS65000 action pref=100; accept AS-FUNKTRANSIT and NOT AS65002
+import:       from AS65023 action pref=100; accept AS-FUNKTRANSIT and NOT AS65002
+import:       from AS65017 action pref=100; accept AS65017 and NOT AS65002
+import:       from AS65030 action pref=100; accept AS-FUNKTRANSIT and NOT AS65002
+export:       to AS65000 announce AS-NODNOL
+export:       to AS65023 announce AS-NODNOL
+export:       to AS65017 announce AS65002
+export:       to AS65030 announce AS-NODNOL
+tun:          NODNOL-SPLURBY
+tun:          NODNOL-BLANK
+tun:          NODNOL-RAVENSHEAD
+tun:          NODNOL-MUNKYII
+admin-c:      CA1-FUNKNET
+tech-c:       CA1-FUNKNET
+mnt-by:       FUNK-MNT
+changed:      chris@nodnol.org 20040706
+source:       FUNKNET
+
+inetnum:      10.2.0.36 - 10.2.0.39
+netname:      NODNOL-SPLURBY
+descr:        NODNOL-SPLURBY tunnel /30
+country:      GB
+admin-c:      CA1-FUNKNET
+tech-c:       CA1-FUNKNET
+rev-srv:      ns1.nodnol.org
+rev-srv:      ns2.nodnol.org
+status:       ASSIGNED PA
+notify:       chris@nodnol.org
+mnt-by:       FUNK-MNT
+changed:      chris@nodnol.org 20030724
+source:       FUNKNET
+
+tunnel:       NODNOL-SPLURBY
+type:         ipip
+as:           AS65000
+as:           AS65002
+address:      10.2.0.37
+address:      10.2.0.38
+endpoint:     131.231.83.95
+endpoint:     81.168.98.134
+admin-c:      CA1-FUNKNET
+tech-c:       CA1-FUNKNET
+mnt-by:       FUNK-MNT
+notify:       chris@nodnol.org
+changed:      chris@nodnol.org 20040222
+source:       FUNKNET
+
+inetnum:      10.2.5.36 - 10.2.5.39
+netname:      NODNOL-BLANK
+descr:        NODNOL-BLANK tunnel /30
+country:      GB
+admin-c:      CA1-FUNKNET
+tech-c:       CA1-FUNKNET
+rev-srv:      ns1.nodnol.org
+rev-srv:      ns2.nodnol.org
+status:       ASSIGNED PA
+notify:       chris@nodnol.org
+mnt-by:       FUNK-MNT
+changed:      chris@nodnol.org 20030724
+source:       FUNKNET
+
+tunnel:       NODNOL-BLANK
+type:         ipip
+as:           AS65023
+as:           AS65002
+address:      10.2.5.37
+address:      10.2.5.38
+endpoint:     213.129.72.23
+endpoint:     81.168.98.134
+admin-c:      CA1-FUNKNET
+tech-c:       CA1-FUNKNET
+mnt-by:       FUNK-MNT
+notify:       chris@nodnol.org
+changed:      chris@nodnol.org 20040310
+source:       FUNKNET
+
+inetnum:      10.4.0.0 - 10.4.255.255
+netname:      NERD-NERD-MESH
+descr:        Inter-Nerd tunnels
+country:      GB
+admin-c:      CA1-FUNKNET
+tech-c:       CA1-FUNKNET
+rev-srv:      ns1.nodnol.org
+rev-srv:      ns2.nodnol.org
+status:       ASSIGNED PA
+notify:       chris@nodnol.org
+notify:       dunc@lemonia.org
+mnt-by:       FUNK-MNT
+changed:      dunc@lemonia.org 20030721
+source:       FUNKNET
+
+tunnel:       NODNOL-RAVENSHEAD
+type:         ipip
+as:           AS65002
+as:           AS65017
+address:      10.4.0.141
+address:      10.4.0.142
+endpoint:     81.168.98.134
+endpoint:     213.104.69.191
+admin-c:      CA1-FUNKNET
+tech-c:       CA1-FUNKNET
+mnt-by:       FUNK-MNT
+notify:       chris@nodnol.org
+notify:       dunc@lemonia.org
+changed:      chris@nodnol.org 20031230
+source:       FUNKNET
+
+inetnum:      10.2.2.36 - 10.2.2.39
+netname:      NODNOL-MUNKYII
+descr:        NODNOL-MUNKYII tunnel /30
+country:      GB
+admin-c:      CA1-FUNKNET
+tech-c:       CA1-FUNKNET
+rev-srv:      ns1.nodnol.org
+rev-srv:      ns2.nodnol.org
+status:       ASSIGNED PA
+notify:       chris@nodnol.org
+mnt-by:       FUNK-MNT
+changed:      chris@nodnol.org 20030724
+source:       FUNKNET
+
+tunnel:       NODNOL-MUNKYII
+type:         ipip
+as:           AS65030
+as:           AS65002
+address:      10.2.2.37
+address:      10.2.2.38
+endpoint:     81.187.70.18
+endpoint:     81.168.98.134
+admin-c:      CA1-FUNKNET
+tech-c:       CA1-FUNKNET
+mnt-by:       FUNK-MNT
+notify:       chris@nodnol.org
+changed:      chris@nodnol.org 20040222
+source:       FUNKNET
+
+route:        192.168.74.0/24
+descr:        NODNOL-LAN
+origin:       AS65002
+mnt-by:       CHRIS
+changed:      chris@nodnol.org 20040105
+source:       FUNKNET
+
+inetnum:      192.168.74.0 - 192.168.74.255
+netname:      NODNOL-WIRELESS
+descr:        Nodnol.org
+descr:        London
+country:      GB
+admin-c:      CA1-FUNKNET
+tech-c:       CA1-FUNKNET
+rev-srv:      ns1.nodnol.org
+rev-srv:      ns2.nodnol.org
+status:       ASSIGNED PA
+notify:       chris@nodnol.org
+mnt-by:       CHRIS
+changed:      chris@nodnol.org 20030321
+source:       FUNKNET
+
