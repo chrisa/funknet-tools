@@ -71,20 +71,20 @@ foreach my $blank_tun (keys(%blank_nerd_tunnels))
 	if ($as1 =~ /AS65023/m)
 	{ 
 		my $tmp = shift(@endpoints);
-		$ip = shift(@endpoints);
+		$ip = shift(@endpoints) || die "no ip";
 		my $tmp_addy = shift(@address);
-		$ip_addy = shift(@address);
+		$ip_addy = shift(@address) || die "no ip_addy";
 		$other_as = $as2;
 	}
-	elsif ($as2  =~ /AS65000/m)
+	elsif ($as2  =~ /AS65023/m)
 	{
-		$ip = shift(@endpoints);
-		$ip_addy = shift(@address);
+		$ip = shift(@endpoints) || die "no ip";
+		$ip_addy = shift(@address) || die "no ip_addy";
 		$other_as = $as1;
 	}
 	$endpoints{$other_as} = $ip;
-	$as_name=$as_names{$other_as};
-	$as_num=$as_nums{$as_name};
+	$as_name=$as_names{$other_as} || die "no as_name";
+	$as_num=$as_nums{$as_name} || die "no as_num";
 
 	$hosts .= qq[
 define host{
@@ -132,7 +132,7 @@ define service{
         max_check_attempts      5
         check_period            24x7
         normal_check_interval   15
-        retry_check_interval    1
+        Retry_check_interval    1
         notification_interval   30
         notification_period     24x7
         notification_options    w,c,r
