@@ -36,7 +36,9 @@ tunnelspace-list.pl
 
 =head1 DESCRIPTION
 
-query the whois for all the assigned IPs within the tunnelspacs
+query the whois for all the assigned IPs within the tunnelspaces.
+
+emits warnings if an address is assigned to more than one tunnel.
 
 =head1 USAGE
 
@@ -137,9 +139,14 @@ sub get_address {
 
     foreach my $address ($tunnel->address) {
 	if (!defined $address) { next; }
-	if (! grep /^$address$/, @$addr_list) {
+	my @overlaps = grep {$_->{address} eq $address} @$addr_list;
+	if (!scalar @overlaps) {    
 	    debug("get_address: unique $address found in $tunnel_name");
 	    push @$addr_list, { address => $address, tunnel => $tunnel_name };
+	} else {
+	    foreach my $overlap (@overlaps) {
+	        debug("EEP: $address ($tunnel_name) overlaps with $overlap->{tunnel}");
+	    }
 	}
     }
 }
