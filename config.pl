@@ -68,7 +68,7 @@ Turn on copious debugging information
 =cut
 
 my %opt;
-getopts('waqdf:', \%opt);
+getopts('iwaqdf:', \%opt);
 
 unless ($opt{f}) {
     print STDERR "usage: $0 -f path_to_config_file\n";
@@ -79,7 +79,8 @@ if ($opt{d}) {
     $DEBUG = 1;
 }
 
-my $config = Funknet::Config->new( configfile => $opt{f} );
+my $config = Funknet::Config->new( configfile  => $opt{f},
+				   interactive => $opt{i}, );
 
 # Generate the changes between current (host) and desired (whois) config.
 debug("Generating BGP config");
