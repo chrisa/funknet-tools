@@ -36,7 +36,7 @@ use strict;
 use base qw/ Funknet::Config::CLI /;
 
 use Net::Telnet;
-use Network::IPv4Addr qw/ ipv4_network /;
+use Net::IPv4Addr qw/ ipv4_network /;
 
 use Funknet::Config::ConfigFile;
 

@@ -33,7 +33,7 @@
 package Funknet::Config::BGP::IOS;
 use strict;
 use base qw/ Funknet::Config::BGP /;
-use Network::IPv4Addr qw/ ipv4_cidr2msk /;
+use Net::IPv4Addr qw/ ipv4_cidr2msk /;
 
 sub config {
     my ($self) = @_;
