@@ -119,7 +119,9 @@ sub new {
 
     $args{source_as} =~ /^\d+$/ or return undef;
     $args{peer_as}   =~ /^\d+$/ or return undef;
-    $args{source_addr} =~ /^\d+\.\d+\.\d+\.\d+$/ or return undef;
+    if ($args{source} eq 'whois') {
+	$args{source_addr} =~ /^\d+\.\d+\.\d+\.\d+$/ or return undef;
+    }
     $args{peer_addr}   =~ /^\d+\.\d+\.\d+\.\d+$/ or return undef;
     $args{dir}      =~ /^(import|export)$/ or return undef;
     
