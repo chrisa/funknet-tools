@@ -97,26 +97,6 @@ sub firewall {
     return @{$self->{_firewall}};
 }
 
-sub config {
-    my ($self) = @_;
-
-    my $l = Funknet::Config::ConfigFile->local;
-    my $rule_num = $l->{min_ipfw_rule};
-
-    my @cmds;
-
-    for my $fwallrule ($self->firewall) {
-	if($rule_num <= $l->{max_ipfw_rule}) {
-	    push @cmds, $fwallrule->create($rule_num);
-	    $rule_num++;
-	} else
-	{
-	    die("ran out of available firewall entries");
-	}
-    }
-    return @cmds;
-}
-
 sub source {
     my ($self) = @_;
     return $self->{_source};

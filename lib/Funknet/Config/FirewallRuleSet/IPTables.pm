@@ -129,4 +129,20 @@ sub local_firewall_rules {
 						source => 'host'));
 }
 
+sub config {
+    my ($self) = @_;
+
+    my $l = Funknet::Config::ConfigFile->local;
+
+    my @cmds;
+
+    for my $fwallrule ($self->firewall) {
+	if (defined $fwallrule) {
+	    push @cmds, $fwallrule->create();
+	}
+    }
+    return @cmds;
+}
+
+
 1;

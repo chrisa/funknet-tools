@@ -187,8 +187,14 @@ if ($opt{a}) {
 if ($opt{w}) {
     if ($opt{c}) {
 	debug("Writing tunnel config");
-	$tun->writeout;
+	my $combined = Funknet::Config::CommandSet->new( target => 'host',
+							 cmds   => [
+								    $tun->cmds(),
+								    $fwall->cmds()
+								   ]
+						       );
+	$combined->writeout();
     } else {
-	debug("attempt to write tunnel config to RCFile from a diff");
+	debug("attempt to write tunnel/firewall config to RCFile from a diff");
     } 
 }

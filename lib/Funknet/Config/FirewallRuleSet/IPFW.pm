@@ -234,4 +234,25 @@ sub remove {
     return($new_fwall);
 }
 
+sub config {
+    my ($self) = @_;
+
+    my $l = Funknet::Config::ConfigFile->local;
+    my $rule_num = $l->{min_ipfw_rule};
+
+    my @cmds;
+
+    for my $fwallrule ($self->firewall) {
+	if($rule_num <= $l->{max_ipfw_rule}) {
+	    push @cmds, $fwallrule->create($rule_num);
+	    $rule_num++;
+	} else
+	{
+	    die("ran out of available firewall entries");
+	}
+    }
+    return @cmds;
+}
+
+
 1;
