@@ -159,3 +159,44 @@ mnt-by:       CHRIS
 changed:      chris@nodnol.org 20030321
 source:       FUNKNET
 
+as-set:       AS-FUNKTRANSIT
+descr:        All FUNKNET nodes AS
+members:      AS65000
+members:      AS65001
+members:      AS65002
+members:      AS65003
+members:      AS65004
+members:      AS65005
+members:      AS65006
+members:      AS65007
+members:      AS65008
+members:      AS65009
+members:      AS65010
+members:      AS65011
+members:      AS65013
+members:      AS65014
+members:      AS65015
+members:      AS65016
+members:      AS65017
+members:      AS65018
+members:      AS65019
+members:      AS65020
+members:      AS65021
+members:      AS65022
+members:      AS65023
+members:      AS65024
+members:      AS65025
+members:      AS65026
+members:      AS65027
+members:      AS65028
+members:      AS65029
+members:      AS65030
+members:      AS65031
+tech-c:       CA1-FUNKNET
+admin-c:      CA1-FUNKNET
+mnt-by:       FUNK-MNT
+changed:      dunc@lemonia.org 20040802
+source:       FUNKNET
+
+
+
