@@ -71,14 +71,20 @@ sub delete {
 sub create {
 
     my ($self, $rule_num) = @_;
+    my $rule;
 
-    my $whois_source = Funknet::ConfigFile::Tools->whois_source || 'FUNKNET';
-    
     if (defined $self->{_source_port} && defined $self->{_destination_port}) {
-	return ("ipfw add $rule_num allow $self->{_proto} from $self->{_source_address} $self->{_source_port} " .
-		"to $self->{_destination_address} $self->{_destination_port}");
+	$rule = "ipfw add $rule_num allow $self->{_proto} from $self->{_source_address} $self->{_source_port} " .
+		"to $self->{_destination_address} $self->{_destination_port}";
     } else {
-	return ("ipfw add $rule_num allow $self->{_proto} from $self->{_source_address} to $self->{_destination_address}");
+	$rule = "ipfw add $rule_num allow $self->{_proto} from $self->{_source_address} to $self->{_destination_address}";
     }
+
+    if (defined $self->{_in_interface}) {
+	$rule = $rule . "\ in recv $self->{_in_interface}";
+    } elsif (defined $self->{_out_interface}) {
+	$rule = $rule . "\ out xmit $self->{_out_interface}";
+    }
+    return($rule);
 }
 1;

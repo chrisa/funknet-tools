@@ -95,39 +95,71 @@ sub copy {
 sub local_firewall_rules {
 
     my $l = Funknet::ConfigFile::Tools->local;
-    my $chain = Funknet::ConfigFile::Tools->whois_source || 'FUNKNET';
     debug("arrived in IPFW.pm local_firewall_rules");
 
     my $whole_set = `ipfw list` ;
     my @rules = split ('\n', $whole_set);
     my @rules_out;
 
-
     foreach my $rule (@rules) {
 
-	my ($src, $dest, $proto, $policy);
+	my ($src, $dest, $proto, $policy, $src_port, $dst_port, $in_if, $out_if);
+	my ($first_half, $second_half);
+	my $dst_port;
 	my $rule_num;
-	my $type;
 	chomp($rule);
-	$rule_num = $src = $dest = $proto = $policy = $rule;
+
+	$rule_num = $rule;
 	$rule_num =~ s/^(\d+).*/$1/;
 
 	next unless(($rule_num <= $l->{max_ipfw_rule}) && ($rule_num >= $l->{min_ipfw_rule}));	
 
-	$policy =~ s/^\d+\s(\S+).*/$1/;
-	$proto =~ s/^\d+\s\S+\s(\S+).*/$1/;
-	$src =~ s/^\d+\s\S+\s\S+\sfrom\s(\d+\.\d+\.\d+\.\d+).*/$1/;
-	$dest =~ s/^\d+\s\S+\s\S+\sfrom\s\d+\.\d+\.\d+\.\d+\sto\s(\d+\.\d+\.\d+\.\d+)/$1/;
+	($first_half, $second_half) = split ('to', $rule);
+	$dst_port = $second_half;
+
+	if ($first_half =~ s/^\d+\s(\S+)\s(\S+)\sfrom\s(\d+\.\d+\.\d+\.\d+)(?:\/\d+)?\ (\d+).*/$1,$2,$3,$4/) {  
+	    ($policy, $proto, $src, $src_port) = split(',',$first_half);
+	} else {
+	    $first_half =~ s/^\d+\s(\S+)\s(\S+)\sfrom\s(\d+\.\d+\.\d+\.\d+)(?:\/\d+)?.*/$1,$2,$3/;
+	    ($policy, $proto, $src) = split(',',$first_half);
+	    $src_port = undef;
+	}
+
+	unless ($dst_port =~ s/^\ \d+\.\d+\.\d+\.\d+(?:\/\d+)?\ (\d+).*/$1/) {
+	    $dst_port = undef;
+	}
+
+	if ($second_half =~ /in/) {
+            $second_half =~ s/^\ (\d+\.\d+\.\d+\.\d+)(?:\/\d+)?\ (?:\d+\ )?in\ recv\ ([a-z]+[0-9]+)/$1,$2,$3/;
+	    ($dest, $in_if) = split(',', $second_half);
+
+	} elsif ($second_half =~ /out/) {
+
+            $second_half =~ s/^\ (\d+\.\d+\.\d+\.\d+)(?:\/\d+)?\ (?:\d+\ )?out\ xmit\ ([a-z]+[0-9]+)/$1,$2,$3/;
+            ($dest, $out_if) = split(',', $second_half);
+
+	} else {
+
+	    $second_half =~ s/^\ (\d+\.\d+\.\d+\.\d+)(?:\/\d+)?.*/$1/;
+	    $dest = $second_half;
+	}
+
 	debug("proto is $proto");
-	my $new_rule_object = Funknet::Config::FirewallRule->new(
-						source => 'host',
-						source_address => $src,
-						destination_address => $dest,
-						proto => $proto,
-						rule_num => $rule_num );
+	my $new_rule_object =
+	  Funknet::Config::FirewallRule->new(
+					source               => 'host',
+					source_address       => $src,
+					source_port          => $src_port,
+
+					destination_address  => $dest,
+					destination_port     => $dst_port,
+
+					proto                => $proto,
+                                        in_interface         => $in_if,
+                                        out_interface        => $out_if,
+					rule_num             => $rule_num );
 	debug("new_rule_object");
 	push (@rules_out, $new_rule_object);
-
     }
     return (Funknet::Config::FirewallRuleSet::IPFW->new(
 						firewall => \@rules_out,
