@@ -185,7 +185,7 @@ sub node_set {
 
     # check the endpoint looks valid
 
-    unless (is_ipv4($args{endpoint}) {
+    unless (is_ipv4($args{endpoint})) {
 	error( "invalid ipv4 address: $args{endpoint}" );
 	return undef;
     }
