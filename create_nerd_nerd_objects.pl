@@ -21,21 +21,14 @@ unless (defined $whois)
         die "Error getting a Funknet::Config::Whois object\n";
 }
 
-
-#$whois->source('FUNKNET');
-#$whois->type('aut-num');
-
 my $transobj = $whois->query('AS-FUNKTRANSIT');
-
 my $trans_text = $transobj->text();
-
 my @lines = split('\n',$trans_text);
 
 foreach my $thing (@lines)
 {
 	if($thing =~ /^members:/)
 	{
-		
 		$thing =~ s/[^A]+(AS\d\d\d\d\d)/$1/;
 		push (@ass,$thing);
 	}
@@ -116,7 +109,6 @@ foreach my $thing (@ass)
 	{
 		next if $twat eq $thing;
 		next if(($twat eq 'AS65000') or ($twat eq 'AS65023'));
-
 		next if(grep(/$as_names{$twat}:$as_names{$thing}/,@done));
 
 		my $local_as_name = $as_names{$thing};
@@ -139,8 +131,6 @@ foreach my $thing (@ass)
 		print FILE "address: $this_remote\n";
 		print FILE "endpoint: $local_endpoint\n";
 		print FILE "endpoint: $remote_endpoint\n";
-#		print FILE "endpoint: \n";
-#		print FILE "endpoint: \n";
 		print FILE "admin-c: CA1-FUNKNET\n";
 		print FILE "tech-c: CA1-FUNKNET\n";
 		print FILE "mnt-by: FUNK-MNT\n";
@@ -164,41 +154,3 @@ foreach my $thing (@ass)
 }
 close(FILE);
 exit(0);
-
-sub get_endpoint
-{
-	print STDERR "Got called\n";
-	my $as = shift (@_);
-	my $as_name = shift (@_);
-
-	my $ip;
-
-	foreach my $guess (keys(%splurby_nerd_tunnels))
-	{
-		my $guess1 = "SPLURBY-$as_name";
-		my $guess2 = "$as_name-SPLURBY";
-		next unless (($guess eq $guess1) || ($guess eq $guess2));
-		print STDERR "$guess\n";
-exit(0);
-		my $tunnel_object = $splurby_nerd_tunnels{$guess};
-		my @ass = $tunnel_object->as;
-		my @endpoints = $tunnel_object->endpoint;
-	        my ($as1,$as2) = @ass;
-		if ($as1 eq $as)
-		{ 
-			$ip = shift(@endpoints);
-		}
-		elsif ($as2 eq $as)
-		{
-			my $tmp = shift(@endpoints);
-			$ip = shift(@endpoints);
-		}
-		else
-		{
-			print STDERR "error $tunnel_object not for $guess\n";
-			next;
-		}
-	}
-	print STDERR "whoops\n";
-	return($ip);
-}
