@@ -132,7 +132,7 @@ sub host_init {
     
     # fire object back through init for checking and bless
     return $self->init(
-		       source   => 'whois',
+		       source   => 'host',
 		       keyfile  => $keyfile,
 		       certfile => $certfile,
 		      );
