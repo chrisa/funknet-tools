@@ -149,7 +149,7 @@ sub get_object {
     $w->type($type);
     my $obj = $w->query($name);
     if (defined $obj && scalar @{ $obj->{_order} }) {
-        return $obj;
+	return bless $obj, 'Funknet::Whois::Object';
     } else { 
 	return undef;
     }
@@ -169,7 +169,7 @@ sub get_object_inverse {
     $w->inverse_lookup($key);
     my $obj = $w->query($value);
     if (defined $obj && scalar @{ $obj->{_order} }) {
-        return $obj;
+	return bless $obj, 'Funknet::Whois::Object';
     } else { 
 	return undef;
     }

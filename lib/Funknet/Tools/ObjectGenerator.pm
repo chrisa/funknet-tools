@@ -213,11 +213,11 @@ sub node_set {
 	my $ifaddr = $rtr->ifaddr;
 	$ifaddr =~ s/ MASKLEN.*$//;
 	
-	my $t = $gen->tunnel( 'name'    =>  $args{nodename}.'-'.$peers->{$peer}->as_name,
-			      'as'      => [$peers->{$peer}->aut_num,$ns->{as}->aut_num],
-			      'endpoint'      => [$ifaddr, $args{endpoint}],
-			      'address'    => ['',''],
-			      'type'    => 'ipip',
+	my $t = $gen->tunnel( 'name'     =>  $args{nodename}.'-'.$peers->{$peer}->as_name,
+			      'as'       => [ $peers->{$peer}->aut_num,$ns->{as}->aut_num ],
+			      'endpoint' => [ $ifaddr, $args{endpoint} ],
+			      'address'  => [ $t_inetnum->tunnel_addresses ],
+			      'type'     => 'ipip',
 			    );
 	if (defined $t) {
 	    push @{$ns->{tun_objs}}, $t;

@@ -70,4 +70,29 @@ sub text {
     return $text;
 }
 
+sub tunnel {
+    my ($self) = @_;
+    $self->{_tunnel} = 1;
+}
+
+=head2 tunnel_addresses
+
+Returns the two usable addresses in a /30, assuming ->tunnel has
+already been called.
+
+=cut
+
+sub tunnel_addresses {
+    my ($self) = @_;
+    return undef unless $self->{_tunnel};
+    
+    my $inetnum = $self->inetnum;
+    my ($network, $octet) = $inetnum =~ /(\d+\.\d+\.\d+\.)(\d+) -/;
+    return undef unless defined $network && defined $octet;
+
+    # we get away with this, because this inetnum *must* be a /30,
+    # and this hack is always valid for a /30.
+    return ( ($network . ($octet+1)) , ($network . ($octet+2)) );
+}
+
 1;

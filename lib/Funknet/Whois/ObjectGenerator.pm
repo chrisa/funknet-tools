@@ -457,8 +457,9 @@ sub inetnum_assign {
 
     my $inetnum = assign_tunnel_inetnum($args{peer});
 
-    return $self->inetnum( 'name' => $args{name},
-			   'network' => $inetnum );
+    my $inetnum = $self->inetnum( 'name' => $args{name},
+				  'network' => $inetnum );
+    $inetnum->tunnel();
 }
 
 sub tunnel {
