@@ -72,18 +72,13 @@ sub create {
 
     my ($self, $rule_num) = @_;
 
-    my $proto = $self->{_proto};
     my $whois_source = Funknet::ConfigFile::Tools->whois_source || 'FUNKNET';
     
-    my $port_str = " ";
-    if (defined $self->{_source_port}) {
-	$port_str .= "$self->{_source_port} ";
+    if (defined $self->{_source_port} && defined $self->{_destination_port}) {
+	return ("ipfw add $rule_num allow $self->{_proto} from $self->{_source_address} $self->{_source_port} " .
+		"to $self->{_destination_address} $self->{_destination_port}");
+    } else {
+	return ("ipfw add $rule_num allow $self->{_proto} from $self->{_source_address} to $self->{_destination_address}");
     }
-    if (defined $self->{_destination_port}) {
-	$port_str .= "$self->{_destination_port} ";
-    }
-    
-    return ("ipfw add $rule_num allow $proto from $self->{_source_address} to $self->{_destination_address} $port_str");
 }
-
 1;
