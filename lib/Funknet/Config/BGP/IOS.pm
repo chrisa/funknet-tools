@@ -74,7 +74,47 @@ sub diff {
     for my $n ( $host->neighbors ) {
 	unless ($whois->neighbor_set($n) ) {
 	    # not there; delete.
-	    push @cmds, "no neighbor ".$n->remote_as;
+	    push @cmds, "no neighbor ".$n->remote_addr;
+	}
+    }
+
+    # iterate acls, do add/remove/change
+
+    for my $n ( $whois->neighbors ) {
+	unless ($host->neighbor_set($n) ) {
+	    # not there; config from scratch.
+	    defined $n->{_acl_in} && push @cmds, $n->{_acl_in}->config;
+	    defined $n->{_acl_out} && push @cmds, $n->{_acl_out}->config;
+	} else {
+	    # there already; make a diff.
+	    my $h_n = $host->neighbor($n);
+	    if (defined $n->{_acl_in} && !defined $h_n->{acl_in}) {
+		push @cmds, $n->{_acl_in}->config;
+	    }
+	    if (defined $n->{_acl_out} && !defined $h_n->{acl_out}) {
+		push @cmds, $n->{_acl_out}->config;
+	    }
+	    if (defined $h_n->{_acl_in} && !defined $n->{acl_in}) {
+		push @cmds, $h_n->{_acl_in}->config;
+	    }
+	    if (defined $h_n->{_acl_out} && !defined $n->{acl_out}) {
+		push @cmds, $h_n->{_acl_out}->config;
+	    }
+	    if (defined $n->{_acl_in} && defined $h_n->{_acl_in}) {
+		push @cmds, $n->{_acl_in}->diff($h_n->{_acl_in});
+	    }
+	    if (defined $n->{_acl_out} && defined $h_n->{_acl_out}) {
+		push @cmds, $n->{_acl_out}->diff($h_n->{_acl_out});
+	    }
+	}
+    }
+    for my $n ( $host->neighbors ) {
+	unless ($whois->neighbor_set($n) ) {
+	    # not there; delete.
+	    defined $n->{_acl_in} && push @cmds, "no route-map ".$n->{acl_in}->name;
+	    defined $n->{_acl_in} && push @cmds, "no ip prefix-list ".$n->{acl_in}->name;
+	    defined $n->{_acl_out} && push @cmds, "no route-map ".$n->{acl_out}->name;
+	    defined $n->{_acl_out} && push @cmds, "no ip prefix-list ".$n->{acl_out}->name;
 	}
     }
 

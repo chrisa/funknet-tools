@@ -82,4 +82,9 @@ sub config {
 	       " match ip address prefix-list $self->{_name}\n!\n";
 }
 
+sub diff {
+    my ($whois, $host) = @_;
+    return "acl diff here";
+}
+
 1;
