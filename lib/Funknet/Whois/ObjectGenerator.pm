@@ -424,7 +424,7 @@ sub inetnum {
     }
 
     if (defined $args{name} &&
-	def  ined $args{network}) {
+	defined $args{network}) {
 	
 	my $m = parse_object(tmpl('inetnum'));
 
