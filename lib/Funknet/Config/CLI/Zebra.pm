@@ -92,10 +92,10 @@ sub get_bgp {
 	    		push @networks, scalar ipv4_network("$1$2");
 		}
 	}
-	if ($line =~ /^\*?\>?\s+(\d+\.\d+\.\d+\.\d+)(\/\d+)?\s+$/) {
+	if ($line =~ /^\*?\>?\s+(\d+\.\d+\.\d+\.\d+)(\/\d+)?\s+\d+\.\d+\.\d+\.\d+/) {
 	    $current = "$1$2";
 	}
-	if ($line =~ /^\*?\>?\s+0\.0\.0\.0/ && $current) {
+	if ($line =~ /0\.0\.0\.0/ && $current) {
 	    push @networks, $current;
 	    undef $current;
 	}
