@@ -2,7 +2,7 @@
 use strict;
 use Funknet::Whois::Server;
 
-my $s = new Funknet::Whois::Server("FUNKNET",1);
-my $num = $s->load("$ARGV[0]");
+my $s = new Funknet::Whois::Server($ARGV[1],1);
+my $num = $s->load($ARGV[0]);
 $s->go;
 
