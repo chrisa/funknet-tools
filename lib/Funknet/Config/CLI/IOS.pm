@@ -73,6 +73,7 @@ sub get_bgp {
 	    local_addr => $neighbors->{$peer}->{local_addr},
 	    remote_addr => $neighbors->{$peer}->{remote_addr},
 	    source => 'host',
+	    local_router => 'ios',
 	);
     }
     return $bgp;
