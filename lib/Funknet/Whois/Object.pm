@@ -46,7 +46,7 @@ sub new {
     my $self = bless {}, $class;
 
     for my $line (split /\n/, $text) {
-	my ($key, $val) = $line =~ /(.+):\s*(.+)?/;
+	my ($key, $val) = $line =~ /(.+?):\s*(.+)?/;
 	next unless ($key);
 	if (!defined $val) { $val = "" };
 	push @{ $self->{_methods}->{$key} }, $val;
@@ -117,7 +117,7 @@ sub text {
     }
 
     for my $line (@content) {
-	my ($key, $val) = $line =~ /(.+): ?(.+)/;
+	my ($key, $val) = $line =~ /(.+?):\s*(.+)/;
 	push @lines, { key => $key, val => $val };
 	if (length $key > $maxkey) {
 	    $maxkey = length $key;
@@ -125,7 +125,7 @@ sub text {
     }
     my $text = '';
     for my $line (@lines) {
-	$text .= $line->{key} . ': ' . (' ' x ($maxkey - length $line->{key})) . $line->{val} . "\n";
+	$text .= $line->{key} . ':    ' . (' ' x ($maxkey - length $line->{key})) . $line->{val} . "\n";
     }
     
     # delete trailing spaces, so they don't get QP-ed 
