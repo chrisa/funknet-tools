@@ -34,7 +34,6 @@ use strict;
 use base qw/ Funknet::Config::CLI::Zebra /;
 use Funknet::Config::ConfigFile;
 use IO::Socket::UNIX;
-use Data::Dumper;
 
 =head1 NAME
 
@@ -50,7 +49,7 @@ sub cmd {
     my ($self, $cmd) = @_;
     return undef unless defined $self->{t};
     my $fh = $self->{t};
-    print $fh "$cmd\0\0\0";
+    print $fh "$cmd\n";
     
     my ($text, $chunk);
     while(my $ret = $fh->sysread($chunk, 4096)) {
@@ -100,7 +99,6 @@ sub login {
 				       Peer => $l->{bgpd_vty},
 				      );
 	die "failed to connect $l->{bgpd_vty}: $!" unless defined $fh;	  
-	print $fh "terminal length 0\n";
 	$self->{t} = $fh;
     } 
 }
