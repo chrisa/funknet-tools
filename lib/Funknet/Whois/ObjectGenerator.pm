@@ -281,7 +281,7 @@ sub mntner {
 	$m->tech_c($self->{person});
 
 	$m->mnt_by($mnt_by);
-	$m->referral_by($referral_by);
+	$m->referral_by($args{referral_by});
 
 	return $m;
 
