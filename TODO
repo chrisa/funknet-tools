@@ -1,38 +1,25 @@
 Known bugs:
 
-* There are a lot of places where we pass the static local_* values
-  around from the config file. This should be replaced with calls to
-  Funknet::Config::ConfigFile, at the point where the values are
-  actually needed.
-
 * diffing access-lists isn't done yet. this might turn out to be hard,
   or we might just replace the existing one with the whois one...
     -- changed - we now at least look to see if the access list
        is the same. doing more will require building a data
        structure for access lists, rather than just capturing text
-
-* there are no tunnel commands in there yet, so ->config on a tunnel
-  just prints the relevant details - but this is already split into
-  OS-specific packages, so it's just a case of adding print
-  statements.
-
-* Secrets.pm needs work. I don't know how to deal with this yet, but
-  I'm thinking in terms of a local config file.
+    -- and that data structure is Net::ACL. You'll create access-
+       list objects with Net::ACL::RtConfig, or maybe Net::ACL::
+       RtConfig::SOAP.
 
 * Privilege in general needs thinking about - the program only needs
-  root to alter tunnels. Is userv portable enough?
-
-* There will be a driver module which takes the place of
-  generate-tuns.pl, probably called Funknet::Config.pm.
+  root to alter tunnels. Is userv portable enough? Secrets.pm should
+  also pick up usernames and passwords from ConfigFile.pm
 
 * Lots of little BGP statements are missing. There needs to be a way
   to put arbitrary extra commands in there, as well as things like
   iBGP sessions.
+    -- this should probably be covered by the 'ignore' concept. 
+       ignore_neighbour, etc. 
 
 * Linux ifconfig-reading is stubbed out at the moment. 
-
-* the IP address validation subs are stubbed out so far because all
-  the CPAN modules for doing this are broken in some way.
 
 * some network statements in the BGP configs aren't visible in 
   'sho ip bgp', so we miss them. 
