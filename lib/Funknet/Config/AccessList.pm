@@ -46,7 +46,9 @@ sub name {
 
 sub config {
     my ($self) = @_;
-    return $self->{_acl_text};
+    my $config = $self->{_acl_text}."!\n";
+    $config .= "route-map $self->{_name} permit 1\n" . 
+	       " match ip address prefix-list $self->{_name}\n!\n";
 }
 
 1;
