@@ -218,6 +218,9 @@ aut-num objects.
 =cut
 
 use Funknet::Config::Validate qw/ is_ipv4 is_valid_as / ;
+use Funknet::Whois qw / get_object parse_object /;
+use Funknet::Whois::Templates qw / tmpl /;
+use Net::Whois::RIPE;
 
 sub new {
     my ($class, %args) = @_;
@@ -230,14 +233,10 @@ sub new {
     }
 
     if (defined $args{mntner}) {
-	$self->{mntner} = $args{mntner};
+	$self->{mntner} = get_object('mntner', $args{mntner});
     }
-    
-    if (defined $args{admin_c}) {
-	$self->{admin_c} = $args{admin_c};
-    }
-    if (defined $args{tech_c}) {
-	$self->{tech_c} = $args{tech_c};
+    if (defined $args{person}) {
+	$self->{person} = get_object('person', $args{person});
     }
 
     return $self;
@@ -245,11 +244,32 @@ sub new {
 
 sub mntner {
     my ($self, %args) = @_;
-    unless (defined $self->{tech_c} && defined $self->{admin_c}) {
+    unless (defined $self->{person}) {
 	return undef;
     }
 
+    if (defined $args{name} &&
+	defined $args{auth} && 
+	defined $args{descr} &&
+	defined $args{e_mail}) {
+	
+	my $m = parse_object(tmpl('mntner'));
+	$m->mntner($args{name});
+	$m->descr ($args{descr});
+	$m->upd_to($args{e_mail});
+	$m->auth  ($args{auth});
+	$m->changed($args{e_mail});
+	$m->source ($self->{source});
 
+	$m->admin_c($self->{admin_c});
+	$m->tech_c($self->{tech_c});
+	
+	return $m;
+
+    } else {
+	
+	return undef;
+    }
 }
 
 sub person {
@@ -260,13 +280,31 @@ sub person {
 	defined $args{phone}) {
 	
 	# create a new object.
+	
+	my $p = parse_object(tmpl('person'));
+	$p->person ($args{name});
+	$p->address($args{address});
+	$p->phone  ($args{phone});
+	$p->e_mail ($args{e_mail});
+	$p->notify ($args{e_mail});
+	$p->nic_hdl('AUTO-1');
+	$p->changed($args{e_mail});
+	$p->source ($self->{source});
 
+	return $p;
+	
     } elsif (defined $args{name} &&
 	     defined $args{mntner}) {
 	
 	# go and get the old object and modify the 
 	# maintainer. if it doesn't exist, return undef.
 
+	my $p = get_object('person', $args{name})
+	  or return undef;
+
+	$p->mnt_by($args{mntner});
+	return $p;
+	
     } else {
 	
 	return undef;
@@ -275,19 +313,24 @@ sub person {
 
 sub aut_num {
     my ($self, %args) = @_;
-    unless (defined $self->{mntner} && defined $self->{tech_c} && defined $self->{admin_c}) {
+    unless (defined $self->{mntner} && defined $self->{person}) {
 	return undef;
     }
 
 }
 
 sub aut_num_assign {
-
+    my ($self, %args) = @_;
+    unless (defined $self->{mntner} && defined $self->{person}) {
+	return undef;
+    }
+    
+    
 }
 
 sub inetnum {
     my ($self, %args) = @_;
-    unless (defined $self->{mntner} && defined $self->{tech_c} && defined $self->{admin_c}) {
+    unless (defined $self->{mntner} && defined $self->{person}) {
 	return undef;
     }
 
@@ -296,7 +339,7 @@ sub inetnum {
 
 sub inetnum_assign {
     my ($self, %args) = @_;
-    unless (defined $self->{mntner} && defined $self->{tech_c} && defined $self->{admin_c}) {
+    unless (defined $self->{mntner} && defined $self->{person}) {
 	return undef;
     }
 
@@ -305,7 +348,7 @@ sub inetnum_assign {
 
 sub tunnel {
     my ($self, %args) = @_;
-    unless (defined $self->{mntner} && defined $self->{tech_c} && defined $self->{admin_c}) {
+    unless (defined $self->{mntner} && defined $self->{person}) {
 	return undef;
     }
 
@@ -314,7 +357,7 @@ sub tunnel {
 
 sub route {
     my ($self, %args) = @_;
-    unless (defined $self->{mntner} && defined $self->{tech_c} && defined $self->{admin_c}) {
+    unless (defined $self->{mntner} && defined $self->{person}) {
 	return undef;
     }
 
@@ -323,10 +366,13 @@ sub route {
 
 sub node_setup {
     my ($self, %args) = @_;
-    unless (defined $self->{mntner} && defined $self->{tech_c} && defined $self->{admin_c}) {
+    unless (defined $self->{mntner} && defined $self->{person}) {
 	return undef;
     }
 
 
     
 }
+
+
+1;

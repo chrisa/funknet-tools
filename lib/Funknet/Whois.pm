@@ -43,7 +43,7 @@ Routines for dealing with whois objects.
 =cut
 
 use vars qw/ @EXPORT_OK @ISA /;
-@EXPORT_OK = qw/ parse_object check_auth object_exists /;
+@EXPORT_OK = qw/ parse_object check_auth object_exists get_object /;
 @ISA = qw/ Exporter /;
 use Exporter; 
 
@@ -128,4 +128,12 @@ sub object_exists {
     # compare
 
     return 1;
+}
+
+sub get_object {
+    my ($type, $name) = @_;
+    my $w = Net::Whois::RIPE->new( 'whois.funknet.org' );
+    $w->type($type);
+    my $obj = $w->query($name);
+    return $obj;
 }
