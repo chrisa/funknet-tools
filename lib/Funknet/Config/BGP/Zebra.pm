@@ -73,7 +73,7 @@ sub diff {
     my $l = Funknet::Config::ConfigFile->local;
     $l->{as} =~ s/^AS//;
 
-    my ($bounce_req, $bounce_all, $bgp_req);
+    my ($bounce_req, $bounce_req_soft, $bounce_all, $bgp_req);
     my @cmds;
     
     # first check we have the objects the right way around.
@@ -161,7 +161,11 @@ sub diff {
 	    if (defined $h_n->{_acl_in} && !defined $n->{_acl_in}) {
 		push @cmds, "no route-map ".$h_n->{_acl_in}->name;
 		push @cmds, "no ip prefix-list ".$h_n->{_acl_in}->name;
-		$bounce_req->{$n->remote_addr} = 1;
+		if ($n->soft_reconfig) {
+		    $bounce_req_soft->{$n->remote_addr} = 1;
+		} else {
+		    $bounce_req->{$n->remote_addr} = 1;
+		}
 	    }
 	    if (defined $h_n->{_acl_out} && !defined $n->{_acl_out}) {
 		push @cmds, "no route-map ".$h_n->{_acl_out}->name;
@@ -173,7 +177,11 @@ sub diff {
 		push @cmds, "no ip prefix-list ".$n->{_acl_in}->name;
 		push @cmds, $n->{_acl_in}->config;
 		push @cmds, 'exit';
-		$bounce_req->{$n->remote_addr} = 1;
+		if ($n->soft_reconfig) {
+		    $bounce_req_soft->{$n->remote_addr} = 1;
+		} else {
+		    $bounce_req->{$n->remote_addr} = 1;
+		}
 	    }
 	    if (defined $n->{_acl_out} && !defined $h_n->{_acl_out}) {
 		push @cmds, "no route-map ".$n->{_acl_out}->name;
@@ -187,7 +195,11 @@ sub diff {
 		for my $cmd (@acl_diff) {
 		    if (defined $cmd) {
 			push @cmds, $cmd;
-			$bounce_req->{$n->remote_addr} = 1;
+			if ($n->soft_reconfig) {
+			    $bounce_req_soft->{$n->remote_addr} = 1;
+			} else {
+			    $bounce_req->{$n->remote_addr} = 1;
+			}
 		    }
 		}
 	    }
@@ -210,12 +222,16 @@ sub diff {
 	push @cmds, 'exit';
     }
     
-    # bounce the relevant bgp sessions
-    
+    # bounce the relevant bgp sessions -- if we've changed 'network x.x.x.x/y' or something
+    # we'll need to bounce all neighbors. if we've just changed something neighbor specific,
+    # bounce only that, and if it's only route-maps and prefix lists, *and* the neighbor had
+    # soft-reconfig set, do soft reconfig inbound. 
+
     if ( $bounce_all ) {
 	push @cmds, 'clear ip bgp *';
     } else {
 	push @cmds, map { "clear ip bgp $_" } keys %$bounce_req;
+	push @cmds, map { "clear ip bgp $_ soft in" } keys %$bounce_req_soft;
     }
 
     return @cmds;
