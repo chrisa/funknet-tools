@@ -75,36 +75,39 @@ sub local_firewall_rules {
     my $chain = Funknet::Config::ConfigFile->whois_source || 'FUNKNET';
     debug("arrived in IPTables.pm local_firewall_rules whois_src is $chain");
 
-    my $whole_set = `iptables -n -L $chain` ;
-    my @rules = split ('\n', $whole_set);
-    my @rules_out;
+    if(my $whole_set = `iptables -n -L $chain`) {
 
+	my @rules = split ('\n', $whole_set);
+	my @rules_out;
 
-    foreach my $rule (@rules) {
-
-	my ($src, $dest, $proto, $policy);
-	my $type;
-	chomp($rule);
-	next if $rule =~ /^Chain/;
-	next if $rule =~ /^target/;
-	debug("$rule");
-	$src = $dest = $proto = $policy = $rule;
-	$policy =~ s/^(\w+).*/$1/;
-	$proto =~ s/^\w+\s+(\w+).*/$1/;
-	$src =~ s/^\w+\s+\w+\s+--\s+(\d+\.\d+\.\d+\.\d+).*/$1/;
-	$dest =~ s/^\w+\s+\w+\s+--\s+\d+\.\d+\.\d+\.\d+\s+(\d+\.\d+\.\d+\.\d+).*/$1/;
-	debug("proto is $proto");
-	my $new_rule_object = Funknet::Config::FirewallRule->new(
-						source => 'host',
-						source_address => $src,
-						destination_address => $dest,
-						proto => $proto );
-	debug("new_rule_object");
-	push (@rules_out, $new_rule_object);
-    }
+	foreach my $rule (@rules) {
+	    my ($src, $dest, $proto, $policy);
+	    my $type;
+	    chomp($rule);
+	    next if $rule =~ /^Chain/;
+	    next if $rule =~ /^target/;
+	    debug("$rule");
+	    $src = $dest = $proto = $policy = $rule;
+	    $policy =~ s/^(\w+).*/$1/;
+	    $proto =~ s/^\w+\s+(\w+).*/$1/;
+	    $src =~ s/^\w+\s+\w+\s+--\s+(\d+\.\d+\.\d+\.\d+).*/$1/;
+	    $dest =~ s/^\w+\s+\w+\s+--\s+\d+\.\d+\.\d+\.\d+\s+(\d+\.\d+\.\d+\.\d+).*/$1/;
+	    debug("proto is $proto");
+	    my $new_rule_object = Funknet::Config::FirewallRule->new(
+						  source => 'host',
+						  source_address => $src,
+						  destination_address => $dest,
+						  proto => $proto );
+	    debug("new_rule_object");
+	    push (@rules_out, $new_rule_object);
+	}
     return (Funknet::Config::FirewallRuleSet::IPTables->new(
 						firewall => \@rules_out,
 						source => 'host'));
+    }
+    else {
+	return undef;
+    }
 }
 
 sub config {
@@ -113,6 +116,11 @@ sub config {
     my $l = Funknet::Config::ConfigFile->local;
 
     my @cmds;
+    my $whois_source = Funknet::Config::ConfigFile->whois_source;
+    debug("whois source is $whois_source\n");
+    my $first_rule = Funknet::Config::FirewallRule::IPTables->create_chain($whois_source);
+    debug("first rule is $first_rule\n");
+    push (@cmds, $first_rule);
 
     for my $fwallrule ($self->firewall) {
 	if (defined $fwallrule) {

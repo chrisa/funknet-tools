@@ -86,4 +86,10 @@ sub as_hashkey {
         "$self->{_source_address}-$self->{_destination_address}-";
 }
 
+sub create_chain {
+    my ($class, $chain) = @_;
+
+    return("iptables -N $chain");
+}
+
 1;
