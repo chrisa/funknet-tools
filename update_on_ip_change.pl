@@ -80,9 +80,8 @@ sub get_ip
 	my $iface = shift(@_);
 
 	#This bit is shit, but nice module wouldn't build
-
 	my $ip = qx[/sbin/ifconfig $iface 2> /dev/null | /usr/bin/grep inet | /usr/bin/grep -v inet6] || die "couldn't get settings of interface $iface";
-	$ip =~ s/.*inet\ ([^\ ]+).*/$1/;
+	$ip =~ s/.*inet[^\d]+([^\ ]+).*/$1/;
 	return($ip);
 }
 
@@ -94,11 +93,15 @@ sub update_whois
 	my $subject="IP update from $hostname";
 
 	my @current_entry = get_entry_from_whois();
+	
+	my @new_message;
+
+	my $ref_to_msg = \@new_message;
 
 	my $mime_obj = MIME::Entity->build(From    => $signing_email,
 					   To      => $update_email,
 					   Subject => $subject,
-					   Data    => \@message);
+					   Data    => $ref_to_msg);
 
 	my $mg = new Mail::GnuPG ( key => $key_id );
 	my $ret = $mg->mime_sign($mime_obj, $signing_email);
@@ -112,10 +115,13 @@ get_entry_from_whois
 
 	$whois->no_recursive;
 	$whois->source('FUNKNET');
-	$whois->query_iterator($tunnel_object);
+	my $iterator = $whois->query_iterator($tunnel_object);
 	while (my $obj = $iterator->next) 
 	{
 		my $test = $obj->content;
-		push(@current,$test);
+		if ($test !~ /^%/)
+		{
+			push(@current,$test);
+		}
 	}
 }
