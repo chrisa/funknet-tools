@@ -114,8 +114,8 @@ sub new {
 		return undef;
 	    }
 	} else {
-	    $self->error("config file not found: $file");
-	    return undef;
+	    $self->warn("config file not found: $file");
+	    return $self;
 	}
     }
     debug("Reading config file '$file'");
