@@ -211,7 +211,7 @@ sub exec_enable {
 
     my $t = new Net::Telnet ( Timeout => 10,
                               Prompt  => '/[ \>\#]$/',
-                              Port    => 23,
+                              Port    => 2605,
                             );
     $t->input_log(\*STDOUT);
     $t->open($self->{_local_host});
