@@ -69,6 +69,7 @@ sub config {
 
 sub diff {
     my ($whois, $host) = @_;
+    my $l = Funknet::Config::ConfigFile->local;
     my ($bounce_req, $bounce_all, $bgp_req);
     my @cmds;
     
@@ -78,14 +79,14 @@ sub diff {
 	return undef;
     }
     
-    # see if we need to change the AS on the bgp-router first
-    if (defined $host->local_as && $host->local_as != $whois->local_as) {
-	push @cmds, "no router bgp ".$host->local_as;
-	push @cmds, "router bgp ".$whois->local_as;
-    } else {
-	# not sure of this logic, but will fix current bork -- doug
-	push @cmds, "router bgp ".$whois->local_as;
-    }
+#     # see if we need to change the AS on the bgp-router first
+#     if (defined $host->local_as && $host->local_as != $whois->local_as) {
+# 	push @cmds, "no router bgp ".$host->local_as;
+# 	push @cmds, "router bgp ".$whois->local_as;
+#     } else {
+# 	# not sure of this logic, but will fix current bork -- doug
+# 	push @cmds, "router bgp ".$whois->local_as;
+#     }
     
     # see what we need to do to the 'network' statements
     
@@ -112,10 +113,15 @@ sub diff {
 	    push @cmds, $n->config;
 	    $bgp_req = 1;
 	} else {
-	    # there already; make a diff.
-	    push @cmds, $n->diff($host->neighbor($n));
-	    $bounce_req->{$n->remote_addr} = 1;
-	    $bgp_req = 1;
+	    # there already; make a diff (careful not to push undefs)
+	    my @neighbor_diff = $n->diff($host->neighbor($n));
+	    for my $cmd (@neighbor_diff) {
+		if (defined $cmd) {
+		    push @cmds, $cmd;
+		    $bounce_req->{$n->remote_addr} = 1;
+		    $bgp_req = 1;
+		}
+	    }
 	}
     }
     for my $n ( $host->neighbors ) {
@@ -129,6 +135,7 @@ sub diff {
     # we're done with bgp, get back to configuration mode
 
     if ($bgp_req) {
+	unshift @cmds, 'router bgp '.$l->{as};
 	push @cmds, 'exit';
     }
 
@@ -146,12 +153,17 @@ sub diff {
 
     for my $n ( $whois->neighbors ) {
 	unless ($host->neighbor_set($n) ) {
-	    # not there; config from scratch.
+	    # not there; config from scratch (deleting first just in case)
+	    defined $n->{_acl_in} && push @cmds, "no route-map ".$n->{_acl_in}->name;
+	    defined $n->{_acl_in} && push @cmds, "no ip prefix-list ".$n->{_acl_in}->name;
+	    defined $n->{_acl_out} && push @cmds, "no route-map ".$n->{_acl_out}->name;
+	    defined $n->{_acl_out} && push @cmds, "no ip prefix-list ".$n->{_acl_out}->name;
 	    defined $n->{_acl_in} && push @cmds, $n->{_acl_in}->config;
 	    defined $n->{_acl_out} && push @cmds, $n->{_acl_out}->config;
 	} else {
 	    # there already; make a diff.
 	    my $h_n = $host->neighbor($n);
+
 	    if (defined $h_n->{_acl_in} && !defined $n->{_acl_in}) {
 		push @cmds, "no route-map ".$h_n->{_acl_in}->name;
 		push @cmds, "no ip prefix-list ".$h_n->{_acl_in}->name;
@@ -163,11 +175,15 @@ sub diff {
 		$bounce_req->{$n->remote_addr} = 1;
 	    }
 	    if (defined $n->{_acl_in} && !defined $h_n->{_acl_in}) {
+		push @cmds, "no route-map ".$n->{_acl_in}->name;
+		push @cmds, "no ip prefix-list ".$n->{_acl_in}->name;
 		push @cmds, $n->{_acl_in}->config;
 		push @cmds, 'exit';
 		$bounce_req->{$n->remote_addr} = 1;
 	    }
 	    if (defined $n->{_acl_out} && !defined $h_n->{_acl_out}) {
+		push @cmds, "no route-map ".$n->{_acl_out}->name;
+		push @cmds, "no ip prefix-list ".$n->{_acl_out}->name;
 		push @cmds, $n->{_acl_out}->config;
 		push @cmds, 'exit';
 		$bounce_req->{$n->remote_addr} = 1;
@@ -192,7 +208,7 @@ sub diff {
 	    }
 	}
     }
-    
+
     # we're done in configuration mode, get back to enable.
     
     if (scalar @cmds) {
