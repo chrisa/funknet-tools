@@ -38,6 +38,8 @@ use Test::More tests => 24;
 
 BEGIN { use_ok ( 'Funknet::Config::Host' ); }
 
+Funknet::Config::ConfigFile::make_local_sub('AS64512');
+
 my $host = new Funknet::Config::Host;
 my $bgp = $host->sessions;
 my $tun = $host->tunnels;
@@ -578,17 +580,23 @@ sub close {}
 package Funknet::Config::ConfigFile;
 use strict;
 
-no warnings 'redefine';
+# factory method for a 'local' sub. don't ask. just don't ask. 
 
-sub local {
+sub make_local_sub {
 
-    return {
-	 as       => 'AS64512',
+    my $as = shift;
+
+    my $local_hash = {
+	 as       => $as,
 	 os       => 'ios',
 	 host     => '127.0.0.1',
 	 router   => 'ios',
 	 endpoint => '1.2.3.4',
-     };
+    };
+
+    *local=sub {
+        return $local_hash;
+    };
 }
 
 sub AUTOLOAD {
