@@ -99,6 +99,11 @@ sub new {
     my $self = bless {}, $class;
     $self->{file} = $file;
 
+    if (defined $config && ref $config eq 'HASH') {
+        $self->{config} = $config;
+        return $self;
+    }
+
     debug("looking for config file '$file'");
     unless (-f $file) {
 	if ($interact) {
