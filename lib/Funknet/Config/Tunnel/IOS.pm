@@ -53,18 +53,23 @@ sub config {
 
 sub delete {
     my ($self) = @_;
-    return "no interface Tunnel$self->{_interface}";
+    return (
+	"configure terminal",
+	"no interface Tunnel$self->{_interface}",
+	"exit" );
 }
 
 sub create {
     my ($self, $inter) = @_;
     
     return (
+	"configure terminal",
 	"interface Tunnel$inter",
-        " tunnel mode $self->{_type}", 
-	" tunnel source $self->{_local_endpoint}",
-	" tunnel destination $self->{_remote_endpoint}",
-	" ip address $self->{_local_address} 255.255.255.252" );
+        "tunnel mode $self->{_type}", 
+	"tunnel source $self->{_local_endpoint}",
+	"tunnel destination $self->{_remote_endpoint}",
+	"ip address $self->{_local_address} 255.255.255.252",
+        "exit" );
 }
 
 1;

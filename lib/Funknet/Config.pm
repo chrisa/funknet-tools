@@ -1,6 +1,5 @@
 package Funknet::Config;
 use strict;
-
 use Funknet::Config::Whois;
 use Funknet::Config::Host;
 use Funknet::Config::CommandSet;
@@ -83,12 +82,13 @@ sub bgp_diff {
 					     local_os => $self->{_local_os},
 					     local_host => $self->{_local_host},
 					   );
-    
+
     my $host = Funknet::Config::Host->new( local_as => $self->{_local_as},
 					   local_router => $self->{_local_router},
 					   local_os => $self->{_local_os},
 					   local_host => $self->{_local_host},
 					 );
+
     my $whois_bgp = $whois->sessions;
     my $host_bgp = $host->sessions;
     
@@ -133,7 +133,6 @@ sub tun_diff {
 						  local_os => $self->{_local_os},
 						);
     }
-
     return $diff;
 }
 

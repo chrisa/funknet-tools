@@ -41,13 +41,7 @@ sub diff {
 	warn "diff passed objects backwards";
 	return undef;
     }
-    
-    # see if we need to change the AS on the bgp-router first
-    if (defined $host->local_as && $host->local_as != $whois->local_as) {
-	push @cmds, "no router bgp ".$host->local_as;
-	push @cmds, "router bgp ".$whois->local_as;
-    }
-    
+
     # see what we need to do to the 'network' statements
     
     for my $r ( $whois->routes ) {
@@ -95,7 +89,15 @@ sub diff {
     # we're done with bgp, get back to configuration mode
     
     if ($bgp_req) {
+	unshift @cmds, 'router bgp '.$whois->local_as;
 	push @cmds, 'exit';
+    }
+
+    # see if we need to change the AS on the bgp-router first
+    if (defined $host->local_as && $host->local_as != $whois->local_as) {
+	unless ($host->local_as eq '00000') {
+	    unshift @cmds, "no router bgp ".$host->local_as;
+	}
     }
 
     # iterate acls, do add/remove/change - doing delete first!
@@ -112,7 +114,11 @@ sub diff {
 
     for my $n ( $whois->neighbors ) {
 	unless ($host->neighbor_set($n) ) {
-	    # not there; config from scratch.
+	    # not there; config from scratch (deleting first just in case)
+	    defined $n->{_acl_in} && push @cmds, "no route-map ".$n->{_acl_in}->name;
+	    defined $n->{_acl_in} && push @cmds, "no ip prefix-list ".$n->{_acl_in}->name;
+	    defined $n->{_acl_out} && push @cmds, "no route-map ".$n->{_acl_out}->name;
+	    defined $n->{_acl_out} && push @cmds, "no ip prefix-list ".$n->{_acl_out}->name;
 	    defined $n->{_acl_in} && push @cmds, $n->{_acl_in}->config;
 	    defined $n->{_acl_out} && push @cmds, $n->{_acl_out}->config;
 	} else {
@@ -130,11 +136,15 @@ sub diff {
 		push @bounce_req, $n->remote_addr;
 	    }
 	    if (defined $n->{_acl_in} && !defined $h_n->{_acl_in}) {
+		push @cmds, "no route-map ".$n->{_acl_in}->name;
+		push @cmds, "no ip prefix-list ".$n->{_acl_in}->name;
 		push @cmds, $n->{_acl_in}->config;
 		push @cmds, 'exit';
 		push @bounce_req, $n->remote_addr;
 	    }
 	    if (defined $n->{_acl_out} && !defined $h_n->{_acl_out}) {
+		push @cmds, "no route-map ".$n->{_acl_out}->name;
+		push @cmds, "no ip prefix-list ".$n->{_acl_out}->name;
 		push @cmds, $n->{_acl_out}->config;
 		push @cmds, 'exit';
 		push @bounce_req, $n->remote_addr;

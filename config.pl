@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl -w
+\#!/usr/local/bin/perl -w
 use strict;
 use lib './lib';
 use Funknet::Config;
@@ -30,5 +30,5 @@ print $tun->as_text;
 print "\n";
 
 # Run the commands on the local system.
-#$bgp->apply;
-#$tun->apply;
+$bgp->apply;
+$tun->apply;

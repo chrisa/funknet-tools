@@ -24,7 +24,7 @@ sub new {
 }
 
 sub cmds {
-    my $self = @_;
+    my ($self) = @_;
     return @{ $self->{_cmds} };
 }
 
@@ -44,7 +44,7 @@ sub as_text {
 
 sub apply {
     my ($self) = @_;
- 
+
     # hand off to CLI module to get these commands executed in enable mode
    
     my $cli = Funknet::Config::CLI->new( local_host => $self->{_local_host},
@@ -71,7 +71,8 @@ sub as_text {
 
 sub apply {
     my ($self) = @_;
-    
+
+    warn "in apply";
 }
 
 1;

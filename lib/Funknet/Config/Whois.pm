@@ -146,7 +146,6 @@ sub sessions {
     $w->{FLAG_i} = '';
     my $as = $w->query($self->{_local_as});
 
-
     my $bgp = Funknet::Config::BGP->new( local_as => $self->{_local_as},
 					 local_router => $self->{_local_router},
                                          routes  => \@routes,

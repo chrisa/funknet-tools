@@ -36,8 +36,9 @@ not needed.
 
 =cut
 
- sub get_bgp { my ($self) = @_;
-
+sub get_bgp { 
+    my ($self) = @_;
+    
     my $t = new Net::Telnet ( Timeout => 10,
 			      Prompt  => '/[\>\#]$/',
 			      Port    => 23,
@@ -46,7 +47,7 @@ not needed.
     $t->open($self->{_local_host});
     $t->cmd($self->{_password});
     $t->cmd('terminal length 0');
-
+    
     my @output = $t->cmd('show ip bgp');
 
     my @networks;
@@ -57,7 +58,7 @@ not needed.
 	    next;
 	}
 	next unless $go;
-# 	if ($line =~ /^\*?\>?\s+(\d+\.\d+\.\d+\.\d+)(\/\d+)?\s+0\.0\.0\.0/) {
+#       if ($line =~ /^\*?\>?\s+(\d+\.\d+\.\d+\.\d+)(\/\d+)?\s+0\.0\.0\.0/) {
 # 	    push @networks, "$1$2";
 # 	}
 # 	if ($line =~ /^\*?\>?\s+(\d+\.\d+\.\d+\.\d+)(\/\d+)?\s+$/) {
@@ -86,8 +87,14 @@ not needed.
 	if ($line =~ /local AS number (\d+)/) {
 	    $local_as = "AS$1";
 	}
+	if ($line =~ /BGP not active/) {
+            $local_as = 'AS00000';
+        }
     }
-
+    if (!defined $local_as) {
+	$local_as = 'AS00000';
+    }
+    
     my $bgp = Funknet::Config::BGP->new( local_as => $local_as,
 					 local_router => $self->{_local_router},
 					 routes  => \@networks,
@@ -286,6 +293,27 @@ sub check_login {
     } else {
 	return undef;
     }
+}
+
+sub exec_enable {
+    my ($self, $cmdset) = @_;
+    
+    my $t = new Net::Telnet ( Timeout => 10,
+			      Prompt  => '/[ \>\#]$/',
+			      Port    => 23,
+			    );
+    $t->input_log(\*STDOUT);
+    $t->open($self->{_local_host});
+    $t->cmd($self->{_password});
+    $t->cmd('terminal length 0');
+    $t->cmd('enable');
+    $t->cmd($self->{_enable});
+    for my $cmd ($cmdset->cmds) {
+	$t->cmd($cmd);
+	sleep 1;
+    }
+    $t->cmd('disable');
+    $t->close;
 }
 
 1;
