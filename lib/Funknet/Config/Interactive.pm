@@ -136,6 +136,9 @@ sub get_config {
 					 );
 
     my $rtconfig_default = `which RtConfig`; chomp $rtconfig_default;
+    if ($rtconfig_default =~ /^no RtConfig/) {
+	$rtconfig_default = '';
+    }
     $config->{rtconfig_path} = $ti->get(
 					msg        =>  "Enter the path to RtConfig (default $rtconfig_default)",
 					default    =>  $rtconfig_default,

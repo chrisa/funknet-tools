@@ -109,14 +109,18 @@ sub new {
 	if ($interact) {
 	    # go interactive.
 	    my $fci = new Funknet::Config::Interactive;
-	    $config = $fci->get_config;
-	    $self->{config} = $config;
-	    if (defined $self->{config}) {
-		$self->write;
-		return $self;
+	    if (defined $fci) {
+		$config = $fci->get_config;
+		$self->{config} = $config;
+		if (defined $self->{config}) {
+		    $self->write;
+		    return $self;
+		} else {
+		    $self->error("didn't get valid data from user in interactive-config mode");
+		    return undef;
+		}
 	    } else {
-		$self->error("didn't get valid data from user in interactive-config mode");
-		return undef;
+		$self->error("interactive config requested but Term::Interact is not available");
 	    }
 	} else {
 	    $self->warn("config file not found: $file");

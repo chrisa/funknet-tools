@@ -83,10 +83,6 @@ unless ($opt{f}) {
     print STDERR "usage: $0 -f path_to_config_file\n";
     exit(1);
 }
-unless (-f $opt{f}) {
-    print STDERR "-f option requires a path to a readable funknet.conf file\n";
-    exit(1);
-}
 
 if ($opt{d}) {
     $DEBUG = 1;
