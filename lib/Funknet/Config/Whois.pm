@@ -101,6 +101,7 @@ sub sessions {
 		    remote_as => $as[1-$i],
 		    local_addr => $ad[$i],
 		    remote_addr => $ad[1-$i],
+		    source => 'whois',
 		);
 	    }
 	}

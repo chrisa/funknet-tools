@@ -72,6 +72,7 @@ sub get_bgp {
 	    remote_as => $neighbors->{$peer}->{remote_as},
 	    local_addr => $neighbors->{$peer}->{local_addr},
 	    remote_addr => $neighbors->{$peer}->{remote_addr},
+	    source => 'host',
 	);
     }
     return $bgp;

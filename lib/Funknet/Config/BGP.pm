@@ -50,6 +50,8 @@ sub add_session {
 						   source_addr => $args{local_addr},
 						   peer_addr   => $args{remote_addr},
 						   dir         => 'import',
+						   source      => $args{source},
+						   local_router => $self->{_local_router},
 						 );
 
     my $acl_out = Funknet::Config::AccessList->new( source_as   => $self->{_local_as},
@@ -57,7 +59,9 @@ sub add_session {
 						    source_addr => $args{local_addr},
 						    peer_addr   => $args{remote_addr},
 						    dir         => 'export',
-						 );
+						    source      => $args{source},
+						    local_router => $self->{_local_router},
+						  );
     my ($acl_in_name, $acl_out_name);
     if (defined $acl_in) {
 	push @{$self->{_acls}}, $acl_in;
