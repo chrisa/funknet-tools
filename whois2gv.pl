@@ -33,6 +33,8 @@
 # this script is awful. it predates me knowing about Net::Whois::RIPE. 
 # it works though. 
 
+# run as: ./whois2gv.pl AS-FUNKTRANSIT > foo.jpg
+
 use strict;
 
 use GraphViz;
