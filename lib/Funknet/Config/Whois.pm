@@ -39,10 +39,7 @@ use Net::Whois::RIPE;
 use Funknet::Config::Tunnel;
 use Funknet::Config::TunnelSet;
 use Funknet::Config::BGP;
-
-use base qw/Funknet::Config /;
-
-use Funknet::Config;
+use Funknet::Debug;
 
 =head1 NAME
 

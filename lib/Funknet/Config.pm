@@ -35,11 +35,7 @@
 package Funknet::Config;
 use strict;
 
-use vars qw/ @EXPORT @ISA $DEBUG /;
-use base qw/ Exporter /;
-@EXPORT = qw/ $DEBUG &debug /;
-$DEBUG = 0;
-
+use Funknet::Debug;
 use Funknet::Config::Whois;
 use Funknet::Config::Host;
 use Funknet::Config::CommandSet;
@@ -153,16 +149,6 @@ sub tun_diff {
 						);
     }
     return $diff;
-}
-
-sub debug {
-
-    my $msg = shift;
-
-    if ($DEBUG) {
-	print STDERR "FUNKNET: $msg\n";
-    }
-
 }
 
 1;

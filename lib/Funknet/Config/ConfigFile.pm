@@ -34,11 +34,10 @@
 
 package Funknet::Config::ConfigFile;
 use strict;
-use Data::Dumper;
 use vars qw/ $AUTOLOAD @ISA /;
 use Carp qw/ cluck /;
 use Funknet::Config::Validate qw / is_ipv4 is_ipv6 is_valid_as is_valid_router is_valid_os /;
-use base qw/ Funknet::Config /;
+use Funknet::Debug;
 
 =head1 NAME
 
@@ -187,10 +186,6 @@ sub warn {
 sub error {
     goto &Funknet::Config::error;
 }
-sub debug {
-    goto &Funknet::Config::debug;
-}
-
 
 sub AUTOLOAD {
     my ($self) = @_;
