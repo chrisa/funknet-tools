@@ -32,6 +32,11 @@
 package Funknet::Whois::Policy;
 use strict;
 
+use vars qw/ @EXPORT_OK @ISA /;
+@ISA = qw/ Exporter /;
+@EXPORT_OK = qw/ assign_as assign_inetnum /;
+use Exporter;
+
 =head1 NAME
 
 Funknet::Whois::Policy

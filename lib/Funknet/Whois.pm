@@ -139,7 +139,11 @@ sub get_object {
     my $w = Net::Whois::RIPE->new( 'whois.funknet.org' );
     $w->type($type);
     my $obj = $w->query($name);
-    return $obj;
+    if (scalar @{ $obj->{_order} }) {
+        return $obj;
+    } else { 
+	return undef;
+    }
 }
 
 1;

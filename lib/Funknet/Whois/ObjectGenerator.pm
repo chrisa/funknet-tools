@@ -372,12 +372,14 @@ sub aut_num {
 
     if (defined $args{name} &&
 	defined $args{tuns} && 
+	defined $args{aut_num} && 
 	defined $args{import} &&
 	defined $args{export}) {
 	
 	my $m = parse_object(tmpl('aut-num'));
 	$m->as_name($args{name});
 	$m->descr ($args{descr});
+	$m->aut_num ($args{aut_num});
 
 	$m->changed($self->{e_mail});
 	$m->notify($self->{e_mail});
@@ -406,10 +408,12 @@ sub aut_num_assign {
     }
 
     my $as = assign_as();
-    
+
     return $self->aut_num( 'name' => $args{name},
 			   'tuns' => $args{tuns},
-			   'as'   => $as,
+			   'import' => $args{import},
+			   'export' => $args{export},
+			   'aut_num'   => $as,
 			 );
 }
 
@@ -424,7 +428,7 @@ sub inetnum {
 	
 	my $m = parse_object(tmpl('inetnum'));
 
-	$m->inetnum(cidr_to_inetnum($args{network});
+	$m->inetnum(cidr_to_inetnum($args{network}));
 	$m->netname($args{name});
 	$m->descr($args{descr});
 
@@ -497,6 +501,9 @@ sub route {
     unless (defined $self->{mntner} && defined $self->{person}) {
 	return undef;
     }
+
+    print STDERR "in route, args: \n";
+    print STDERR Dumper \%args;
 
     if (defined $args{descr} &&
 	defined $args{route} &&
