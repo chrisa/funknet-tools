@@ -209,4 +209,8 @@ sub ifname {
     my ($self) = @_;
     return $self->{_ifname};
 }
+sub source {
+    my ($self) = @_;
+    return $self->{_source};
+}
 1;
