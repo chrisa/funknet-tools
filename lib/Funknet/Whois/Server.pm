@@ -64,7 +64,7 @@ sub load {
 
 	next if $line =~ /^#/;
 
-	if ($line =~ /^(.*):\s+(.*)$/) {
+	if ($line =~ /^(.*):\s*(.*)$/) {
 	    my ($key, $value) = ($1, $2);
 
 	    if ($key eq 'source' && $value ne $self->{_source}) {
