@@ -1,18 +1,38 @@
-#!/usr/bin/perl -w
-# "Programming Web Services with Perl", by Randy J. Ray and Pavel Kulchenko
-# O'Reilly and Associates, ISBN 0-596-00206-8.
+#!/usr/local/bin/perl -w
+# Copyright (c) 2003
+#	The funknet.org Group.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+# 1. Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+# 2. Redistributions in binary form must reproduce the above copyright
+#    notice, this list of conditions and the following disclaimer in the
+#    documentation and/or other materials provided with the distribution.
+# 3. All advertising materials mentioning features or use of this software
+#    must display the following acknowledgement:
+#	This product includes software developed by The funknet.org
+#	Group and its contributors.
+# 4. Neither the name of the Group nor the names of its contributors
+#    may be used to endorse or promote products derived from this software
+#    without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE GROUP AND CONTRIBUTORS ``AS IS'' AND
+# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED.  IN NO EVENT SHALL THE GROUP OR CONTRIBUTORS BE LIABLE
+# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+# OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+# HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+# OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+# SUCH DAMAGE.
 
-#
-# Version 2 of the daemon, this time using a SOAP layer for
-# the methods to expose, and a daemon class that derives
-# from the original HTTP::Daemon-based class for the server
-# layer. Combined, these allow for basic authentication of
-# user operations.
-#
 use strict;
 use lib '/home/funknet/funknet-tools/lib';
 
-# Again, loading this now saves effort for SOAP::Lite
 use Funknet::WebServices::IRR;
 use Funknet::WebServices::IRR::SOAP;
 use Funknet::WebServices::IRR::Daemon;

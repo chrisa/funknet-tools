@@ -27,3 +27,49 @@ generated from the system's internal data structures.
 Finally you'll get a list of commands required to convert one to the
 other, near enough.
 
+For example:
+
+Proposed changes:
+
+BGP:
+in enable mode on 213.210.34.174
+configure terminal
+no router bgp 65002
+router bgp AS65001
+no network 192.168.74.0 mask 255.255.255.0
+no network 213.210.34.176 mask 255.255.255.240
+neighbor 10.2.3.2 remote-as 65002
+neighbor 10.2.3.2 description NODNOL-MUNKY
+
+neighbor 10.2.0.1 remote-as 65000
+neighbor 10.2.0.1 description SPLURBY-MUNKY
+
+no neighbor 10.2.0.37
+exit
+no route-map 65000import
+no ip prefix-list 65000import
+no route-map 65000export
+no ip prefix-list 65000export
+exit
+clear ip bgp *
+
+Tunnels:
+in enable mode on 213.210.34.174
+configure terminal
+no interface Tunnel0
+exit
+configure terminal
+interface Tunnel0
+tunnel mode ipip
+tunnel source 62.169.139.122
+tunnel destination 131.231.83.95
+ip address 10.2.0.2 255.255.255.252
+exit
+configure terminal
+interface Tunnel1
+tunnel mode ipip
+tunnel source 62.169.139.122
+tunnel destination 213.210.34.174
+ip address 10.2.3.1 255.255.255.252
+exit
+
