@@ -109,6 +109,74 @@ sub tunnels {
 	    }
 	}
     }
+
+    # don't uncomment this; it won't work until we have an 'endpoint' object in 
+    # the whois. 
+
+=head2 endpoint object
+
+  endpoint:    SOME-NAME
+  type:        ipip
+  remote-as:   AS65000
+  local-as:    AS65002
+  remote-addr: 10.2.0.37
+  local-addr:  10.2.0.38
+  remote-ep:   131.x.x.x
+  local-ep:    213.210.34.174
+  encryption:  none
+  mnt-by:      ME
+  admin-c:     CA1-FUNKNET
+  tech-c:      CA1-FUNKNET
+  changed:     today
+
+=cut
+
+    if (0) {
+
+	# create tunnels from matching pairs of endpoint objects. 
+
+	foreach my $ep_name ($as->ep) {
+
+	    $w->type('endpoint');
+	    my @ep = $w->query($ep_name); # check behaviour of ->query in list context
+		
+	    # check for match with remote as' endpoint.
+
+	    if ( $ep[0]->remote_as eq $ep[1]->local_as &&
+		 $ep[1]->remote_as eq $ep[0]->local_as &&
+		 
+		 $ep[0]->remote_addr eq $ep[1]->local_addr &&
+		 $ep[1]->remote_addr eq $ep[0]->local_addr &&
+
+		 $ep[0]->remote_ep eq $ep[1]->local_ep &&
+		 $ep[1]->remote_ep eq $ep[0]->local_ep ) {
+		
+		# find our end
+		
+		my $our_ep;
+		for my $i ( 0..1 ) {
+		    if ($ep[1]->local_ep eq $l->{endpoint}) {
+			$our_ep = $i;
+		    }
+		}
+		    
+		# cons the tunnel
+
+		push @local_tun, 
+		Funknet::Config::Tunnel->new(
+		    name => $ep_name,
+		    local_address => $ep[$our_ep]->local_addr,
+		    remote_address => $ep[$our_ep]->remote_addr,
+		    local_endpoint => $ep[$our_ep]->local_ep,
+		    remote_endpoint => $ep[$our_ep]->remote_ep,
+		    type => $ep[$our_ep]->type,
+		    source => 'whois',
+		    proto => '4',
+		);
+	    }
+	}
+    }
+
     return Funknet::Config::TunnelSet->new( tunnels => \@local_tun,
 					    source => 'whois' );
 }
