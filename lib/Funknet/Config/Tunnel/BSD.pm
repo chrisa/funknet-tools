@@ -88,11 +88,20 @@ sub config {
 sub new_from_ifconfig {
     my ($class, $if) = @_;
 
-    my $type;
-    $if =~ /^(gif)(\d+)/ and $type = 'ipip';
-    $if =~ /^(gre)(\d+)/ and $type = 'gre';
-    my $interface = $2;
-    my $ifname = "$1$2";
+    my ($type, $interface, $ifname);
+    if ( $if =~ /^(gif)(\d+)/)
+    {
+	$type = 'ipip';
+	$interface = $2;
+	$ifname = "$1$2";
+    }
+    if ( $if =~ /^(gre)(\d+)/)
+    {
+	$type = 'gre';
+	$interface = $2;
+	$ifname = "$1$2";
+    }
+	
     defined $type or return undef;
 
     my ($local_endpoint, $remote_endpoint) = $if =~ /tunnel inet (\d+\.\d+\.\d+\.\d+) --> (\d+\.\d+\.\d+\.\d+)/;
