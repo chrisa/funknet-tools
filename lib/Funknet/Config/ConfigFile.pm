@@ -234,8 +234,14 @@ sub AUTOLOAD {
     my ($self) = @_;
     my $key = $AUTOLOAD;
     $key =~ s/Funknet::Config::ConfigFile:://;
+
     if (ref $self) {
 	$config = $self->{config};
+    }
+
+    # default 'halt' to 1 
+    if ($key eq 'halt' && !exists $config->{halt}) {
+	return 1;
     }
 	
     if (exists $config->{$key}) { 
