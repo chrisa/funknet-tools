@@ -7,12 +7,14 @@
 # Replace the AS number with your AS number
 
 # local_as/router/os/host are mandatory
+# local_bgpd_vty required if you set local_host to 127.0.0.1
 
 local_as = AS65764
 local_endpoint = 1.2.3.4
 local_host = 127.0.0.1
 local_os = bsd
 local_router = zebra
+local_bgpd_vty = /var/run/quagga/bgpd.vty
 
 # if you want encryption with ipsec, you need to set this
 # 'kame' is *BSD and Linux 2.6
