@@ -122,8 +122,8 @@ source:       FUNKNET
 (BEGIN_MAIL)
 
 inetnum:      10.2.5.64 - 10.2.5.67
-netname:      KATGATE-TUN
-descr:        KATGATE-TUN tunnel /30
+netname:      BLANK-KATGATE
+descr:        BLANK-KATGATE tunnel /30
 country:      GB
 admin-c:      DOUG-FUNKNET
 tech-c:       DOUG-FUNKNET
