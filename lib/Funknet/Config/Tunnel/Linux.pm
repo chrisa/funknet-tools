@@ -89,42 +89,49 @@ sub config {
 sub new_from_ifconfig {
     my ($class, $if) = @_;
 
-# this needs writing for linux - this code was pinched from BSD.pm
+    my ($type, $interface, $ifname);
+    if ($if =~ /^(tunl)(\d+)/) {
+	$type = 'ipip';
+	$interface = $2;
+	$ifname = "$1$2";
+    }
+    defined $type or return undef;
 
-#     my $type;
-#     $if =~ /^(gif)(\d+)/ && $type = 'ipip';
-#     $if =~ /^(gre)(\d+)/ && $type = 'gre';
-#     my $interface = $2;
-#     my $ifname = "$1$2";    
-#     defined $type or return undef;
+    my ($local_address, $remote_address)   = $if =~ /inet addr:(\d+\.\d+\.\d+\.\d+)\s+P-t-P:(\d+\.\d+\.\d+\.\d+)\s+Mask/;
 
-#     my ($local_endpoint, $remote_endpoint) = $if =~ /tunnel inet (\d+\.\d+\.\d+\.\d+) --> (\d+\.\d+\.\d+\.\d+)/;
-#     my ($local_address, $remote_address)   = $if =~ /inet (\d+\.\d+\.\d+\.\d+) --> (\d+\.\d+\.\d+\.\d+) netmask/;
+    # bloody linux makes us run 'ip link show $if'
+    my $iplink = `/sbin/ip link show $ifname`;
+    my ($local_endpoint, $remote_endpoint) = $iplink =~ /ipip (\d+\.\d+\.\d+\.\d+) peer (\d+\.\d+\.\d+\.\d+)/;
 
-#     return Funknet::Config::Tunnel->new(
-# 	name => 'none',
-# 	local_address => $local_address,
-# 	remote_address => $remote_address,
-# 	local_endpoint => $local_endpoint,
-# 	remote_endpoint => $remote_endpoint,
-# 	type => $type,
-#       ifname => $ifname,
-# 	source => 'host',
-#       proto => '4',
-#     );
-    return undef;
+    return Funknet::Config::Tunnel->new(
+ 	name => 'none',
+ 	local_address => $local_address,
+ 	remote_address => $remote_address,
+ 	local_endpoint => $local_endpoint,
+ 	remote_endpoint => $remote_endpoint,
+ 	type => $type,
+	interface => $interface,
+	ifname => $ifname,
+ 	source => 'host',
+	proto => '4' 
+    );
 }
 
 
 sub delete {
     my ($self) = @_;
-    return "a list of commands to delete $self->{_interface} on Linux go here";
+    return "ip tunnel del tunl$self->{_interface}";
 }
 
 sub create {
     my ($self, $inter) = @_;
-    # details are in $self, see Solaris.pm
-    return "a list of commands to create a tunnel interface numbered $inter on Linux go here";
+    return ("ip tunnel add tunl$inter mode ipip local $self->{_local_endpoint} remote $self->{_remote_endpoint}",
+	    "ip addr add $self->{_local_address}/30 dev tunl$inter",
+	    "ip link set tunl$inter up" );
+}
+
+sub ifsym {
+    return 'tunl';
 }
 
 1;
