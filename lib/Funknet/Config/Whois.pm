@@ -1,3 +1,5 @@
+#!/usr/bin/perl -w
+#
 # $Id$
 #
 # Copyright (c) 2003
