@@ -3,6 +3,7 @@ use strict;
 use Funknet::Config::Whois;
 use Funknet::Config::Host;
 use Funknet::Config::CommandSet;
+use Funknet::Config::ConfigFile;
 use Funknet::Config::Validate qw/ is_valid_as is_valid_os 
                                   is_valid_router is_ipv4 /;
 
@@ -32,30 +33,37 @@ sub new {
     my ($class,%args) = @_;
     my $self = bless {}, $class;
     $self->{_error} = [];
-    
-    unless (defined $args{local_as} && is_valid_as($args{local_as})) {
-	$self->error("local_as missing or invalid");
-      }
-    unless (defined $args{local_os} && is_valid_os($args{local_os})) {
-	$self->error("local_os missing or invalid");
-      }
-    unless (defined $args{local_router} && is_valid_router($args{local_router})) {
-	$self->error("local_router missing or invalid");
-      }
-    unless (defined $args{local_host} && is_ipv4($args{local_host})) {
-	$self->error("local_host missing or invalid");
-      }
 
+    $self->{_config} = Funknet::Config::ConfigFile->new( $args{configfile} )
+	or die "couldn't load config file";
+    
+    unless (defined $self->{_config}->local_as && 
+	    is_valid_as($self->{_config}->local_as)) {
+	$self->error("local_as missing or invalid");
+    }
+    unless (defined $self->{_config}->local_os && 
+	    is_valid_os($self->{_config}->local_os)) {
+	$self->error("local_os missing or invalid");
+    }
+    unless (defined $self->{_config}->local_router && 
+	    is_valid_router($self->{_config}->local_router)) {
+	$self->error("local_router missing or invalid");
+    }
+    unless (defined $self->{_config}->local_host && 
+	    is_ipv4($self->{_config}->local_host)) {
+	$self->error("local_host missing or invalid");
+    }
+    
     if ($self->error) {
 	warn $self->error;
 	return undef;
     }
 
-    $self->{_local_as} = $args{local_as};
-    $self->{_local_os} = $args{local_os};
-    $self->{_local_router} = $args{local_router};
-    $self->{_local_host} = $args{local_host};
-    
+    $self->{_local_as} = $self->{_config}->local_as;
+    $self->{_local_os} = $self->{_config}->local_os;
+    $self->{_local_router} = $self->{_config}->local_router;
+    $self->{_local_host} = $self->{_config}->local_host;
+
     return $self;
 }
 
