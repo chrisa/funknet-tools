@@ -41,12 +41,13 @@ Use Email::Robot to implement a pureperl whois-by-email updater.
 
 =cut
 
-package Funknet::Whois::Updater;
+package Funknet::Whois::Update;
 use strict;
 
-use Funknet::Whois qw/ parse_object /;
+use Funknet::Whois qw/ parse_object check_auth /;
 use Funknet::Whois::Update::Robot;
-use IO::File::flock qw/ :flock /;
+use Fcntl qw/ :DEFAULT :flock :seek /;
+use Data::Dumper;
 
 =head2 new
 
@@ -65,6 +66,7 @@ sub new {
 
     $self->{_verbose} = $verbose;
     $self->{_source} = $source;
+    $self->{_testing} = 1;
     
     return $self;
 }
@@ -89,11 +91,17 @@ sub update {
 	$data .= $line;
     }
 
-    my $robot = Funknet::Whois::Update::Robot->new( envfrom => 'auto-dbm@funknet.org',
-						    from    => 'auto-dbm@funknet.org',
-						    pubring => '/home/funknet/.gnupg/pubring.gpg',
-						    secring => '/home/funknet/.gnupg/secring.gpg',
+    my $robot = Funknet::Whois::Update::Robot->new( fromname => 'auto-dbm robot', 
+						    envfrom  => 'auto-dbm@funknet.org',
+						    from     => 'auto-dbm@funknet.org',
+						    pubring  => '/home/chris/.gnupg/pubring.gpg',
+						    secring  => '/home/chris/.gnupg/secring.gpg',
+						    testing  => $self->{_testing},
 						  );
+    if (!$robot) {
+	errorlog("couldn't create FWU::Robot\n");
+	exit 1;
+    }
 
     unless ($robot->process_header($data)) {
 	errorlog("error reading header -- a bounce?");
@@ -127,7 +135,7 @@ sub update {
 	    push @nosource, $object;
 	    next;
 	}
-	if (check_auth($object->domain, $pgp->keyid)) {
+	if (check_auth($object, $pgp->keyid)) {
 	    push @ok, $object;
 	} else {
 	    $robot->error("hierarchical authorisation failed for object ".$object->object);
@@ -136,14 +144,18 @@ sub update {
     }
 
     # apply the authorised objects (lock datafile, load existing to hash, replace, write, unlock)
-
-    my $fh = new IO::File $file,'a', LOCK_EX, 5;
-    if($@ && $@ =~ /TIMEOUT/){
-	$robot->fatalerror("timeout trying to lock $file: $!");
+    
+    unless (sysopen DATA, "$file", O_RDWR) {
+	warn "couldn't open $file for read/write: $!";
+	return undef;
     }
-
+    unless (flock DATA, LOCK_EX|LOCK_NB) {
+	warn "couldn't lock $file: $!";
+	return undef;
+    }
+    
     my ($currobj, $objects);
-    while (my $line = <$fh>) {
+    while (my $line = <DATA>) {
 	chomp $line;
 	next if $line =~ /^#/;
 	if ($line =~ /^(.*): (.*)$/) {
@@ -173,32 +185,36 @@ sub update {
 	$objects->{$object->type}->{$object->name} = $object->text;
     }
 
-    $fh->seek(0,0);
+    unless(seek DATA, 0, SEEK_SET) {
+	warn "couldn't seek: $!";
+	return undef;
+    }
     
     for my $type (keys %$objects) {
 	for my $name (keys %{$objects->{$type}}) {
-	    print $objects->{$type}->{$name}, "\n";
+	    print DATA $objects->{$type}->{$name}, "\n";
 	}
     }
     
-    $fh->lock_un;
-    close $fh;
+    flock (DATA, LOCK_UN);
+    close DATA;
+
 
     # reply.
 
     my @failed = (@noauth, @nosource);
 
     if (scalar (@failed)) {
-	my $mail_text = $robot->failure_text($pgp->keyid, $robot->header, @objects);
-	unless (my $res = $robot->reply_mail( $mail_text, subject => 'Reverse Delegation results' )) {
+	my $mail_text = $robot->failure_text($pgp->keyid, $robot->header_text, @objects);
+	unless (my $res = $robot->reply_mail( $mail_text, subject => 'FAILED: ' )) {
 	    errorlog("error sending mail: $res");
 	    exit 1;
 	}
     }
 
     if (scalar (@ok)) {
-	my $mail_text = $robot->success_text($pgp->keyid, $robot->header, @objects);
-	unless (my $res = $robot->reply_mail( $mail_text, subject => 'Reverse Delegation results' )) {
+	my $mail_text = $robot->success_text($pgp->keyid, $robot->header_text, @objects);
+	unless (my $res = $robot->reply_mail( $mail_text, subject => 'SUCCEEDED: ' )) {
 	    errorlog("error sending mail: $res");
 	    exit 1;
 	}

@@ -67,6 +67,7 @@ sub new {
 	if (defined $args{$f} && -f $args{$f}) {
 	    $self->{'_'.$f} = $args{$f};
 	} else {
+	    warn "keyring file $args{$f} not found";
 	    return undef;
 	}
     }
@@ -74,6 +75,7 @@ sub new {
 	if (defined $args{$f}) {
 	    $self->{'_'.$f} = $args{$f};
 	} else {
+	    warn "required parameter $f missing";
 	    return undef;
 	}
     }
@@ -93,6 +95,17 @@ sub new {
     }
 
     return $self;
+}
+
+=head2 header_text
+
+Returns a useful block of headers as a text blob.
+
+=cut
+
+sub header_text {
+    my ($self) = @_;
+    return "this would be a header\n";
 }
 
 =head2 process_header 
@@ -166,14 +179,14 @@ sub reply_mail {
 
     my $to = $self->{_replytoline} || $self->{_fromline};
     unless ($to) {
+	warn "no recipient";
 	return 0;
     }
 
-  my $pid;
-    if($self->{_testing}) {
+    my $pid;
+    if ($self->{_testing}) {
 	open(MAIL, ">&STDOUT");
-    }
-    else {
+    } else {
 	eval {
 	    $pid=open3(\*MAIL, \*M_OUT, \*M_ERR,
 		$self->{_sendmail}, "-bm", "-oi", "-oem",

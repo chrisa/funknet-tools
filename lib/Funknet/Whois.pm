@@ -74,6 +74,32 @@ sub parse_object {
 
 =head2 check_auth
 
+Takes an object and keyid, checks auth. 
+
+=cut 
+
+sub check_auth {
+    my ($object, $keyid) = @_;
+    my $auth_ok;
+
+    my $w = Net::Whois::RIPE->new( 'whois.funknet.org' );
+    $w->type('mntner');
+
+  AUTH:
+    for my $mnt_by ($object->mnt_by) {
+	my $mntner = $w->query($mnt_by);
+	for my $auth ($mntner->auth) {
+	    if ($auth eq "PGPKEY-$keyid") {
+		$auth_ok = 1;
+		last AUTH;
+	    }
+	}
+    }
+    return $auth_ok;
+}
+
+=head2 check_zone_auth
+
 Takes a zone and a keyid and checks that that key is authorised to
 delegate that zone for reverse dns. We do this by converting the 
 'domain' attribute we're passed into an inetnum and retrieving the
@@ -83,7 +109,7 @@ mntner.
 
 =cut
 
-sub check_auth {
+sub check_zone_auth {
     my ($zone, $keyid) = @_;
 
     $keyid =~ s/.*([A-F0-9]{8})$/$1/;
@@ -106,23 +132,7 @@ sub check_auth {
     $w->type('inetnum');
     my $in = $w->query($inetnum);
     
-    my $auth_ok;
-  AUTH:
-    for my $mnt_by ($in->mnt_by) {
-
-	$w->type('mntner');
-	my $mntner = $w->query($mnt_by);
-	
-	for my $auth ($mntner->auth) {
-
-	    if ($auth eq "PGPKEY-$keyid") {
-		$auth_ok = 1;
-		last AUTH;
-	    }
-	}
-    }
-	    
-    return $auth_ok;
+    return check_auth($in, $keyid);
 }
     
 sub object_exists {
