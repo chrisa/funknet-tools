@@ -45,3 +45,18 @@ commands for Unix will be saved through this module.
 =head1 METHODS
 
 =cut
+
+sub new {
+    my ($class) = @_;
+    my $self = bless {}, $class;
+    $self->{_rcfile} = Funknet::Config::ConfigFile->rcfile;
+    $self->{_root} = Funknet::Config::Root->new;
+    return $self;
+}
+
+sub write {
+    my ($self, $cmdset) = @_;
+    $self->{_root}->pipe_root("cat > $self->{_rcfile}", $cmdset->as_text);
+}
+
+1;
