@@ -96,12 +96,32 @@ sub sessions {
 	    my @ad = $tun->address;
 	    
 	    if ($as[$i] eq $self->{_local_as}) {
+		
+		my $acl_in = Funknet::Config::AccessList->new( source_as   => $as[$i],
+							       peer_as     => $as[1-$i],
+							       source_addr => $ad[$i],
+							       peer_addr   => $ad[1-$i,]
+							       dir         => 'import',
+							       source      => 'whois',
+							       local_host  => $self->{_local_host},
+							     );
+		
+		my $acl_out = Funknet::Config::AccessList->new( source_as   => $as[$i],
+								peer_as     => $as[1-$i],
+								source_addr => $ad[$i],
+								peer_addr   => $ad[1-$i],
+								dir         => 'export',
+								source      => 'whois',
+								local_host  => $self->{_local_host},
+							      );
+		
 		$bgp->add_session(
 		    description => $tun_name,
 		    remote_as => $as[1-$i],
 		    local_addr => $ad[$i],
 		    remote_addr => $ad[1-$i],
-		    source => 'whois',
+		    acl_in => $acl_in, 
+		    acl_out => $acl_out,
 		);
 	    }
 	}
