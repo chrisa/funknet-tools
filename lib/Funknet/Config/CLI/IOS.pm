@@ -69,7 +69,14 @@ sub get_bgp {
 # 	}
 
 	if ($line =~ /^\*?\>?\s+(\d+\.\d+\.\d+\.\d+)(\/\d+)?\s+\d.{40}i/ && !defined $current) {
- 	    push @networks, scalar ipv4_network("$1$2");
+	    if(!defined($2))
+	    {
+		push @networks, scalar ipv4_network("$1");
+	    }
+	    else
+	    {
+		push @networks, scalar ipv4_network("$1$2");
+	    }
  	}
 	if ($line =~ /^\*?\>?\s+(\d+\.\d+\.\d+\.\d+)(\/\d+)?\s+$/) {
  	    $current = "$1$2";
@@ -252,7 +259,7 @@ sub get_interfaces {
 	    ($1 eq 'GRE') and $tunnels->{$current}->{type} = 'gre';
 	}
     }
-    
+
     for my $tun (keys %$tunnels) {
 	my $new_tun = 
 	    Funknet::Config::Tunnel->new(
@@ -309,8 +316,10 @@ sub exec_enable {
     $t->cmd('enable');
     $t->cmd($self->{_enable});
     for my $cmd ($cmdset->cmds) {
-	$t->cmd($cmd);
-	sleep 1;
+	for my $cmd_line (split /\n/, $cmd) {
+	    $t->cmd($cmd_line);
+	    sleep 2;
+	}
     }
     $t->cmd('disable');
     $t->close;
