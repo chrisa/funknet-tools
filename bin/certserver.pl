@@ -41,12 +41,17 @@ use Getopt::Std;
 my %opt;
 getopts('gwusc:o:p:f:', \%opt);
 
+unless (defined $opt{f}) {
+    print STDERR "usage: -f /path/to/config/file [...]\n";
+    exit 1;
+}
+
 my $config = Funknet::ConfigFile::CertServer->new($opt{f});
 my $l = $config->local();
 
 if ($opt{g}) {
     unless (defined $opt{c} && defined $opt{o} && defined $opt{p}) {
-	print STDERR "need all of Common Name, Organisational Unit and Passphrase for gen+sign\n";
+	print STDERR 'usage: -g [-w] [-u] -c "Common Name", -o "Organisational Unit" -p "Passphrase"', "\n";
 	exit 1;
     }
     my $cs = Funknet::KeyStash::CertServer->new($l->{ca_dir}, $l->{ca_name});
