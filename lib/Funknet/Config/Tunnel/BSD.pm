@@ -57,8 +57,8 @@ sub new_from_ifconfig {
     my ($class, $if) = @_;
 
     my $type;
-    $if =~ /^(gif\d+)/ and $type = 'ipip';
-    $if =~ /^(gre\d+)/ and $type = 'gre';
+    $if =~ /^gif(\d+)/ and $type = 'ipip';
+    $if =~ /^gre(\d+)/ and $type = 'gre';
     my $interface = $1;
     defined $type or return undef;
 
@@ -81,7 +81,14 @@ sub new_from_ifconfig {
 sub delete {
     my ($self) = @_;
 
-    return "ifconfig $self->{_interface} destroy";
+    my $tun_type;
+    for ($self->{_type})
+    {
+	if    (/ipip/) {$tun_type = 'gif';}
+	elsif (/gre/) {$tun_type = 'gre';}
+    }
+
+    return "ifconfig $tun_type$self->{_interface} destroy";
 }
 
 sub create {
