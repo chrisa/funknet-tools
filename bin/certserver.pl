@@ -35,23 +35,27 @@
 
 use strict;
 use Funknet::KeyStash::CertServer;
+use Funknet::ConfigFile::CertServer;
 use Getopt::Std;
 
 my %opt;
-getopts('gsc:o:p:', \%opt);
+getopts('gsc:o:p:f:', \%opt);
+
+my $config = Funknet::ConfigFile::CertServer->new($opt{f});
+my $l = $config->local();
 
 if ($opt{g}) {
     unless (defined $opt{c} && defined $opt{o} && defined $opt{p}) {
 	print STDERR "need all of Common Name, Organisational Unit and Passphrase for gen+sign\n";
 	exit 1;
     }
-    my $cs = Funknet::KeyStash::CertServer->new('etc/ca', 'TestCA');
+    my $cs = Funknet::KeyStash::CertServer->new($l->{ca_dir}, $l->{ca_name});
     my ($newkey, $newreq) = $cs->newreq( cn         => $opt{c},
 					 ou         => $opt{o},
 					 passphrase => $opt{p},
 				       );
     my $newcert = $cs->sign( req          => $newreq,
-			     capassphrase => 'TestCA',
+			     capassphrase => $l->{ca_pass},
 			   );
     unless ($newcert) {
 	print STDERR "problem generating cert -- unique CN for this CA?\n";

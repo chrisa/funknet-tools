@@ -1,0 +1,3 @@
+ca_dir = CA
+ca_name = TestFunknetCA
+ca_pass = TestFunknetCA
