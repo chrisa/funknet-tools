@@ -60,7 +60,7 @@ so. Currently we just dump the information in an arbitrary format.
 =head2 local_firewall_rules
 
 Returns a FirewallRuleSet::IPFW object representing the current 
-configuration if the host
+configuration of the host
 
 =head2 diff($hostobj)
 
