@@ -156,9 +156,12 @@ sub diff {
 	    }
 	}
     }
-
-debug("this is what I return from the diff");
-return @cmds;
+    
+    my $cmdset = Funknet::Config::CommandSet->new( cmds => \@cmds,
+						   target => 'cli',
+						 );
+    
+    return Funknet::Config::ConfigSet->new( cmds => [ $cmdset ] );
 }
 
 1;
