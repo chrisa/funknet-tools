@@ -39,7 +39,7 @@ use strict;
 use base qw/ Funknet::ConfigFile /;
 our $config;
 
-sub local {
+sub server_config {
     my ($self) = @_;
     if (ref $self) {
 	$config = $self->{config};
@@ -47,8 +47,26 @@ sub local {
 	$config = $self->get_config();
     }
     
-    return { listen_address              => $config->{listen_address},
-	     listen_port                 => $config->{listen_port},
+    return { listen_address => $config->{listen_address},
+	     listen_port    => $config->{listen_port},
+	   };
+}
+
+sub updater_config {
+    my ($self) = @_;
+    if (ref $self) {
+	$config = $self->{config};
+    } else {
+	$config = $self->get_config();
+    }
+    
+    return { envfrom  => $config->{envfrom},
+	     fromname => $config->{fromname},
+	     from     => $config->{from},
+	     pubring  => $config->{pubring},
+	     secring  => $config->{secring},
+	     source   => $config->{whois_source},
+	     objfile  => $config->{objects_file},
 	   };
 }
 

@@ -1,8 +1,28 @@
 #!/usr/bin/perl
 use strict;
+use Getopt::Std;
 use Funknet::Whois::Update;
+use Funknet::ConfigFile::Whois;
 
-my $u = new Funknet::Whois::Update("FUNKNET",1);
-$u->update("whois-objects");
+my %opt;
+getopts('vtf:', \%opt);
+
+unless ($opt{f}) {
+    print STDERR "usage: $0 -f whois_server_config_file\n";
+    exit(1);
+}
+unless (-f $opt{f}) {
+    print STDERR "-f option requires a path to a readable funknet_whois.conf file\n";
+    exit(1);
+}
+
+my $config = new Funknet::ConfigFile::Whois($opt{f});
+my $updater_config = $config->updater_config();
+
+if ($opt{v}) { $updater_config->{verbose} = 1 };
+if ($opt{t}) { $updater_config->{testing} = 1 };
+
+my $u = new Funknet::Whois::Update(%$updater_config);
+$u->update();
 
 

@@ -1,4 +1,11 @@
 listen_address			= 1.2.3.4
 listen_port			= 4343
 whois_source			= FUNKNET
-objects_file			= /home/dunc/devel/funknet-tools/t/all_objects.txt
+objects_file			= /home/funknet/FUNKNET_objects.txt
+
+envfrom				= auto-dbm@funknet.org
+from				= auto-dbm@funknet.org
+fromname			= Update Robot Thing
+
+pubring				= /home/funknet/.gnupg/pubring.gpg
+secring				= /home/funknet/.gnupg/secring.gpg

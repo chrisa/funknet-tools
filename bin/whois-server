@@ -10,11 +10,11 @@ my %opt;
 getopts('f:', \%opt);
 
 unless ($opt{f}) {
-    print STDERR "usage: $0 -f whois_server_config_file -s whois_source -d data_file\n";
+    print STDERR "usage: $0 -f whois_server_config_file\n";
     exit(1);
 }
 unless (-f $opt{f}) {
-    print STDERR "-f option requires a path to a readable funknet.conf file\n";
+    print STDERR "-f option requires a path to a readable funknet_whois.conf file\n";
     exit(1);
 }
 

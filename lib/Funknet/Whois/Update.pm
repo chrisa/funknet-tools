@@ -56,18 +56,37 @@ Constructor. set up an updater for the right source.
 =cut
 
 sub new {
-    my ($class, $source, $verbose) = @_;
+    my ($class, %args) = @_;
     my $self = bless {}, $class;
     
-    unless (defined $source) {
+    unless (defined $args{source}) {
 	warn "need a source";
 	return undef;
     }
+    unless (defined $args{objfile}) {
+	warn "need an objects file";
+	return undef;
+    }
 
-    $self->{_verbose} = $verbose;
-    $self->{_source} = $source;
-    $self->{_testing} = 1;
-    
+    # basics
+    $self->{_verbose} = $args{verbose};
+    $self->{_source}  = $args{source};
+    $self->{_testing} = $args{testing};
+    $self->{_objfile} = $args{objfile};
+
+    # gpg
+    $self->{_pubring} = $args{pubring};
+    $self->{_secring} = $args{secring};
+
+    # mail
+    $self->{_fromname} = $args{fromname};
+    $self->{_envfrom}  = $args{envfrom};
+    $self->{_from}     = $args{from};
+
+    if ($self->{_verbose}) {
+	print STDERR Dumper $self;
+    }
+
     return $self;
 }
 
@@ -78,7 +97,7 @@ Main entry point for update routine. Stolen from auto-inaddr.pl.
 =cut
 
 sub update {
-    my ($self, $file) = @_;
+    my ($self) = @_;
 
     # read mail, spin up Robot
 
@@ -91,16 +110,20 @@ sub update {
 	$data .= $line;
     }
 
-    my $robot = Funknet::Whois::Update::Robot->new( fromname => 'auto-dbm robot', 
-						    envfrom  => 'auto-dbm@funknet.org',
-						    from     => 'auto-dbm@funknet.org',
-						    pubring  => '/home/dunc/.gnupg/pubring.gpg',
-						    secring  => '/home/dunc/.gnupg/secring.gpg',
+    my $robot = Funknet::Whois::Update::Robot->new( fromname => $self->{_fromname},
+						    envfrom  => $self->{_envfrom},
+						    from     => $self->{_from},
+						    pubring  => $self->{_pubring},
+						    secring  => $self->{_secring},
 						    testing  => $self->{_testing},
 						  );
     if (!$robot) {
 	errorlog("couldn't create FWU::Robot\n");
 	exit 1;
+    }
+
+    if ($self->{_verbose}) {
+	print STDERR Dumper $robot;
     }
 
     unless ($robot->process_header($data)) {
@@ -153,12 +176,12 @@ sub update {
 
     # apply the authorised objects (lock datafile, load existing to hash, replace, write, unlock)
     
-    unless (sysopen DATA, "$file", O_RDWR) {
-	warn "couldn't open $file for read/write: $!";
+    unless (sysopen DATA, "$self->{_objfile}", O_RDWR) {
+	warn "couldn't open $self->{_objfile} for read/write: $!";
 	return undef;
     }
     unless (flock DATA, LOCK_EX|LOCK_NB) {
-	warn "couldn't lock $file: $!";
+	warn "couldn't lock $self->{_objfile}: $!";
 	return undef;
     }
     
