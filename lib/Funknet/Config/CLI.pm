@@ -155,16 +155,12 @@ command itself, caller must do that.
 
 =cut
 
-use Data::Dumper;
-
 sub exec_cmd {
     my ($self, $cmd) = @_;
 
     $self->login;
     my @output = $self->{t}->cmd($cmd);
     $self->logout;
-
-    warn Dumper { output => \@output };
 
     return wantarray ? @output : join '', @output;
 }
