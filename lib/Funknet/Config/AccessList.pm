@@ -8,17 +8,17 @@ sub new {
     my $rtconfig = 
 	'/usr/local/bin/RtConfig -h whois.funknet.org -p 43 -s FUNKNET -protocol ripe ' . 
 	'-config cisco -cisco_use_prefix_lists';
-    
-    $args{source_as} =~ /^AS\d+$/ or return undef;
-    $args{peer_as}   =~ /^AS\d+$/ or return undef;
+
+    $args{source_as} =~ /^\d+$/ or return undef;
+    $args{peer_as}   =~ /^\d+$/ or return undef;
     $args{source_addr} =~ /^\d+\.\d+\.\d+\.\d+$/ or return undef;
     $args{peer_addr}   =~ /^\d+\.\d+\.\d+\.\d+$/ or return undef;
     $args{dir}      =~ /^(import|export)$/ or return undef;
     
     my $command = 
-	'@RtConfig '.$args{dir}.' '.$args{source_as}.' '.$args{source_addr}.' '.
+	'@RtConfig '.$args{dir}.' AS'.$args{source_as}.' '.$args{source_addr}.' AS'.
 	$args{peer_as}.' '.$args{peer_addr}."\n";
-    
+
     my @output = `echo '$command' | $rtconfig`;
     
     my $acl_text = '';

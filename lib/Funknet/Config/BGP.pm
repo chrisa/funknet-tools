@@ -43,6 +43,7 @@ sub new {
 sub add_session {
     my ($self, %args) = @_;
 
+    $args{remote_as} =~ s/^AS//;
     my $acl_in = Funknet::Config::AccessList->new( source_as   => $self->{_local_as},
 						   peer_as     => $args{remote_as},
 						   source_addr => $args{local_addr},
