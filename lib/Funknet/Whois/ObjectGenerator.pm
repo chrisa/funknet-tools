@@ -322,6 +322,11 @@ sub person {
 	defined $args{e_mail} &&
 	defined $args{phone}) {
 	
+	if ($args{address} =~ /\n/) {
+	    my @lines =  split /\n/, $args{address};
+	    $args{address} = [ @lines ];
+	}
+
 	# create a new object.
 	
 	my $p = parse_object(tmpl('person'));
