@@ -83,10 +83,14 @@ Request interactive initial setup of funknet.conf
 Writes out the tunnel config to a file, for use in startup scripts. 
 (Must be used with -c, to generate a full config)
 
+=head2 -r
+
+Do firewall _R_ules for the local system.
+
 =cut
 
 my %opt;
-getopts('ciwaqdef:', \%opt);
+getopts('ciwaqderf:', \%opt);
 
 unless ($opt{f}) {
     print STDERR "usage: $0 -f path_to_config_file\n";
@@ -111,10 +115,12 @@ if ($opt{c}) {
     ($bgp, $whois_bgp) = $config->bgp_config or die "bgp_config failed: ".$config->error;
     debug("Generating tunnel config");
     ($tun, $whois_tun) = $config->tun_config or die "tun_config failed: ".$config->error;
-    debug("Generating firewall config");
-    ($fwall, $whois_fwall) = $config->fwall_config($whois_tun) or die "fwall_config failed: ".$config->error;
+    if ($opt{r}) {
+	debug("Generating firewall config");
+	($fwall, $whois_fwall) = $config->fwall_config($whois_tun) or die "fwall_config failed: ".$config->error;
+    }
     if ($opt{e}) {
-    debug("Generating encryption config");
+	debug("Generating encryption config");
 	($enc, $whois_enc) = $config->enc_config($whois_tun) or die "enc_config files: ".$config->error;
     }
 } else {
@@ -123,11 +129,13 @@ if ($opt{c}) {
     debug("Generating tunnel diff");
     my ($whois_tun, $host_tun, $whois_fwall, $host_fwall);
     ($tun, $whois_tun, $host_tun) = $config->tun_diff or die "tun_diff failed: ".$config->error;
-    debug("Generating firewall diff");
-    ($fwall, $whois_fwall, $host_fwall) = $config->fwall_diff($whois_tun) or die "fwall_diff failed: ".$config->error;
+    if ($opt{r}) {
+	debug("Generating firewall diff");
+	($fwall, $whois_fwall, $host_fwall) = $config->fwall_diff($whois_tun) or die "fwall_diff failed: ".$config->error;
+    }
     if ($opt{e}) {
-    debug("Generating encryption diff");
-	$enc = $config->enc_diff($whois_tun, $host_tun) or die "enc_diff files: ".$config->error; # XXX - need both whois-tun and host-tun, not just the diff
+	debug("Generating encryption diff");
+	$enc = $config->enc_diff($whois_tun, $host_tun) or die "enc_diff files: ".$config->error; 
     }
 }
 
@@ -151,9 +159,11 @@ unless ($opt{q}) {
     print "Tunnels:\n";
     print $tun->as_text;
     print "\n";
-    print "Firewall:\n";
-    print $fwall->as_text;
-    print "\n";
+    if ($opt{r}) {
+	print "Firewall:\n";
+	print $fwall->as_text;
+	print "\n";
+    }
     if ($opt{e}) {
 	print "Encryption:\n";
 	print $enc->as_text;

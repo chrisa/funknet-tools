@@ -206,12 +206,6 @@ sub new {
 	return undef;
     } 
 
-    debug("Testing firewall_type");
-    unless (defined $config->{firewall_type} && is_valid_firewall($config->{firewall_type})) {
-	$self->warn("missing or invalid 'firewall_type' in $file");
-	return undef;
-    } 
-
     debug("Done parsing config file");
     return $self;
 }
