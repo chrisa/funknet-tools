@@ -1,0 +1,5 @@
+Funknet::Config stuff.
+
+You need a working installation of RtConfig to use this. (ftp.ripe.net etc)
+The driver script takes a local AS number, produces the tunnel configs
+and BGPd config for a single router at that AS.
