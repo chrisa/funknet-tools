@@ -44,6 +44,11 @@ A reverse-dns update robot, after 'Marvin', the RIPE robot.
 
 use Net::DNS;
 
+use vars qw/ @EXPORT_OK @ISA /;
+@EXPORT_OK = qw/ do_update /;
+@ISA = qw/ Exporter /;
+use Exporter; 
+
 my @auth_zones = qw/ 10.in-addr.arpa 16.172.in-addr.arpa 168.192.in-addr.arpa /;
 
 sub do_update {
