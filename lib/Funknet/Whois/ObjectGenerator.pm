@@ -220,7 +220,9 @@ aut-num objects.
 use Funknet::Config::Validate qw/ is_ipv4 is_valid_as / ;
 use Funknet::Whois qw / get_object parse_object /;
 use Funknet::Whois::Templates qw / tmpl /;
+use Funknet::Whois::Policy qw / assign_as assign_inetnum /;
 use Net::Whois::RIPE;
+use Net::IPv4Addr qw/ ipv4_network ipv4_broadcast /;
 use Data::Dumper;
 
 sub new {
@@ -241,6 +243,9 @@ sub new {
     }
     if (defined $args{key_cert}) {
 	$self->{key_cert} = $args{key_cert};
+    }
+    if (defined $args{e_mail}) {
+	$self->{e_mail} = $args{e_mail};
     }
 
     return $self;
@@ -365,6 +370,33 @@ sub aut_num {
 	return undef;
     }
 
+    if (defined $args{name} &&
+	defined $args{tuns} && 
+	defined $args{import} &&
+	defined $args{export}) {
+	
+	my $m = parse_object(tmpl('aut-num'));
+	$m->as_name($args{name});
+	$m->descr ($args{descr});
+
+	$m->changed($self->{e_mail});
+	$m->notify($self->{e_mail});
+	$m->source ($self->{source});
+	$m->admin_c($self->{person});
+	$m->tech_c($self->{person});
+	$m->mnt_by($self->{mntner});
+	
+	$m->import($args{import});
+	$m->export($args{export});
+	$m->tun($args{tun});
+
+	return $m;
+
+    } else {
+	
+	return undef;
+    }
+
 }
 
 sub aut_num_assign {
@@ -372,8 +404,13 @@ sub aut_num_assign {
     unless (defined $self->{mntner} && defined $self->{person}) {
 	return undef;
     }
+
+    my $as = assign_as();
     
-    
+    return $self->aut_num( 'name' => $args{name},
+			   'tuns' => $args{tuns},
+			   'as'   => $as,
+			 );
 }
 
 sub inetnum {
@@ -382,7 +419,30 @@ sub inetnum {
 	return undef;
     }
 
+    if (defined $args{name} &&
+	defined $args{network}) {
+	
+	my $m = parse_object(tmpl('inetnum'));
 
+	$m->inetnum(cidr_to_inetnum($args{network});
+	$m->netname($args{name});
+	$m->descr($args{descr});
+
+	$m->rev_srv(['ns1.funknet.org', 'ns2.funknet.org']);
+
+	$m->changed($self->{e_mail});
+	$m->notify($self->{e_mail});
+	$m->source($self->{source});
+	$m->admin_c($self->{person});
+	$m->tech_c($self->{person});
+	$m->mnt_by($self->{mntner});
+
+	return $m;
+
+    } else {
+	
+	return undef;
+    }
 }
 
 sub inetnum_assign {
@@ -391,7 +451,10 @@ sub inetnum_assign {
 	return undef;
     }
 
+    my $inetnum = assign_inetnum($args{purpose});
 
+    return $self->inetnum( 'name' => $args{name},
+			   'network' => $inetnum );
 }
 
 sub tunnel {
@@ -399,8 +462,34 @@ sub tunnel {
     unless (defined $self->{mntner} && defined $self->{person}) {
 	return undef;
     }
+    
+    if (defined $args{name} &&
+	defined $args{type} &&
+	defined $args{as} &&
+	defined $args{address} &&
+	defined $args{endpoint}) {
+	
+	my $m = parse_object(tmpl('tunnel'));
 
+	$m->tunnel($args{name});
+	$m->type($args{type});
+	$m->as($args{as});
+	$m->address($args{address});
+	$m->endpoint($args{endpoint});
 
+	$m->changed($self->{e_mail});
+	$m->notify($self->{notify});
+	$m->source($self->{source});
+	$m->mnt_by($self->{mntner});
+	$m->admin_c($self->{person});
+	$m->tech_c($self->{person});
+
+	return $m;
+
+    } else {
+	
+	return undef;
+    }
 }
 
 sub route {
@@ -409,18 +498,44 @@ sub route {
 	return undef;
     }
 
+    if (defined $args{descr} &&
+	defined $args{route} &&
+	defined $args{origin}) {
+	
+	my $m = parse_object(tmpl('route'));
 
-}
+	$m->route($args{route});
+	$m->descr($args{descr});
+	$m->origin($args{origin});
 
-sub node_setup {
-    my ($self, %args) = @_;
-    unless (defined $self->{mntner} && defined $self->{person}) {
+	$m->changed($self->{e_mail});
+	$m->source($self->{source});
+	$m->mnt_by($self->{mntner});
+
+	return $m;
+
+    } else {
+	
 	return undef;
     }
-
-
-    
 }
 
+# sub node_setup {
+#     my ($self, %args) = @_;
+#     unless (defined $self->{mntner} && defined $self->{person}) {
+# 	return undef;
+#     }
+#
+#    
+# }
+
+sub cidr_to_inetnum {
+    my ($cidr) = @_;
+    
+    my ($lo) = ipv4_network($cidr);
+    my ($hi) = ipv4_broadcast($cidr);
+
+    return "$lo - $hi";
+}
 
 1;

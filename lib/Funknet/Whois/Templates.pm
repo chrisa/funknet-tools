@@ -97,5 +97,57 @@ changed:
 source:
 ';
 
+$t->{'aut-num'} = '
+aut-num:
+as-name:
+descr:
+import:
+export:
+tun:
+admin-c:
+tech-c:
+mnt-by:
+notify:
+changed:
+source:
+';
+
+$t->{'inetnum'} = '
+inetnum:
+netname:
+descr:
+country:
+admin-c:
+tech-c:
+rev-srv:
+status:
+notify:
+mnt-by:
+changed:
+source:
+';
+
+$t->{'route'} = '
+route:
+descr:
+origin:
+mnt-by:
+changed:
+source:
+';
+
+$t->{'tunnel'} = '
+tunnel:
+type:
+as:
+address:
+endpoint:
+admin-c:
+tech-c:
+mnt-by:
+notify:
+changed:
+source:
+';
 
 1;

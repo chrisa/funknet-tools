@@ -43,4 +43,30 @@ following policy hints in the larger networks' objects.
 
 =cut
 
+sub assign_as {
+    
+#    my $as = 65000;
+#    do {
+#	my $obj = get_object("AS$as");
+#    } while defined $obj;
+
+    my $as = 65050;
+    
+    return 'AS'.($as + 1);    
+}
+
+sub assign_inetnum {
+    my ($purpose) = @_;
+
+    if ($purpose eq 'tunnel') {
+	
+	my $inetnum = '10.2.0.0/30';
+	return $inetnum;
+	
+
+    } else {
+	return undef;
+    }
+}
+
 1;
