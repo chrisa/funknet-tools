@@ -153,4 +153,37 @@ sub tun_diff {
     return $diff;
 }
 
+sub bgp_config {
+    my ($self) = @_;
+    
+    my $whois = Funknet::Config::Whois->new();
+    debug("Creating BGP session from whois data");
+    my $whois_bgp = $whois->sessions;
+    
+    my $config = Funknet::Config::CommandSet->new( cmds => [ $whois_bgp->config ],
+						   target => 'cli',
+						 );
+    return $config;
+}
+
+sub tun_config {
+    my ($self) = @_;
+    my $l = Funknet::Config::ConfigFile->local;
+
+    my $whois = Funknet::Config::Whois->new();
+    my $whois_tun = $whois->tunnels;
+
+    my $config;
+    if ($l->{os} eq 'ios') {
+	$config = Funknet::Config::CommandSet->new( cmds => [ $whois_tun->config ],
+						    target => 'cli',
+						  );
+    } else {
+	$config = Funknet::Config::CommandSet->new( cmds => [ $whois_tun->config ],
+						    target => 'host',
+						  );
+    }
+    return $config;
+}
+
 1;
