@@ -66,8 +66,40 @@ cvs -d :ext:anoncvs.aldigital.co.uk:/home/cvsroot \
 	co anoncvs.aldigital.co.uk-funknet-tools
 
 # sent this mail, signed with my funknet-whois-db-registered key,
+# for katgate to update the whois on reboot ( dynamic ip ),
 # ( see http://www.funknet.org/doc/routing/whois.html ),
 # to auto-dbm@funknet.org : (BEGIN_MAIL)
+
+key-cert:       PGPKEY-(_katgate_gpg_key_id_)
+mnt-by:         FUNK-MNT
+certif:         -----BEGIN PGP PUBLIC KEY BLOCK-----
+certif:         (_katgate_public_key_material_)
+certif:         (_katgate_public_key_material_)
+certif:         -----END PGP PUBLIC KEY BLOCK-----
+changed:        doug@lemonia.org
+source:         FUNKNET
+
+(END_MAIL)
+
+(BEGIN_MAIL)
+
+aut-num:      AS65016
+as-name:      KATGATE
+descr:        katgate funknet nerd
+import:       from AS65000 action pref=100; accept AS-FUNKTRANSIT and NOT AS65016
+import:       from AS65023 action pref=100; accept AS-FUNKTRANSIT and NOT AS65016
+export:       to AS65000 announce AS65016
+export:       to AS65023 announce AS65016
+tun:          BLANK-KATGATE
+admin-c:      DOUG-FUNKNET
+tech-c:       DOUG-FUNKNET
+mnt-by:       DUNC-MNT
+changed:      doug@lemonia.org
+source:       FUNKNET
+
+(END_MAIL)
+
+(BEGIN_MAIL)
 
 tunnel:       BLANK-KATGATE
 remarks:      endpoint is fiction
@@ -77,7 +109,7 @@ as:           AS65016
 address:      10.2.5.65
 address:      10.2.5.66
 endpoint:     213.129.72.23
-endpoint:     81.86.226.157
+endpoint:     (_katgate_ip_)
 admin-c:      DOUG-FUNKNET
 tech-c:       DOUG-FUNKNET
 mnt-by:       DOUG-MNT
