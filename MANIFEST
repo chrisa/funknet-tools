@@ -82,3 +82,4 @@ t/diff.t
 t/directmysql.t
 t/host.t
 t/whois.t
+META.yml                                Module meta-data (added by MakeMaker)
