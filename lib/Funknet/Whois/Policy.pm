@@ -43,6 +43,8 @@ use Exporter;
 use Funknet::Whois qw/ get_object /;
 use Funknet::Whois::DirectMysql;
 
+our @errors;
+
 =head1 NAME
 
 Funknet::Whois::Policy
@@ -100,15 +102,24 @@ i.e. "10.2.0.0 - 10.2.0.3".
 sub assign_tunnel_inetnum {
     my ($peer) = @_;
     unless ($peer =~ /^AS\d+$/) {
+	error("peer not in format ASxxxxx: $peer");
 	return undef;
     }
 
     # get aut-num for our peer
     my $aut_num = get_object('aut-num', $peer);
+    unless (defined $aut_num) {
+	error("peer $peer not found in whois");
+	return undef;
+    }
     
     # get tunnelspace inetnum allocation
     my $netname = $aut_num->as_name . '-TUNNELS';
     my $tspace = get_object( 'inetnum', $netname );
+    unless (defined $tspace) {
+	error("no tunnelspace allocation for ".$aut_num->as_name);
+	return undef;
+    }
     my $inum = $tspace->inetnum;
 
     my $dbh = new Funknet::Whois::DirectMysql;
@@ -117,7 +128,7 @@ sub assign_tunnel_inetnum {
     if ($inum =~ /(.*) - (.*)/) {
 	($alloc_start, $alloc_end) = ($dbh->ipv4_to_int($1), $dbh->ipv4_to_int($2));
     } else {
-	warn "inetnum didn't parse";
+	error("inetnum didn't parse: $inum");
 	return undef;
     }
     
@@ -132,7 +143,7 @@ sub assign_tunnel_inetnum {
     my $sth = $dbh->prepare($sql);
     my $rv = $sth->execute($alloc_start, $alloc_end);
     unless ($rv) {
-	warn "database: $DBI::errstr";
+	error("database: $DBI::errstr");
 	return undef;
     }
     my ($tun_start, $tun_end) = $sth->fetchrow_array;
@@ -151,8 +162,20 @@ sub assign_tunnel_inetnum {
 	my $tun_inum = "$start_ip/30";
         return $tun_inum;
     } else {
-	warn "assignment full?";
+	error("assignment full?");
 	return undef;
+    }
+}
+
+sub error {
+    my ($err) = @_;
+
+    if (defined $err) {
+	push @errors, "Whois::Policy: $err";
+    } else {
+	my @this = @errors;
+	@errors = ();
+	return wantarray ? @this : join "\n", @this;
     }
 }
 
