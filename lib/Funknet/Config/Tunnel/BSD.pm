@@ -80,18 +80,8 @@ sub new_from_ifconfig {
 
 sub delete {
     my ($self) = @_;
-    return "a list of commands to delete $self->{_interface} on BSD go here";
-#     my $tun_type;
-#     for ($self->{_type})
-#     {
-#        if    (/ipip/) {$tun_type = 'gif';}
-#        elsif (/gre/) {$tun_type = 'gre';}
-#     }
-#
 
-#     return "heres the deletey bit";
-#	return "$self->{_interface}";
-#	return "ifconfig $tun_type$inter destroy";
+    return "ifconfig $self->{_interface} destroy";
 }
 
 sub create {
