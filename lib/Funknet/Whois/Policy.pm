@@ -69,19 +69,21 @@ sub assign_as {
     
     my $dbh = new Funknet::Whois::DirectMysql;
     
-    # XXX needs to chop off 'AS' for order by.
-    my $sql = "SELECT aut_num 
+    my $sql = "SELECT SUBSTRING(aut_num, 3) AS aut_num
                  FROM aut_num 
              ORDER BY aut_num DESC
                 LIMIT 1";
 
     my $sth = $dbh->prepare($sql);
-    my $rv = $sql->execute();
+    my $rv = $sth->execute();
     unless ($rv) {
 	warn "database: $DBI::errstr";
 	return undef;
     }
     my ($as) = $sth->fetchrow_array;
+
+print STDERR "as from sql: $as\n";
+
     $sth->finish;
     
     return 'AS'.($as + 1);    
@@ -105,17 +107,24 @@ sub assign_tunnel_inetnum {
     }
 
     # get aut-num for our peer
-    my $aut_num = get_object($peer);
+    my $aut_num = get_object('aut-num', $peer);
     
     # get tunnelspace inetnum allocation
     my $netname = $aut_num->as_name . '-TUNNELS';
-    my $tspace = get_object( $netname );
+    my $tspace = get_object( 'inetnum', $netname );
     my $inum = $tspace->inetnum;
+
+print STDERR "inum: $inum\n";
 
     my $dbh = new Funknet::Whois::DirectMysql;
 	
     my ($alloc_start, $alloc_end);
     if ($inum =~ /(.*) - (.*)/) {
+
+print STDERR "1 $1 2 $2\n";
+print STDERR $dbh->ipv4_to_int($1);
+print STDERR $dbh->ipv4_to_int($2);
+
 	($alloc_start, $alloc_end) = ($dbh->ipv4_to_int($1), $dbh->ipv4_to_int($2));
     } else {
 	warn "inetnum didn't parse";
@@ -130,8 +139,10 @@ sub assign_tunnel_inetnum {
              ORDER BY end_in DESC
                 LIMIT 1";
 
+print STDERR "as: $alloc_start ae: $alloc_end\n";
+
     my $sth = $dbh->prepare($sql);
-    my $rv = $sql->execute($alloc_start, $alloc_end);
+    my $rv = $sth->execute($alloc_start, $alloc_end);
     unless ($rv) {
 	warn "database: $DBI::errstr";
 	return undef;
@@ -139,15 +150,23 @@ sub assign_tunnel_inetnum {
     my ($tun_start, $tun_end) = $sth->fetchrow_array;
     $sth->finish;
     
+print STDERR "s: $tun_start e: $tun_end\n";
+
     # return the 30 following this
     
     $tun_start += 4;
     $tun_end += 4;
+
+print STDERR "new: s $tun_start e $tun_end\n";
     
     if ($tun_start >= $alloc_start && $tun_end <= $alloc_end) {
 	my $start_ip = $dbh->int_to_ipv4($tun_start);
 	my $end_ip = $dbh->int_to_ipv4($tun_end);
-	return "$start_ip - $end_ip";
+
+# XXX return an inetnum or a cidr network?
+	my $tun_inum = "$start_ip/30";
+print STDERR "tun_inum: $tun_inum\n";
+        return $tun_inum;
     } else {
 	warn "assignment full?";
 	return undef;

@@ -35,7 +35,7 @@
 package Funknet::Whois::DirectMysql;
 use strict;
 use DBI;
-use base qw/ DBI /;
+use base qw/ DBI::db /;
 use Funknet::Config::Validate qw/ is_ipv4 /;
 
 =head1 NAME
@@ -70,7 +70,7 @@ sub new {
       or die "couldn't open whoisd config file $config: $!";
     while (<CONF>) {
 	next unless /^UPDSOURCE FUNKNET (.*),(.*),(.*),(.*),(.*) /;
-	($host, $port, $user, $pass) = ($1, $2, $3, $4, $5);
+	($host, $port, $user, $pass, $name) = ($1, $2, $3, $4, $5);
 	last;
     }
     close CONF;
@@ -78,24 +78,28 @@ sub new {
     unless (defined $host &&
 	    defined $port &&
 	    defined $user &&
-	    defined $pass) {
+	    defined $pass &&
+            defined $name) {
 	die "failed to get database params";
     }
     
     # connect to database
 
-    my $dbh = DBI->connect("DBI:mysql:database=$name,host=$host,port=$port",$user,$pass);
+    my $dbh = DBI->connect("DBI:mysql:database=$name;host=$host;port=$port",$user,$pass);
     unless ($dbh) {
 	die "failed to connect to $name: $DBI::errstr";
     }
-	
+
     bless $dbh, "Funknet::Whois::DirectMysql";
     return $dbh;
 }
 
 
 sub ipv4_to_int {
-    my ($ipv4) = @_;
+    my ($self, $ipv4) = @_;
+    unless (ref $self) {
+        $ipv4 = $self;
+    }
 
     unless (is_ipv4($ipv4) && $ipv4 =~ /(\d+)\.(\d+)\.(\d+)\.(\d+)/) {
 	return undef;
@@ -105,7 +109,11 @@ sub ipv4_to_int {
 }
 
 sub int_to_ipv4 {
-    my ($int) = @_;
+    my ($self, $int) = @_;
+    unless (ref $self) {
+        $int = $self;
+    }
+
     
     unless ($int >= 0 && $int <= 256**4) {
 	return undef;

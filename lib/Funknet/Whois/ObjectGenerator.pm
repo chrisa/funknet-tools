@@ -424,7 +424,7 @@ sub inetnum {
     }
 
     if (defined $args{name} &&
-	defined $args{network}) {
+	def  ined $args{network}) {
 	
 	my $m = parse_object(tmpl('inetnum'));
 
@@ -538,6 +538,8 @@ sub route {
 
 sub cidr_to_inetnum {
     my ($cidr) = @_;
+
+print STDERR "cidr_to_inetnum: $cidr\n";
     
     my ($lo) = ipv4_network($cidr);
     my ($hi) = ipv4_broadcast($cidr);
