@@ -524,15 +524,6 @@ sub route {
     }
 }
 
-# sub node_setup {
-#     my ($self, %args) = @_;
-#     unless (defined $self->{mntner} && defined $self->{person}) {
-# 	return undef;
-#     }
-#
-#    
-# }
-
 sub cidr_to_inetnum {
     my ($cidr) = @_;
 

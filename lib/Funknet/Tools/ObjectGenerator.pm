@@ -45,30 +45,119 @@ Reasonable interface to the Funknet::Whois::ObjectGenerator stuff.
 
 =cut
 
-sub node_set {
+sub person {
     my (%args) = @_;
 
-    @errors = ();
+    unless (defined $args{name}) {
+	error( "didn't get a name" );
+    }
+    unless (defined $args{address}) {
+	error( "didn't get an address" );
+    }
+    unless (defined $args{e_mail}) {
+	error( "didn't get an email address" );
+    }
+    unless (defined $args{phone}) {
+	error( "didn't get a phone number" );
+    }
+
+    if (error()) {
+	return undef;
+    }
+    
+    my $gen = Funknet::Whois::ObjectGenerator->new( source => 'FUNKNET' );
+    my $me = $gen->person( 'name'    => $args{name},
+			   'address' => $args{address},
+			   'e_mail'  => $args{e_mail},
+			   'phone'   => $args{phone},
+			 );
+    return $me;
+}
+
+sub key_cert {
+    my (%args) = @_;
+
+    unless (defined $args{name}) {
+	error( "didn't get a list of peers" );
+    }
+    unless (defined $args{changed}) {
+	error( "didn't get an email address for 'changed:'" );
+    }
+    unless (defined $args{certif}) {
+	error( "didn't get the key material" );
+    }
+
+    if (error()) {
+	return undef;
+    }
+    
+    my $gen = Funknet::Whois::ObjectGenerator->new( source => 'FUNKNET' );
+    my $key = $gen->key_cert( 'name'    => $args{name},
+			      'e_mail'  => $args{changed},
+			      'certif'  => $args{certif},
+			    );
+    return $key;
+}
+
+sub mntner {
+    my (%args) = @_;
+
+    unless (defined $args{person}) {
+	error( "didn't a person object name" );
+    }
+    unless (defined $args{name}) {
+	error( "didn't get a mntner name" );
+    }
+    unless (defined $args{auth}) {
+	error( "didn't get an auth param (PGPKEY-?)" );
+    }
+    unless (defined $args{descr}) {
+	error( "didn't get a description" );
+    }
+    unless (defined $args{e_mail}) {
+	error( "didn't get an email address" );
+    }
+
+    if (error()) {
+	return undef;
+    }
+
+    my $gen = Funknet::Whois::ObjectGenerator->new('source' => 'FUNKNET', 
+						   'person' => $args{person} );
+    
+    my $me = $gen->mntner( 'name'   => $args{name}, 
+			   'auth'   => $args{auth},
+			   'descr'  => $args{descr}, 
+			   'e_mail' => $args{e_mail} );
+    
+    return $me;
+}
+
+sub node_set {
+    my (%args) = @_;
 
     # check args - we need: list of peers, the local network, mntner, and the name of the node
     
     unless (defined $args{peers}) {
 	error( "didn't get a list of peers" );
-	return undef;
     }
     unless (defined $args{network}) {
 	error( "didn't get a network" );
-	return undef;
     }
     unless (defined $args{mntner}) {
 	error( "didn't get a mntner" );
-	return undef;
     }
     unless (defined $args{nodename}) {
 	error( "didn't get a nodename" );
-	return undef;
+    }
+    unless (defined $args{endpoint}) {
+	error( "didn't get an endpoint" );
     }
 
+    if (error()) {
+	return undef;
+    }
+    
     my $ns;
     
     # check the requested local network is available
@@ -100,7 +189,7 @@ sub node_set {
 						    'person' => $mntner->admin_c,
 						    'e_mail' => $mntner->upd_to,
 						  );
-        # get an AS number
+    # get an AS number
     $ns->{as} = $gen->aut_num_assign( 'name'  => $args{nodename},
 				      'descr' => $args{nodename},
 				      'tuns'  => [ ],
@@ -118,7 +207,7 @@ sub node_set {
 	
 	my $t = $gen->tunnel( 'name'    =>  $args{nodename}.'-'.$peers->{$peer}->as_name,
 			      'as'      => [$peers->{$peer}->aut_num,$ns->{as}->aut_num],
-			      'endpoint'      => ['',''],
+			      'endpoint'      => [$args{endpoint},''],
 			      'address'    => ['',''],
 			      'type'    => 'ipip',
 			    );
