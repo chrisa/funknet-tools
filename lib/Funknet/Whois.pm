@@ -43,13 +43,14 @@ Routines for dealing with whois objects.
 =cut
 
 use vars qw/ @EXPORT_OK @ISA /;
-@EXPORT_OK = qw/ parse_object check_auth object_exists get_object /;
+@EXPORT_OK = qw/ parse_object check_auth object_exists get_object pretty_object /;
 @ISA = qw/ Exporter /;
 use Exporter; 
 
 use IO::Scalar;
 use Net::Whois::RIPE;
 use Net::Whois::RIPE::Object;
+use Funknet::Whois::Object;
 
 =head2 parse_object
 
@@ -57,13 +58,16 @@ Takes a whois object as text, returns a Net::Whois::RIPE::Object
 object (this is only here because the Net::Whois::RIPE::Object
 constructor expects a handle, and we have a string).
 
+Yeah, this should probably proxy through a Funknet::Whois::Object 
+constructor.
+
 =cut
 
 sub parse_object {
     my ($object_text) = @_;
     my $sh = new IO::Scalar \$object_text;
     my $object = Net::Whois::RIPE::Object->new($sh);
-    return $object;
+    return bless $object, 'Funknet::Whois::Object';
 }
 
 =head2 check_auth
@@ -137,3 +141,5 @@ sub get_object {
     my $obj = $w->query($name);
     return $obj;
 }
+
+1;
