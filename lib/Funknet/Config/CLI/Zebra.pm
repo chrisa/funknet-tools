@@ -2,6 +2,7 @@ package Funknet::Config::CLI::Zebra;
 use strict;
 use Net::Telnet;
 use Data::Dumper;
+use Network::IPv4Addr qw/ ipv4_network /;
 
 =head1 NAME
 
@@ -52,16 +53,14 @@ sub get_bgp {
 	}
 	next unless $go;
 	if ($line =~ /^\*?\>?\s+(\d+\.\d+\.\d+\.\d+)(\/\d+)?\s+0\.0\.0\.0/) {
-		my $mask;
-		if (!defined($2))
+		if(!defined($2))
 		{
-			$mask='/24';
+	    		push @networks, scalar ipv4_network("$1");
 		}
 		else
 		{
-			$mask=$2;
+	    		push @networks, scalar ipv4_network("$1$2");
 		}
-	    push @networks, "$1$mask";
 	}
 	if ($line =~ /^\*?\>?\s+(\d+\.\d+\.\d+\.\d+)(\/\d+)?\s+$/) {
 	    $current = "$1$2";
