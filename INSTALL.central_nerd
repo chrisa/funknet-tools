@@ -229,7 +229,7 @@ REAL_IP SECRET
 # see zero-lemon-ports/meta/nat-firewall-tarball/files/crontab-FUNKNET
 crontab -u root -e
 # funknet
-0,10,20,30,40,50 * * * * /bin/sh /etc/tunnelup.sh >/var/log/tunnelup 2>&1 &
+0,10,20,30,40,50 * * * * ( mv /var/log/tunnelup /var/log/tunnelup.last ; /bin/sh /etc/tunnelup.sh >/var/log/tunnelup 2>&1 ) &
 :wq
 
 # youre done, skin up.
