@@ -138,6 +138,17 @@ sub host_init {
 		      );
 }
 
+# returns the data required for the tun to be made 
+# explicitly aware of its encryption.  
+
+sub tun_data {
+    my ($self) = @_;
+    return {
+	    keyfile_path  => $self->{_keyfile}->path(),
+	    certfile_path => $self->{_certfile}->path(),
+	   };
+}
+
 sub apply {
     my ($self) = @_;
 

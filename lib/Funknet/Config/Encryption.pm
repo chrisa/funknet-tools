@@ -203,4 +203,7 @@ sub get_keycert {
     return ($keyfile, $certfile);
 }
 
+# stub, this only applies to OpenVPN
+sub tun_data {}
+
 1;

@@ -89,10 +89,13 @@ encr_certpath = /tmp/ipsec/cert
 
 # remote keystash
 
-ks_user = foo
-ks_pass = bar
-ks_host = whois.funknet.org
-ks_cert = "Funknet KeyStash"
+ks_www_user = foo
+ks_www_pass = bar
+ks_www_host = whois.funknet.org
+ks_www_cert = "Funknet KeyStash"
+ks_whois_host = whois.funknet.org
+ks_whois_port = 43
+ks_whois_source = FUNKNET
 
 # the local keystash cache directory
 

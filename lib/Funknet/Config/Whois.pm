@@ -46,7 +46,6 @@ use Funknet::Config::EncryptionSet;
 use Funknet::Config::FirewallRule;
 use Funknet::Config::FirewallRuleSet;
 use Funknet::Debug;
-use Data::Dumper;
 
 =head1 NAME
 
@@ -350,6 +349,11 @@ sub encryption {
 							  );
 	    if (defined $enc_obj) {
 		push @local_enc, $enc_obj;
+
+		my $tun_data = $enc_obj->tun_data();
+		if (defined $tun_data) {
+		    $tun->enc_data($tun_data);
+		}
 	    }
 	}
     }

@@ -122,7 +122,11 @@ if ($opt{c}) {
     if ($opt{e}) {
 	debug("Generating encryption config");
 	($enc, $whois_enc) = $config->enc_config($whois_tun) or die "enc_config files: ".$config->error;
+	# replace the $tun config from above with a regenned 
+	# one that includes the possible encryption config
+	$tun = $whois_tun->config;
     }
+
 } else {
     debug("Generating BGP diff");
     $bgp = $config->bgp_diff or die "bgp_diff failed: ".$config->error;

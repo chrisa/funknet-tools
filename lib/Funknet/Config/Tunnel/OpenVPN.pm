@@ -35,7 +35,6 @@ use strict;
 use base qw/ Funknet::Config::Tunnel /;
 use Funknet::Config::Util qw/ dq_to_int /;
 use Funknet::Config::SystemFile;
-use Data::Dumper;
 
 =head1 NAME
 
@@ -172,6 +171,12 @@ sub create {
 						      path => $self->{_ovpn_file} );
 						      
     return $ovpn_file;
+}
+
+sub enc_data {
+    my ($self, $enc_data) = @_;
+    $self->{_ovpn_cert} = $enc_data->{certfile_path};
+    $self->{_ovpn_key}  = $enc_data->{keyfile_path};
 }
 
 sub ifsym {

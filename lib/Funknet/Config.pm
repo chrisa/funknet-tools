@@ -44,7 +44,6 @@ use Funknet::Config::CommandSet;
 use Funknet::Config::SystemFileSet;
 use Funknet::Config::ConfigSet;
 use Funknet::ConfigFile;
-use Data::Dumper;
 
 =head1 NAME
 
