@@ -258,7 +258,8 @@ sub update {
 	    exit 1;
 	}
     }
-	
+    
+    return (scalar @ok);
 }
 
 sub errorlog {
