@@ -102,7 +102,7 @@ sub as_text {
 	    $text .= $file->path;
 	    $text .= ":\n";
 	    $text .= $file->new_text;
-	    $text .= "<<<\n";
+	    $text .= "<<<\n\n";
 	}
 	return $text;
     } else {
