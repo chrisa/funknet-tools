@@ -37,7 +37,7 @@ Example directory structure:
 /etc/racoon/private // holds keys which are in use, pem format
 
 /etc/funknet/keystash/cert   // holds cached certs in 'whois object' format 
-/etc/funknet/keystash/key    // holds cached keys in 'whois object' format
+/etc/funknet/keystash/key    // holds cached keys in 'raw pem' format
 
 Example config process:
 
