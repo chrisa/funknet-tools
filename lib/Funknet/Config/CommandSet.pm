@@ -105,13 +105,14 @@ sub as_text {
 
 sub apply {
     my ($self) = @_;
-
-    # hand off to CLI module to get these commands executed in enable mode
-   
-    my $cli = Funknet::Config::CLI->new();
-    
-    my $rv = $cli->exec_enable( $self );
-    return $rv;
+    if (scalar @{ $self->{_cmds} }) {
+	# hand off to CLI module to get these commands executed in enable mode
+	my $cli = Funknet::Config::CLI->new();
+	my $rv = $cli->exec_enable( $self );
+	return $rv;
+    } else {
+	return undef;
+    }
 }
 
 package Funknet::Config::CommandSet::Host;
