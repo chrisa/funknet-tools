@@ -79,7 +79,9 @@ mntner.
 
 sub check_auth {
     my ($zone, $keyid) = @_;
-    
+
+    $keyid =~ s/.*([A-F0-9]{8})$/$1/;
+
     my $inetnum;
     if 
 	($zone =~ /(\d+).(\d+).(\d+).in-addr.arpa/) {
@@ -89,7 +91,7 @@ sub check_auth {
 	($zone =~ /(\d+).(\d+).in-addr.arpa/) {
 	    $inetnum = "$2.$1.0.0";
 	}
-    
+
     my $w = Net::Whois::RIPE->new( 'whois.funknet.org' );
     $w->type('inetnum');
     my $in = $w->query($inetnum);
@@ -97,12 +99,12 @@ sub check_auth {
     my $auth_ok;
   AUTH:
     for my $mnt_by ($in->mnt_by) {
-	
+
 	$w->type('mntner');
 	my $mntner = $w->query($mnt_by);
 	
 	for my $auth ($mntner->auth) {
-	    
+
 	    if ($auth eq "PGPKEY-$keyid") {
 		$auth_ok = 1;
 		last AUTH;
