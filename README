@@ -1,5 +1,18 @@
 This is the Funknet tools package. 
 
+What this code is for:
+
+This code expects to either be run on a Unix PC-router running zebra,
+or to be pointed at a Cisco router. With an AS number, it retrieves
+tunnel and routing configuration from a Whois database, and retrieves
+the local system's current configuration. It then amends that current
+configuration to match the Whois database.
+
+What you need:
+
+Either - a Linux/BSD/Solaris/OSX box running Zebra BGP, or a Cisco
+router. See the Perl dependencies in the DEPENDENCIES file. 
+
 To try the code: 
 
 * copy funknet.conf.dist to funknet.conf and edit to taste. 
