@@ -84,6 +84,7 @@ sub config {
     foreach my $neighbor (@{ $self->{_neighbors} }) {
 	$config .= $neighbor->config;
     }
+    $config .= "!\n";
 
     foreach my $acl (@{ $self->{_acls} }) {
 	$config .= $acl->config;
