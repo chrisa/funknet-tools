@@ -29,6 +29,37 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 # SUCH DAMAGE.
 
+=head1 NAME
+
+Funknet::Config::BGP
+
+=head1 SYNOPSIS
+
+    my $bgp = Funknet::Config::BGP->new( local_as => 'AS65000'
+ 					 routes  => [ 1.2.3.0/24 ],
+	 				 source => 'host');
+
+
+=head1 DESCRIPTION
+
+=head1 METHODS
+
+=head2 new
+
+=head2 add_session
+
+=head2 route_set 
+
+=head2 source 
+=head2 local_as 
+=head2 routes 
+=head2 neighbors 
+=head2 neighbor_set 
+=head2 neighbor 
+
+Acccessors.
+
+=cut
 
 package Funknet::Config::BGP;
 use strict;
