@@ -235,9 +235,9 @@ define hostgroup{
 }
 ];
 
-    open(HOSTGROUPS,">>hostgroups.cfg"); print HOSTGROUPS qq[$hostgroups_inside]; close(HOSTS);
-    open(HOSTS,">>hosts.cfg"); print HOSTS qq[$hosts]; close(HOSTS);
-    open(SERVICES,">>services.cfg"); print SERVICES qq[$services]; close(SERVICES);
+    open(HOSTGROUPS,">>hostgroups.cfg"); print HOSTGROUPS qq[$hostgroups_inside\n]; close(HOSTS);
+    open(HOSTS,">>hosts.cfg"); print HOSTS qq[$hosts\n]; close(HOSTS);
+    open(SERVICES,">>services.cfg"); print SERVICES qq[$services\n]; close(SERVICES);
     
 }
 
