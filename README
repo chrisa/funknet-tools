@@ -1,37 +1,3 @@
-         RAToolSet Patch for the RIPE Whois Server 3.0
+This is the Funknet tools package. 
 
-The RtConfig utility provided with RAToolSet 4.6.3 requires a patch to
-work properly with the RIPE Whois Server 3.0, due to the comment style
-used by the RIPE server.  You can either:
-
-1. Use your existing copy of the RAToolSet source, or download the
-   RAToolSet code from:
-
-     http://www.isi.edu/ra/RAToolSet/
-
-   And apply the patch contained in RAToolSet-4.6.3.patch like this:
-
-     $ patch -p0 < RAToolSet-4.6.3.patch
-     $ cd RAToolSet-4.6.3
-     $ ./configure
-     $ make
-     $ make install
-
-2. Download and install the complete patched source, which is included
-   here as:
-   
-     RAToolSet-4.6.3-RIPE.tar.gz
-
-You need to make sure you specify the BIRD protocol, not the RIPE
-protocol when using RtConfig:
-
-  $ RtConfig -h rpsl.ripe.net -protocol bird
-
-We plan on releasing a protocol for RtConfig that works better with the
-RIPE 3.0 Whois Server, but this seems to work.  Please send any problems
-you experience with the patch to <dbrip@ripe.net>, or post them to the
-<db-beta@ripe.net> mailing list (only subscribed members may post).
-
-Shane Kerr
-ripe-dbm@ripe.net
 
