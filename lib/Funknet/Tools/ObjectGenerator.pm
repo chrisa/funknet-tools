@@ -152,7 +152,7 @@ sub node_set {
 
     # check args - we need: list of peers, the local network, mntner, and the name of the node
     
-    unless (defined $args{peers}) {
+    unless (defined $args{peers} && scalar @{$args{peers}} > 0) {
 	error( "didn't get a list of peers" );
     }
     unless (defined $args{network}) {
