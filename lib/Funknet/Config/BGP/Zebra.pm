@@ -152,8 +152,8 @@ sub diff {
 	    defined $n->{_acl_in} && push @cmds, "no ip prefix-list ".$n->{_acl_in}->name;
 	    defined $n->{_acl_out} && push @cmds, "no route-map ".$n->{_acl_out}->name;
 	    defined $n->{_acl_out} && push @cmds, "no ip prefix-list ".$n->{_acl_out}->name;
-	    defined $n->{_acl_in} && push @cmds, $n->{_acl_in}->config;
-	    defined $n->{_acl_out} && push @cmds, $n->{_acl_out}->config;
+	    defined $n->{_acl_in} && push @cmds, $n->{_acl_in}->config, 'exit';
+	    defined $n->{_acl_out} && push @cmds, $n->{_acl_out}->config, 'exit';
 	} else {
 	    # there already; make a diff.
 	    my $h_n = $host->neighbor($n);
