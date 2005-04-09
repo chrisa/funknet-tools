@@ -167,7 +167,7 @@ sub config {
     }
 
     my $cmdset = Funknet::Config::CommandSet->new( cmds => \@cmds,
-						   target => 'cli',
+						   target => 'host',
 						 );
     
     return Funknet::Config::ConfigSet->new( cmds => [ $cmdset ] );
