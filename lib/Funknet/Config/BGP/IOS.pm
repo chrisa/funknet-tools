@@ -63,6 +63,13 @@ sub config {
 	}
     }
 
+    # we're done in configuration mode, get back to enable.
+    
+    if (scalar @cmds) {
+	unshift @cmds, 'configure terminal';
+	push @cmds, 'exit';
+    }
+
     my $cmdset = Funknet::Config::CommandSet->new( cmds => \@cmds,
 						   target => 'cli',
 					       );
