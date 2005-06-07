@@ -6,7 +6,6 @@ WriteMakefile(
 	      NAME              => 'funknet-tools',
 	      VERSION_FROM      => 'lib/Funknet/Config.pm', # finds $VERSION
 	      PREREQ_PM         => {
-				    Net::Whois::RIPE => ,
 				    Net::IPv4Addr => ,
 				    Net::Telnet => ,
 				   },
