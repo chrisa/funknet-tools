@@ -9214,10 +9214,8 @@ as:           AS65023
 as:           AS65007
 address:      10.2.5.21
 address:      10.2.5.22
-encryption:   X509CERT-00:00:00:00:00:00:00:00
-encryption:   X509CERT-11:11:11:11:11:11:11:11
 endpoint:     213.129.72.23
-endpoint:     217.79.100.249
+endpoint:     84.92.197.97
 admin-c:      CA1-FUNKNET
 tech-c:       CA1-FUNKNET
 mnt-by:       FUNK-MNT
@@ -9601,8 +9599,10 @@ as:           AS65000
 as:           AS65007
 address:      10.2.0.21
 address:      10.2.0.22
+encryption:   X509CERT-00:00:00:00:00:00:00:00
+encryption:   X509CERT-11:11:11:11:11:11:11:11
 endpoint:     131.231.83.95
-endpoint:     217.79.100.249
+endpoint:     84.92.197.97
 admin-c:      CA1-FUNKNET
 tech-c:       CA1-FUNKNET
 mnt-by:       FUNK-MNT
