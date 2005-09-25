@@ -117,7 +117,7 @@ sub text {
     }
 
     for my $line (@content) {
-	my ($key, $val) = $line =~ /(.+?):\s*(.+)/;
+	my ($key, $val) = $line =~ /([a-zA-Z-]+?):\s*(.+)/;
 	push @lines, { key => $key, val => $val };
 	if (length $key > $maxkey) {
 	    $maxkey = length $key;
