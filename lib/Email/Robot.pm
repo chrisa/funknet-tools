@@ -274,7 +274,7 @@ MAILTEXT
 sub fatalerror {
     my ($self, $error_text) = @_;
     my $text = $self->fatalerror_text($error_text);
-    $self->reply_mail( $text, subject => "Reverse Delegation error" );
+    $self->reply_mail( $text, subject => "generic Email::Robot error mail" );
     exit 0;
 }
 

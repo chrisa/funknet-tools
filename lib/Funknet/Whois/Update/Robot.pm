@@ -142,6 +142,13 @@ MAILTEXT
 
 }
 
+sub fatalerror {
+    my ($self, $error_text) = @_;
+    my $text = $self->fatalerror_text($error_text);
+    $self->reply_mail( $text, subject => "whois update error" );
+    exit 0;
+}
+
 sub fatalerror_text {
     my ($self, $error_text) = @_;
     return <<"MAILTEXT";
