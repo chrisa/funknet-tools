@@ -64,13 +64,9 @@ MAILTEXT
 
     for my $object (@objects) {
 
-	my $type = $object->{_order}->[0];
-	my $name;
-	{
-	    no strict 'refs';
-	    # fucking yuck
-	    $name = &{"Funknet::Whois::Object::$type"}($object);
-	}
+	my $type = $object->object_type();
+	my $name = $object->object_name();
+
 	if (defined $object->delete()) {
 	    $text .= "Delete OK: [$type] $name\n";
 	} else {
@@ -115,13 +111,8 @@ MAILTEXT
 	    $text .= $object->text;
 	    $text .= "\n";
 	} else {
-	    my $type = $object->{_order}->[0];
-	    my $name;
-	    {
-		no strict 'refs';
-		# fucking yuck
-		$name = &{"Funknet::Whois::Object::$type"}($object);
-	    }
+            my $type = $object->object_type();
+            my $name = $object->object_name();
 	    if (defined $object->delete()) {
 		$text .= "Delete OK: [$type] $name\n";
 	    } else {
