@@ -44,7 +44,8 @@ Funknet::Whois::Object
 sub new {
     my ($class, $text) = @_;
     my $self = bless {}, $class;
-
+    
+    $self->{_content} = [];
     for my $line (split /\n/, $text) {
 	my ($key, $val) = $line =~ /(.+?):\s*(.+)?/;
 	next unless ($key);
