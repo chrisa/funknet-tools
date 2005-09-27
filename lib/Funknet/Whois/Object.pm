@@ -78,6 +78,11 @@ sub object_type {
     return $self->{_order}->[0];
 }
 
+sub object_name {
+    my ($self) = @_;
+    return $self->{_content}->[0];
+}
+
 sub AUTOLOAD {
     my ($self, $new) = @_;
 
