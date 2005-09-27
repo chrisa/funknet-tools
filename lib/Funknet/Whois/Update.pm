@@ -223,9 +223,9 @@ sub update {
 	} else {
 	    $success++;
 	    if (defined $object->delete()) {
-		$objects->{$object->type}->{$object->name} = undef;
+		$objects->{$object->object_type}->{$object->object_name} = undef;
 	    } else {
-		$objects->{$object->type}->{$object->name} = $object->text;
+		$objects->{$object->object_type}->{$object->object_name} = $object->text;
 	    }
 	}
     }
