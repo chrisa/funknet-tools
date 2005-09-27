@@ -12,6 +12,8 @@ WriteMakefile(
 	      EXE_FILES         => [
 				    'bin/funknet-config',
 				    'bin/dynamic-update',
+				    'bin/whois-update',
+				    'bin/whois-server',
 				   ],
 	      INSTALLSCRIPT     => '/usr/bin',
 	      ($] >= 5.005 ?     
