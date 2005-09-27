@@ -85,7 +85,9 @@ sub query {
 	}
     }
 
-    $self->_connect();
+    unless ($self->_connect()) {
+        die "no connection";
+    }
     my $s = $self->{_socket};
     print $s "$query_string\n";
     
