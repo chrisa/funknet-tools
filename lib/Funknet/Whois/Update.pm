@@ -156,7 +156,7 @@ sub update {
     }
     if (scalar @objects == 0) {
 	warn "no objects";
-	$robot->fatalerror("couldn't convert the signed message into any Net::WHOIS::RIPE::Objects");	
+	$robot->fatalerror("couldn't convert the signed message into any Funknet::Whois::Object objs.");
     }
 
     # check authorisation and source against whois.
