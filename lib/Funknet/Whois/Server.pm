@@ -56,6 +56,7 @@ sub load {
       or die "can't open $self->{_file}: $!";
     
     $self->{_objects} = {};
+    $self->{_types}   = {};
     
     my $currobj;
     my $num;
@@ -93,6 +94,9 @@ sub load {
 	    if ($currobj->{type} eq 'route') {
 		push @{ $self->{_index}->{origin}->{$currobj->{origin}} }, $currobj->{text};
 	    }
+
+            # track types for wildcard-type search.
+            $self->{_types}->{$currobj->{type}}++;
 
 	    undef $currobj;
 
@@ -226,11 +230,26 @@ sub go {
 		$self->_log("object found via inverse lookup\n");
 	    }
 	    print $sh "\n";
-	    
+
 	} else {
 
-	    print $sh "% No entries found in the selected source\n\n";
-	    $self->_log("*** no object found ***\n");
+            my $count = 0;
+            for my $type (keys %{ $self->{_types} }) {
+
+                if (defined $self->{_objects}->{$type}->{$query}) {
+                    
+                    print $sh $self->{_objects}->{$type}->{$query};
+                    print $sh "\n\n";
+                    $self->_log("object found by name with wildcard type\n");
+                    $count++;
+                }
+            }
+
+            unless ($count) {
+                print $sh "% No entries found in the selected source\n\n";
+                $self->_log("*** no object found ***\n");
+            }
+
 	}
 
 	# hacktastic. must clean this up. 
