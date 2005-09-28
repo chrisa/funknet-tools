@@ -57,49 +57,38 @@ sub load {
     
     $self->{_objects} = {};
     $self->{_types}   = {};
+    $self->{_index}   = {};
     
     my $currobj;
     my $num;
+
+    my $objects_text;
     while (my $line = <DATA>) {
-	chomp $line;
+        next if $line =~ /^#/;
+        $objects_text .= $line;
+    }
 
-	next if $line =~ /^#/;
-
-	if ($line =~ /^(.*):\s*(.*)$/) {
-	    my ($key, $value) = ($1, $2);
-
-	    if ($key eq 'source' && $value ne $self->{_source}) {
-		undef $currobj;
-		next;
-	    }
-
-	    unless (defined $currobj) {
-		$currobj->{type} = $key;
-		$currobj->{name} = $value;
-		$currobj->{text} = "$line\n";
-	    } else {
-		$currobj->{text} .= "$line\n";
-
-		if ($key eq 'origin') {
-		    $currobj->{origin} = $value;
-		}
-	    }
-	    
-	} else {
-	    
+  OBJECT:
+    for my $text (split /\r?\n\r?\n/, $objects_text) {
+	if (my $object = Funknet::Whois::Object->new($text)) {
+            next OBJECT unless $object->source eq $self->{_source};
+            
+            # store the object under its name
+	    $self->{_objects}->{$object->object_type}->{$object->object_name} = scalar $object->text;
 	    $num++;
+            
+            # index on origin for route object inverses
+	    if ($object->object_type eq 'route') {
+		push @{ $self->{_index}->{origin}->{$object->origin} }, scalar $object->text;
+	    }
 
-	    $self->{_objects}->{$currobj->{type}}->{$currobj->{name}} = $currobj->{text};
-
-	    if ($currobj->{type} eq 'route') {
-		push @{ $self->{_index}->{origin}->{$currobj->{origin}} }, $currobj->{text};
+            # index nic-handle for persons
+	    if ($object->object_type eq 'person') {
+		$self->{_objects}->{person}->{$object->nic_hdl} = scalar $object->text;
 	    }
 
             # track types for wildcard-type search.
-            $self->{_types}->{$currobj->{type}}++;
-
-	    undef $currobj;
-
+            $self->{_types}->{$object->object_type}++;
 	}
     }
     close DATA;
@@ -214,18 +203,10 @@ sub go {
 	$query =~ s/^ //g;
 	$query =~ s/ $//g;
 
-	#print STDERR Dumper { opts => $opts, query => $query };
-
 	# attempt to answer query
+
         my $count = 0;
-	if (defined $opts->{type} && defined $self->{_objects}->{$opts->{type}}->{$query}) {
-
-	    print $sh $self->{_objects}->{$opts->{type}}->{$query};
-	    print $sh "\n\n";
-	    $self->_log("object found by name\n");
-            $count++;
-
-	} elsif (defined $opts->{inverse} && $opts->{inverse} eq 'origin' && defined $self->{_index}->{origin}->{$query}) {
+	if (defined $opts->{inverse} && $opts->{inverse} eq 'origin' && defined $self->{_index}->{origin}->{$query}) {
 	    
 	    for my $object (sort { dq_to_int(_route($a)) <=> dq_to_int(_route($b)) } 
 	                        @{ $self->{_index}->{origin}->{$query} }) {
@@ -233,6 +214,13 @@ sub go {
 		$self->_log("object found via inverse lookup\n");
 	    }
 	    print $sh "\n";
+            $count++;
+            
+        } elsif (defined $opts->{type} && defined $self->{_objects}->{$opts->{type}}->{$query}) {
+
+	    print $sh $self->{_objects}->{$opts->{type}}->{$query};
+	    print $sh "\n\n";
+	    $self->_log("object found by name\n");
             $count++;
 
 	} elsif (!defined $opts->{type}) {
@@ -249,8 +237,8 @@ sub go {
             }
 
         } else {
-
-
+            
+            # nothing?
 	}
 
         unless ($count) {
