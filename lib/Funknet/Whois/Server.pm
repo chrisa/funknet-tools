@@ -74,17 +74,17 @@ sub load {
             next OBJECT unless $object->source eq $self->{_source};
             
             # store the object under its name
-	    $self->{_objects}->{$object->object_type}->{$object->object_name} = scalar $object->text;
+	    $self->{_objects}->{$object->object_type}->{$object->object_name} = $object;
 	    $num++;
             
             # index on origin for route object inverses
 	    if ($object->object_type eq 'route') {
-		push @{ $self->{_index}->{origin}->{$object->origin} }, scalar $object->text;
+		push @{ $self->{_index}->{origin}->{$object->origin} }, $object;
 	    }
 
             # index nic-handle for persons
 	    if ($object->object_type eq 'person') {
-		$self->{_objects}->{person}->{$object->nic_hdl} = scalar $object->text;
+		$self->{_objects}->{person}->{$object->nic_hdl} = $object;
 	    }
 
             # track types for wildcard-type search.
@@ -210,7 +210,7 @@ sub go {
 	    
 	    for my $object (sort { dq_to_int(_route($a)) <=> dq_to_int(_route($b)) } 
 	                        @{ $self->{_index}->{origin}->{$query} }) {
-		print $sh $object, "\n";
+		print $sh scalar $object->text, "\n";
 		$self->_log("object found via inverse lookup\n");
 	    }
 	    print $sh "\n";
@@ -218,7 +218,7 @@ sub go {
             
         } elsif (defined $opts->{type} && defined $self->{_objects}->{$opts->{type}}->{$query}) {
 
-	    print $sh $self->{_objects}->{$opts->{type}}->{$query};
+	    print $sh scalar $self->{_objects}->{$opts->{type}}->{$query}->text;
 	    print $sh "\n\n";
 	    $self->_log("object found by name\n");
             $count++;
@@ -229,7 +229,7 @@ sub go {
 
                 if (defined $self->{_objects}->{$type}->{$query}) {
                     
-                    print $sh $self->{_objects}->{$type}->{$query};
+                    print $sh scalar $self->{_objects}->{$type}->{$query}->text;
                     print $sh "\n\n";
                     $self->_log("object found by name with wildcard type\n");
                     $count++;
