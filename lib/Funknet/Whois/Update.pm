@@ -149,7 +149,7 @@ sub update {
     # attempt to create a Funknet::Whois::Object
 
     my @objects;
-    for my $text (split /\n\n/, $pgp->data) {
+    for my $text (split /\r?\n\r?\n/, $pgp->data) {
 	if (my $object = Funknet::Whois::Object->new($text)) {
 	    push @objects, $object;
 	}
@@ -158,7 +158,7 @@ sub update {
 	warn "no objects";
 	$robot->fatalerror("couldn't convert the signed message into any Funknet::Whois::Object objs.");
     }
-
+    
     # check authorisation and source against whois.
 
     # first get a FWC.

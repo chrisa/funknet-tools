@@ -46,7 +46,7 @@ sub new {
     my $self = bless {}, $class;
     
     $self->{_content} = [];
-    for my $line (split /\n/, $text) {
+    for my $line (split /\r?\n/, $text) {
 	my ($key, $val) = $line =~ /(.+?):\s*(.+)?/;
 	next unless ($key);
 	if (!defined $val) { $val = "" };
