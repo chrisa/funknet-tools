@@ -150,14 +150,15 @@ sub go {
         $self->{_lh}->stopio;
 
       QUERY:
-	my $query = <$sh>;
-	unless (defined $query) {
-	    exit;
-	}
 
 	# banner
 	print $sh "% This is a FUNKNET Whois Server\n";
 	print $sh "% See http://www.funknet.org for details\n\n";
+
+	my $query = <$sh>;
+	unless (defined $query) {
+	    exit;
+	}
 
 	# remove network line-ending
 	$query =~ s/\n//g;
@@ -216,12 +217,14 @@ sub go {
 	#print STDERR Dumper { opts => $opts, query => $query };
 
 	# attempt to answer query
+        my $count = 0;
 	if (defined $opts->{type} && defined $self->{_objects}->{$opts->{type}}->{$query}) {
 
 	    print $sh $self->{_objects}->{$opts->{type}}->{$query};
 	    print $sh "\n\n";
 	    $self->_log("object found by name\n");
-	    
+            $count++;
+
 	} elsif (defined $opts->{inverse} && $opts->{inverse} eq 'origin' && defined $self->{_index}->{origin}->{$query}) {
 	    
 	    for my $object (sort { dq_to_int(_route($a)) <=> dq_to_int(_route($b)) } 
@@ -230,10 +233,10 @@ sub go {
 		$self->_log("object found via inverse lookup\n");
 	    }
 	    print $sh "\n";
+            $count++;
 
-	} else {
+	} elsif (!defined $opts->{type}) {
 
-            my $count = 0;
             for my $type (keys %{ $self->{_types} }) {
 
                 if (defined $self->{_objects}->{$type}->{$query}) {
@@ -245,12 +248,17 @@ sub go {
                 }
             }
 
-            unless ($count) {
-                print $sh "% No entries found in the selected source\n\n";
-                $self->_log("*** no object found ***\n");
-            }
+        } else {
+
 
 	}
+
+        unless ($count) {
+
+            print $sh "% No entries found in the selected source\n\n\n";
+            $self->_log("*** no object found ***\n");
+
+        }
 
 	# hacktastic. must clean this up. 
 	if ($opts->{k} && $query) {
