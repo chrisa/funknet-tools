@@ -129,7 +129,8 @@ my $transobj = $whois->query("$transit");
 
 foreach my $thing ($transobj->members)
 {
-	next if (($thing eq "AS65000") or ($thing eq "$local_as"));
+#	next if (($thing eq "AS65000") or ($thing eq "$local_as"));
+	next if ($thing eq "$local_as");
 	$whois->type('aut-num');
 	my $reply = $whois->query($thing);
 	$nerd_autnum_objects{$thing} = $reply;
@@ -158,7 +159,7 @@ foreach my $cnerd_tun (keys(%cnerd_nerd_tunnels))
 	my $as_name;
 	my $as_num;
         my ($as1,$as2) = @ass;
-	next if ((($as1 eq 'AS65000') and ($as2 eq 'AS65023')) or (($as2 eq 'AS65000') and ($as1 eq 'AS65023')));
+#	next if ((($as1 eq 'AS65000') and ($as2 eq 'AS65023')) or (($as2 eq 'AS65000') and ($as1 eq 'AS65023')));
 	if ($as1 =~ /$local_as/m)
 	{ 
 		my $tmp = shift(@endpoints);
