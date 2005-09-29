@@ -198,12 +198,22 @@ if ($opt{a}) {
 if ($opt{w}) {
     if ($opt{c}) {
 	debug("Writing tunnel config");
-	my $combined = Funknet::Config::CommandSet->new( target => 'host',
-							 cmds   => [
-								    $tun->cmds(),
-								    $fwall->cmds()
-								   ]
-						       );
+	my $combined;
+	    if ($opt{r}) {
+	        debug("Writing firewall config");
+		$combined = Funknet::Config::CommandSet->new( target => 'host',
+								 cmds   => [
+									    $tun->cmds(),
+									    $fwall->cmds()
+									   ]
+							       );
+	    } else {
+		$combined = Funknet::Config::CommandSet->new( target => 'host',
+								 cmds   => [
+									    $tun->cmds(),
+									   ]
+							       );
+	    }
 	$combined->writeout();
     } else {
 	debug("attempt to write tunnel/firewall config to RCFile from a diff");
