@@ -45,8 +45,8 @@ package Funknet::Whois::Update;
 use strict;
 
 use Funknet::Whois::Client;
+use Funknet::Whois::ObjectFile;
 use Funknet::Whois::Update::Robot;
-use Fcntl qw/ :DEFAULT :flock :seek /;
 use Data::Dumper;
 
 =head2 new
@@ -178,45 +178,20 @@ sub update {
     }
 
     # apply the authorised objects (lock datafile, load existing to hash, replace, write, unlock)
-    
-    unless (sysopen DATA, "$self->{_objfile}", O_RDWR) {
-	warn "couldn't open $self->{_objfile} for read/write: $!";
-	return undef;
-    }
-    unless (flock DATA, LOCK_EX|LOCK_NB) {
-	warn "couldn't lock $self->{_objfile}: $!";
-	return undef;
-    }
-    
-    my ($currobj, $objects);
-    while (my $line = <DATA>) {
-	chomp $line;
-	next if $line =~ /^#/;
-	if ($line =~ /^(.*): ?(.*)$/) {
 
-	    my ($key, $value) = ($1, $2);
-	    $key =~ s/ //g;
-	    $value =~ s/ //g;
-
-	    if ($key eq 'source' && $value ne $self->{_source}) {
-		undef $currobj;
-		next;
-	    }
-	    unless (defined $currobj) {
-		$currobj->{type} = $key;
-		$currobj->{name} = $value;
-		$currobj->{text} = "$line\n";
-	    } else {
-		$currobj->{text} .= "$line\n";
-	    }
-	} else {
-	    $objects->{$currobj->{type}}->{$currobj->{name}} = $currobj->{text};
-	    undef $currobj;
-	}
+    my $object_file = Funknet::Whois::ObjectFile->new( filename => $self->{_objfile},
+                                                       source   => $self->{_source},
+                                                     );
+    my $num = $object_file->load();
+    
+    my $objects;
+    for my $object ($object_file->objects()) {
+        $objects->{$object->object_type}->{$object->object_name} = $object;
     }
     
-    my $fail = 0;
+    my $fail    = 0;
     my $success = 0;
+
     for my $object (@objects) {
 	if ($object->error()) {
 	    $fail++;
@@ -225,24 +200,12 @@ sub update {
 	    if (defined $object->delete()) {
 		$objects->{$object->object_type}->{$object->object_name} = undef;
 	    } else {
-		$objects->{$object->object_type}->{$object->object_name} = $object->text;
+		$objects->{$object->object_type}->{$object->object_name} = $object;
 	    }
 	}
     }
-
-    unless(seek DATA, 0, SEEK_SET) {
-	warn "couldn't seek: $!";
-	return undef;
-    }
     
-    for my $type (keys %$objects) {
-	for my $name (keys %{$objects->{$type}}) {
-	    print DATA $objects->{$type}->{$name}, "\n";
-	}
-    }
-    
-    flock (DATA, LOCK_UN);
-    close DATA;
+    $object_file->save($objects);
 
     # reply.
 
