@@ -53,7 +53,8 @@ sub new {
 	push @{ $self->{_methods}->{$key} }, $val;
 	push @{ $self->{_content} }, $val;
 	
-	if (${ $self->{_order} }[-1] ne $key) {
+	my $test = ${ $self->{_order} }[-1] || 0;
+	if ($test ne $key) {
 	    push @{ $self->{_order} }, $key;
 	}
     }
