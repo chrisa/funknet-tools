@@ -37,6 +37,75 @@ use Funknet::Whois::Object;
 
 our $cache;
 
+=head1 NAME
+
+Funknet::Whois::Client
+
+=head1 DESCRIPTION
+
+A library for doing whois lookups. Similar interface to
+Net::Whois::RIPE. Caches found objects for the lifetime of the client
+object. 
+
+=head1 SYNOPSIS
+
+    my $client = Funknet::Whois::Client->new('whois.funknet.org',
+                                             Timeout => 10, 
+                                             Port    => 4343);
+    $client->source('FUNKNET');
+
+    $client->type('aut-num');
+    my $as = $w->query('AS65000');
+
+    $client->type('route');
+    $client->inverse_lookup('origin');
+    my @routes = $client->query('AS65017');
+
+=head1 METHODS
+
+=head2 new ( $whois_host, ... )
+
+Returns an instance of the client object. First argument is the
+hostname, and defaults for Timeout and Port may be overridden with
+named parameters. 
+
+Does not immediately connect, see C<query>.
+
+=head2 source ( $whois_source )
+
+Set or query the whois source for this client object. 
+
+=head2 type ( $object_type )
+
+Set or query the current type of whois-object being queried for by
+this client object.
+
+=head2 query ( $query_string )
+
+Make a query using the current type, inverse and source settings of
+this client object. In scalar context returns the first object, and
+returns all objects in array context.
+
+Uses the query cache; the client object caches all whois-objects
+retrieved until it is destroyed.
+
+Connections are made lazily; if the connection fails, this method will
+die.
+
+Objects are returned as instances of Funknet::Whois::Object. 
+
+=head2 inverse_lookup ( $lookup_key )
+
+Set the inverse-lookup key to be used by this client object. This
+stays in effect for the next call to query only. 
+
+=head2 check_auth ( $object, $keyid )
+
+A utility method for testing authentication of PGP keys against
+objects. Returns true if $object can be updated by $keyid. 
+
+=cut
+
 sub new {
     my ($class, $host, %args) = @_;
     my $self = bless {}, $class;
@@ -91,7 +160,7 @@ sub query {
     my $s = $self->{_socket};
     print $s "$query_string\n";
     
-    my @objects = $self->parse_result();
+    my @objects = $self->_parse_result();
 
     if ($self->{_inverse}) {
 	$cache->{$self->{_type}}->{$self->{_inverse}}->{$query} = [ @objects ];
@@ -108,7 +177,7 @@ sub inverse_lookup {
     $self->{_inverse} = $type;
 }
 
-sub parse_result {
+sub _parse_result {
     my ($self) = @_;
     my $s = $self->{_socket};
 
@@ -146,8 +215,6 @@ sub _connect {
 	return undef;
     }
 }
-
-# these are moved in here from Funknet::Whois.
 
 sub check_auth {
     my ($self, $object, $keyid) = @_;
