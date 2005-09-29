@@ -234,7 +234,7 @@ sub firewall {
 	
 	@fwall_objs = $tun->firewall_rules;
 
-	if (defined @fwall_objs) {push @local_fwallrule, @fwall_objs};
+	if (@fwall_objs) {push @local_fwallrule, @fwall_objs};
     }
     return Funknet::Config::FirewallRuleSet->new( firewall => \@local_fwallrule,
 					    	  source  => 'whois' );
