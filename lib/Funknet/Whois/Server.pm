@@ -2,6 +2,7 @@ package Funknet::Whois::Server;
 use strict;
 use Net::TCP::Server;
 use Data::Dumper;
+use Funknet::Whois::ObjectFile;
 use Funknet::Config::Util qw/ dq_to_int /;
 
 =head1 NAME
@@ -52,46 +53,32 @@ sub new {
 sub load {
     my ($self) = @_;
     
-    open DATA, $self->{_file}
-      or die "can't open $self->{_file}: $!";
-    
     $self->{_objects} = {};
     $self->{_types}   = {};
     $self->{_index}   = {};
     
-    my $currobj;
-    my $num;
-
-    my $objects_text;
-    while (my $line = <DATA>) {
-        next if $line =~ /^#/;
-        $objects_text .= $line;
+    my $object_file = Funknet::Whois::ObjectFile->new( filename => $self->{_file},
+                                                       source   => $self->{_source},
+                                                     );
+    my $num = $object_file->load();
+    for my $object ($object_file->objects()) {
+        
+        # store the object under its name
+        $self->{_objects}->{$object->object_type}->{$object->object_name} = $object;
+        
+        # index on origin for route object inverses
+        if ($object->object_type eq 'route') {
+            push @{ $self->{_index}->{origin}->{$object->origin} }, $object;
+        }
+        
+        # index nic-handle for persons
+        if ($object->object_type eq 'person') {
+            $self->{_objects}->{person}->{$object->nic_hdl} = $object;
+        }
+        
+        # track types for wildcard-type search.
+        $self->{_types}->{$object->object_type}++;
     }
-
-  OBJECT:
-    for my $text (split /\r?\n\r?\n/, $objects_text) {
-	if (my $object = Funknet::Whois::Object->new($text)) {
-            next OBJECT unless $object->source eq $self->{_source};
-            
-            # store the object under its name
-	    $self->{_objects}->{$object->object_type}->{$object->object_name} = $object;
-	    $num++;
-            
-            # index on origin for route object inverses
-	    if ($object->object_type eq 'route') {
-		push @{ $self->{_index}->{origin}->{$object->origin} }, $object;
-	    }
-
-            # index nic-handle for persons
-	    if ($object->object_type eq 'person') {
-		$self->{_objects}->{person}->{$object->nic_hdl} = $object;
-	    }
-
-            # track types for wildcard-type search.
-            $self->{_types}->{$object->object_type}++;
-	}
-    }
-    close DATA;
 
     for my $type (keys %{ $self->{_objects} }) {
         for my $name (keys %{ $self->{_objects}->{$type} }) {
