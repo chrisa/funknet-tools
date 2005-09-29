@@ -105,7 +105,6 @@ sub local_firewall_rules {
 
 	my ($src, $dest, $proto, $policy, $src_port, $dst_port, $in_if, $out_if);
 	my ($first_half, $second_half);
-	my $dst_port;
 	my $rule_num;
 	chomp($rule);
 
