@@ -1,4 +1,4 @@
-# Copyright (c) 2004
+# Copyright (c) 2005
 #      The funknet.org Group.
 #
 # Redistribution and use in source and binary forms, with or without
