@@ -1,28 +1,103 @@
 #!/usr/bin/perl -w
 
+# $Id: 
+#
+# Copyright (c) 2003
+#	The funknet.org Group.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+# 1. Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+# 2. Redistributions in binary form must reproduce the above copyright
+#    notice, this list of conditions and the following disclaimer in the
+#    documentation and/or other materials provided with the distribution.
+# 3. All advertising materials mentioning features or use of this software
+#    must display the following acknowledgement:
+#	This product includes software developed by The funknet.org
+#	Group and its contributors.
+# 4. Neither the name of the Group nor the names of its contributors
+#    may be used to endorse or promote products derived from this software
+#    without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE GROUP AND CONTRIBUTORS ``AS IS'' AND
+# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED.  IN NO EVENT SHALL THE GROUP OR CONTRIBUTORS BE LIABLE
+# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+# OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+# HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+# OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+# SUCH DAMAGE.
+
 use strict;
-
 use lib './lib';
-
+use Funknet::Config;
+use Funknet::Debug;
 use Funknet::Whois;
-use Net::Whois::RIPE;
+#use Funknet::Whois::Client;
+use Getopt::Std;
 #use Nagios::Config; # no need for this yet
 use Data::Dumper;
 
-my @ass;
+=head1 NAME
+
+config.pl
+
+=head1 DESCRIPTION
+
+This script generates nagios config for checking nodes are alive. It is meant for centralnodes.
+
+=head1 OPTIONS
+
+=head2 -f <config file location>
+
+Specify the config file location.
+
+=head2 -t <TRANSIT> (defaults to AS-FUNKTRANSIT)
+
+Turn on copious debugging information
+
+=cut
+
+my %opt;
+getopts('f:', \%opt);
+
+unless ($opt{f}) {
+    print STDERR "usage: $0 -f path_to_config_file\n";
+    exit(1);
+}
+unless (-f $opt{f}) {
+    print STDERR "-f option requires a path to a readable funknet.conf file\n";
+    exit(1);
+}
+
+my $config = Funknet::ConfigFile->new( $opt{f} );
+
+my $whois_source = $config->whois_source;
+my $whois_host = $config->whois_host;
+my $whois_port = $config->whois_port;
+my $local_as = $config->local_as;
+my $local_endpoint = $config->local_endpoint;
+my $confdir = $config->nagios_config_dir;
+my $transit = $opt{t} ? $opt{t} : "AS-FUNKTRANSIT";
+
 my @as_names;
 my @done;
 my %nerd_autnum_objects;
-my %blank_nerd_tunnels;
+my %cnerd_nerd_tunnels;
 my %as_names;
 my %as_nums;
 my %endpoints;
 my %nerd_tunnels;
-my $confdir = "/usr/local/funknet-tools";
 my $hosts;
 my $services;
 my $hosts_inside;
 my $hosts_outside;
+
 my $host_template = qq[
         check_command           check_ping_remote
         checks_enabled          1
@@ -42,21 +117,19 @@ my $service_template = qq[
         notification_options    w,c,r
 ];
 
-my $whois = Net::Whois::RIPE->new( 'whois.funknet.org');
+my $whois = Funknet::Whois::Client->new($whois_host, Port => $whois_port);
 unless (defined $whois)
 { 
         die "Error getting a Funknet::Config::Whois object\n";
 }
 
-my $transobj = $whois->query('AS-FUNKTRANSIT');
 
-@ass = $transobj->members;
-
-$whois->type('aut-num');
+$whois->type("as-set");
+my $transobj = $whois->query("$transit");
 
 foreach my $thing ($transobj->members)
 {
-	next if (($thing eq 'AS65000') or ($thing eq 'AS65023'));
+	next if (($thing eq "AS65000") or ($thing eq "$local_as"));
 	$whois->type('aut-num');
 	my $reply = $whois->query($thing);
 	$nerd_autnum_objects{$thing} = $reply;
@@ -65,29 +138,28 @@ foreach my $thing ($transobj->members)
 }
 
 $whois->type('aut-num');
-my $blank_aut_num = $whois->query('AS65023');
+my $cnerd_aut_num = $whois->query("$local_as");
 
-foreach my $thing ($blank_aut_num->tun)
+foreach my $thing ($cnerd_aut_num->tun)
 {
 		$whois->type('tunnel');
 		my $tun = $whois->query($thing);
-		$blank_nerd_tunnels{$thing} = $tun;		
+		$cnerd_nerd_tunnels{$thing} = $tun;		
 }
 
-foreach my $blank_tun (keys(%blank_nerd_tunnels))
+foreach my $cnerd_tun (keys(%cnerd_nerd_tunnels))
 {
-	my @endpoints = $blank_nerd_tunnels{$blank_tun}->endpoint;
-	my @address = $blank_nerd_tunnels{$blank_tun}->address;
-	my @ass = $blank_nerd_tunnels{$blank_tun}->as;
+	my @endpoints = $cnerd_nerd_tunnels{$cnerd_tun}->endpoint;
+	my @address = $cnerd_nerd_tunnels{$cnerd_tun}->address;
+	my @ass = $cnerd_nerd_tunnels{$cnerd_tun}->as;
 	my $ip;
 	my $ip_addy;
 	my $other_as;
 	my $as_name;
 	my $as_num;
-	my $blank_as='AS65023';
         my ($as1,$as2) = @ass;
 	next if ((($as1 eq 'AS65000') and ($as2 eq 'AS65023')) or (($as2 eq 'AS65000') and ($as1 eq 'AS65023')));
-	if ($as1 =~ /AS65023/m)
+	if ($as1 =~ /$local_as/m)
 	{ 
 		my $tmp = shift(@endpoints);
 		$ip = shift(@endpoints) || die "no ip";
@@ -95,14 +167,17 @@ foreach my $blank_tun (keys(%blank_nerd_tunnels))
 		$ip_addy = shift(@address) || die "no ip_addy";
 		$other_as = $as2;
 	}
-	elsif ($as2  =~ /AS65023/m)
+	elsif ($as2  =~ /$local_as/m)
 	{
 		$ip = shift(@endpoints) || die "no ip";
 		$ip_addy = shift(@address) || die "no ip_addy";
 		$other_as = $as1;
 	}
 	$endpoints{$other_as} = $ip;
-	$as_name=$as_names{$other_as} || die "no as_name";
+	unless ($as_name=$as_names{$other_as}) {
+                warn "skipping $cnerd_tun because its as-num is not in $transit\n";
+                next
+        }
 	$as_num=$as_nums{$as_name} || die "no as_num";
 
 	$hosts .= qq[
@@ -112,7 +187,7 @@ define host{
         address                 $ip
         $host_template}
 define host{
-        host_name               ${as_name}-funknet
+        host_name               ${as_name}-${whois_source}
         alias                   $as_num
         address                 $ip_addy
 	parents			$as_name
@@ -122,46 +197,46 @@ define host{
 define service{
         host_name               $as_name
         service_description     $as_name ping_remote
-        contact_groups          funknet-outside
+        contact_groups          ${whois_source}-outside
         $service_template}
 define service{
-        host_name               ${as_name}-funknet
-        service_description     ${as_name}-funknet ping_remote
-        contact_groups          funknet-inside
+        host_name               ${as_name}-${whois_source}
+        service_description     ${as_name}-${whois_source} ping_remote
+        contact_groups          ${whois_source}-inside
         $service_template}];
 
-	$hosts_inside .= "${as_name}-funknet,";
+	$hosts_inside .= "${as_name}-${whois_source},";
 	$hosts_outside .= "$as_name,";
 }
 
 my $hostgroups_inside = qq[
 define hostgroup{
-        hostgroup_name          funknet-inside
-        alias                   funknet-inside
-        contact_groups          funknet-inside
+        hostgroup_name          ${whois_source}-inside
+        alias                   ${whois_source}-inside
+        contact_groups          ${whois_source}-inside
         members                 $hosts_inside
 }
 ];
 my $hostgroups_outside = qq[
 define hostgroup{
-        hostgroup_name          funknet-outside
-        alias                   funknet-outside
-        contact_groups          funknet-outside
+        hostgroup_name          ${whois_source}-outside
+        alias                   ${whois_source}-outside
+        contact_groups          ${whois_source}-outside
         members                 $hosts_outside
 }
 ];
 
 my $contactgroups = qq[
 define contactgroup{
-        contactgroup_name       funknet-outside
-        alias                   funknet
-        members                 FUNKNET
+        contactgroup_name       ${whois_source}-outside
+        alias                   ${whois_source}
+        members                 $whois_source
 }
 
 define contactgroup{
-        contactgroup_name       funknet-inside
-        alias                   funknet
-        members                 FUNKNET
+        contactgroup_name       ${whois_source}-inside
+        alias                   ${whois_source}
+        members                 $whois_source
 }
 ];
 
@@ -190,7 +265,7 @@ foreach my $network (@d_ents) {
 define contactgroup{
         contactgroup_name       $network
         alias                   $network network
-        members                 FUNKNET
+        members                 $whois_source
 }
 ];
 
@@ -258,7 +333,7 @@ this script autogenerates nagios config files:
 to monitor hosts on FUNKNET whith no whois data, ie, those hosts behind FUNKNET nerds,
 please create ./nagios/ in this directory and populate with files like this:
 
-# cat ./nagios/NETDOTNET-funknet
+# cat ./nagios/NETDOTNET-FUNKNET
 consume.netdotnet.funknet.org 192.168.9.6
 dell.netdotnet.funknet.org 192.168.9.253
 naught.netdotnet.funknet.org 192.168.9.3
@@ -269,7 +344,7 @@ prefect.netdotnet.funknet.org 192.168.10.6 naught.netdotnet.funknet.org
 #
 
 ... the format being '<hostname> <ip_addr> [<parent>]
-where parent defaults to the FUNKNET nerd ( NETDOTNET-funknet )
+where parent defaults to the FUNKNET nerd ( NETDOTNET-FUNKNET )
 if not specified.
 
 the contact group created is network specific, with FUNKNET as the only member,
