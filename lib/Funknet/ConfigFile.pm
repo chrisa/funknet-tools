@@ -134,7 +134,8 @@ sub new {
 	next unless $line;
 	next if $line =~ /^\s*(#|$)/; # ignore whitespace lines
 	$line =~ s/#.*$//; # strip comments
-        if (my ($key, $values) = $line =~ /(.+)\s*=\s*(.+)/) {
+        # ensure $key and $values split on the 1st '='
+        if (my ($key, $values) = $line =~ /([^=]+)\s*=\s*(.+)/) {
 
 	    # Ignore whitespace
  	    $key =~ s/^\s+//;
