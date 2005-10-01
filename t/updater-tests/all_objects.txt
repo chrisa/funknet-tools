@@ -1,0 +1,104 @@
+person:       Chris Andrews
+address:      30 Mount Nod Road
+address:      London
+address:      SW16 2LH
+address:      United Kingdom
+phone:        +44 20 8696 0061
+e-mail:       chris@nodnol.org
+nic-hdl:      CA1-FUNKNET
+mnt-by:       CHRIS
+notify:       chris@nodnol.org
+changed:      chris@nodnol.org 20030321
+source:       FUNKNET
+
+person:       Matthew Byng-Maddick
+address:      5, Stainsbury Street
+address:      Bethnal Green
+address:      London
+address:      E2 0NF
+address:      United Kingdom
+phone:        +44 20 8980 5714
+e-mail:       mbm+funknet@colondot.net
+nic-hdl:      MB1-FUNKNET
+mnt-by:       MBM-MNT
+notify:       mbm+funknet@colondot.net
+changed:      mbm@colondot.net 20030307
+changed:      mbm@colondot.net 20030307
+source:       FUNKNET
+
+mntner:       CHRIS
+descr:        Chris's maintainer
+admin-c:      CA1-FUNKNET
+tech-c:       CA1-FUNKNET
+upd-to:       chris@nodnol.org
+mnt-nfy:      chris@nodnol.org
+auth:         PGPKEY-B355A313
+mnt-by:       FUNK-MNT
+referral-by:  FUNK-MNT
+changed:      chris@nodnol.org 20030321
+source:       FUNKNET
+
+mntner:       MBM-MNT
+descr:        mbm's maintainer
+descr:        abuse reports to abuse@colondot.net, any other requests
+descr:        to hostmaster@colondot.net
+descr:        In case of emergency:
+descr:        Drink beer
+admin-c:      MB1-FUNKNET
+tech-c:       MB1-FUNKNET
+upd-to:       mbm+funknet@colondot.net
+mnt-nfy:      mbm+funknet@colondot.net
+auth:         PGPKEY-D9C1EB11
+mnt-by:       MBM-MNT
+referral-by:  MBM-MNT
+changed:      mbm@colondot.net 20030307
+changed:      mbm@colondot.net 20030307
+source:       FUNKNET
+
+person:       Duncan Lockwood
+address:      160 Braddon Rd
+address:      Loughborough
+address:      LE11 5YX
+address:      United Kingdom
+phone:        +44 1509 551891
+e-mail:       dunc@lemonia.org
+nic-hdl:      DL1-FUNKNET
+mnt-by:       FUNK-MNT
+notify:       dunc@lemonia.org
+changed:      dunc@lemonia.org 20030123
+timestamp:    2005-09-30T00:00:00
+source:       FUNKNET
+
+person:       Douglas Lang
+address:      5 Griffin Street
+address:      Deal
+address:      CT14 6LH
+address:      United Kingdom
+phone:        +44 1304 389159
+e-mail:       doug@lemonia.org
+nic-hdl:      DOUG-FUNKNET
+mnt-by:       FUNK-MNT
+notify:       doug@lemonia.org
+changed:      doug@lemonia.org 20030622
+timestamp:    2005-10-01T00:00:00
+source:       FUNKNET
+
+mntner:       FUNK-MNT
+descr:        Mntner for Funknet
+admin-c:      CA1-FUNKNET
+tech-c:       CA1-FUNKNET
+upd-to:       funknet-dbm@funknet.org
+mnt-nfy:      funknet-dbm@funknet.org
+auth:         PGPKEY-B355A313
+auth:         PGPKEY-D9C1EB11
+auth:         PGPKEY-3D309FC2
+auth:         PGPKEY-780780F5
+auth:         PGPKEY-BDD76D37
+auth:         PGPKEY-D026CA92
+auth:         PGPKEY-4AA073A6
+auth:         PGPKEY-13092EE1
+auth:         PGPKEY-475139C8
+mnt-by:       TEST-DBM-MNT
+referral-by:  TEST-DBM-MNT
+changed:      doug@lemonia.org 20040301
+source:       FUNKNET
