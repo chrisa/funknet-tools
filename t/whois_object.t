@@ -186,3 +186,43 @@ TEXT
 $obj = Funknet::Whois::Object->new($text, TimeStamp => 1);
 
 ok( !defined $obj, 'failed parse ok' );
+
+# parsing objects with continuation lines
+
+$text = <<'TEXT';
+
+aut-num:      AS65001
+as-name:      MUNKY-NODNOL-ORG
+descr:        munky.nodnol.org
+import:       from AS65000 action pref=100; 
+ accept AS-FUNKTRANSIT and not AS65001
+import:       
++ from AS65023 action pref=100; 
++ accept AS-FUNKTRANSIT and not AS65001
+export:       to AS65000 announce AS65001
+export:       to AS65023 announce AS65001
+tun:          SPLURBY-MUNKY
+tun:          BLANK-MUNKY
+admin-c:      CA1-FUNKNET
+tech-c:       CA1-FUNKNET
+mnt-by:       CHRIS
+notify:       chris@nodnol.org
+changed:      chris@nodnol.org 20040321
+timestamp:    2005-10-01T14:49:00
+source:       FUNKNET
+
+TEXT
+
+$obj = Funknet::Whois::Object->new($text, TimeStamp => 1);
+
+ok( defined $obj,                                'parse ok' );
+is( ref $obj,          'Funknet::Whois::Object', 'correct class' );
+is( $obj->object_type, 'aut-num',                'correct type' );
+is( $obj->object_name, 'AS65001',                'correct name' );
+is( $obj->source,      'FUNKNET',                'source ok' );
+
+@array = $obj->ximport; 
+is( scalar @array,  2,                  'multiple import lines via ximport' );
+is( $array[0],      'from AS65000 action pref=100; accept AS-FUNKTRANSIT and not AS65001', 'import line 1 ok' );
+is( $array[1],      'from AS65023 action pref=100; accept AS-FUNKTRANSIT and not AS65001', 'import line 2 ok' );
+

@@ -52,8 +52,22 @@ sub new {
     }
     
     $self->{_content} = [];
+    my $key;
+
+  LINE:
     for my $line (split /\r?\n/, $text) {
-	my ($key, $val) = $line =~ /(.+?):\s*(.+)?/;
+
+        # is this a continuation line?
+        # first, have we seen any keys?
+        if (defined $self->{_order}) {
+            if ($line =~ s/^(\+\s?|\s)//) {
+                ${ $self->{_methods}->{$key} }[-1] .= $line;
+                ${ $self->{_content} }[-1] .= $line;
+                next LINE;
+            }
+        }
+
+        ($key, my $val) = $line =~ /(.+?):\s*(.+)?/;
 	next unless ($key);
 	if (!defined $val) { $val = "" };
 	push @{ $self->{_methods}->{$key} }, $val;
