@@ -70,7 +70,7 @@ if ($updates > 0) {
 	my $pid = <PID>;
 	close PID;
 
-	if (-d "/proc/$pid") {
+	if (kill 0, $pid) {
 	    kill 1, $pid;
 	}
     }
