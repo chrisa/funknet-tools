@@ -34,7 +34,7 @@
 # SUCH DAMAGE.
 
 use strict;
-use Test::More tests => 24;
+use Test::More skip_all => "obsolete test script";
 
 BEGIN { use_ok ( 'Funknet::Config::Whois' ); }
 
