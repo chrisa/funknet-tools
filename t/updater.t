@@ -9,7 +9,8 @@ if (-f 'whois-server-FUNKNET.pid') {
 }
 
 # start a whoisd on localhost
-unless (my $server_pid = fork()) {
+my $server_pid;
+unless ($server_pid = fork()) {
     exec("/usr/bin/perl -Ilib bin/whois-server -f t/updater-tests/funknet_whois.conf > /dev/null 2>&1");
 }
 
@@ -35,5 +36,7 @@ for my $file (@testfiles) {
     
     print UPDATER $filetext;
     my $result = close UPDATER;
-    ok($result, $file . ": ok");
+    ok($result, $file);
 }
+
+kill 9, $server_pid, $server_pid + 1; # try to get the shell and the child perl process. 
