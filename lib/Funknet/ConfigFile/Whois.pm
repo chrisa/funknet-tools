@@ -60,13 +60,14 @@ sub updater_config {
 	$config = $self->get_config();
     }
     
-    return { envfrom  => $config->{envfrom},
-	     fromname => $config->{fromname},
-	     from     => $config->{from},
-	     pubring  => $config->{pubring},
-	     secring  => $config->{secring},
-	     source   => $config->{whois_source},
-	     objfile  => $config->{objects_file},
+    return { envfrom   => $config->{envfrom},
+	     fromname  => $config->{fromname},
+	     from      => $config->{from},
+	     pubring   => $config->{pubring},
+	     secring   => $config->{secring},
+	     source    => $config->{whois_source},
+	     objfile   => $config->{objects_file},
+             timestamp => $config->{timestamp},
 	   };
 }
 

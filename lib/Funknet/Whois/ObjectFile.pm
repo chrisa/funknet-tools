@@ -49,9 +49,10 @@ sub new {
     my ($class, %args) = @_;
     my $self = bless {}, $class;
 
-    $self->{_filename} = $args{filename};
-    $self->{_source}   = $args{source};
-    $self->{_fh}       = new FileHandle;
+    $self->{_filename}  = $args{filename};
+    $self->{_source}    = $args{source};
+    $self->{_timestamp} = $args{timestamp};
+    $self->{_fh}        = new FileHandle;
 
     return $self;
 }
@@ -72,7 +73,7 @@ sub load {
     my @objects;
   OBJECT:
     for my $text (split /\r?\n\r?\n/, $objects_text) {
-	if (my $object = Funknet::Whois::Object->new($text)) {
+	if (my $object = Funknet::Whois::Object->new($text, TimeStamp => $self->{_timestamp})) {
             next OBJECT unless $object->source eq $self->{_source};
             push @objects, $object;
         }

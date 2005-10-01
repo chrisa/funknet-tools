@@ -32,6 +32,7 @@
 package Funknet::Whois::Object;
 use strict;
 use Data::Dumper;
+use DateTime::Format::W3CDTF;
 
 use vars qw/ $AUTOLOAD /;
 
@@ -42,8 +43,13 @@ Funknet::Whois::Object
 =cut
 
 sub new {
-    my ($class, $text) = @_;
+    my ($class, $text, %args) = @_;
     my $self = bless {}, $class;
+
+    my $f;
+    if ($args{TimeStamp}) {
+        $f = DateTime::Format::W3CDTF->new;
+    }
     
     $self->{_content} = [];
     for my $line (split /\r?\n/, $text) {
@@ -57,6 +63,22 @@ sub new {
 	if ($test ne $key) {
 	    push @{ $self->{_order} }, $key;
 	}
+
+        if ($args{TimeStamp} && $key eq 'timestamp') {
+            if ($val eq '') {
+                return;
+            }
+            my $dt;
+            eval {
+                $dt = $f->parse_datetime($val);
+            };
+            if ($@) {
+                return;
+            } else {
+                $val = $f->format_datetime($dt);
+                $self->{_epoch_time} = $dt->epoch;
+            }
+        }
     }
 
     if (scalar @{ $self->{_content} } > 0) {
@@ -183,6 +205,18 @@ sub rawtext {
     $key .= "\n";
     $key =~ s/^certif: //;
     return $key;
+}
+
+=head2 epoch_time
+
+Returns the object's timestamp in epoch (unix) time seconds.
+
+=cut
+
+sub epoch_time {
+    my ($self) = @_;
+    warn "epoch_time undef" unless defined $self->{_epoch_time};
+    return $self->{_epoch_time};
 }
 
 1;

@@ -87,6 +87,9 @@ sub new {
     $self->{_envfrom}  = $args{envfrom};
     $self->{_from}     = $args{from};
 
+    # check timestamps? (anti-replay)
+    $self->{_timestamp} = $args{timestamp} || 0;
+
     if ($self->{_verbose}) {
 	print STDERR Dumper $self;
     }
@@ -150,7 +153,7 @@ sub update {
 
     my @objects;
     for my $text (split /\r?\n\r?\n/, $pgp->data) {
-	if (my $object = Funknet::Whois::Object->new($text)) {
+	if (my $object = Funknet::Whois::Object->new($text, TimeStamp => $self->{_timestamp})) {
 	    push @objects, $object;
 	}
     }
@@ -179,8 +182,9 @@ sub update {
 
     # apply the authorised objects (lock datafile, load existing to hash, replace, write, unlock)
 
-    my $object_file = Funknet::Whois::ObjectFile->new( filename => $self->{_objfile},
-                                                       source   => $self->{_source},
+    my $object_file = Funknet::Whois::ObjectFile->new( filename  => $self->{_objfile},
+                                                       source    => $self->{_source},
+                                                       timestamp => $self->{_timestamp},
                                                      );
     my $num = $object_file->load();
     
@@ -191,17 +195,33 @@ sub update {
     
     my $fail    = 0;
     my $success = 0;
-
+    
+  OBJECT:
     for my $object (@objects) {
 	if ($object->error()) {
 	    $fail++;
 	} else {
-	    $success++;
 	    if (defined $object->delete()) {
 		$objects->{$object->object_type}->{$object->object_name} = undef;
+                $success++;
+                next OBJECT;
+            }
+            my $old_object = $objects->{$object->object_type}->{$object->object_name};
+            
+            if (defined $old_object) {
+                if ($self->{_timestamp}) {
+                    if ($object->epoch_time > $old_object->epoch_time) {
+                        $success++;
+                        $objects->{$object->object_type}->{$object->object_name} = $object;
+                    } else {
+                        $object->error('timestamp precedes existing object');
+                        $fail++;
+                    }
+                }
 	    } else {
-		$objects->{$object->object_type}->{$object->object_name} = $object;
-	    }
+                $success++;
+                $objects->{$object->object_type}->{$object->object_name} = $object;
+            }
 	}
     }
     
