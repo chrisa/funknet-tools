@@ -68,9 +68,9 @@ MAILTEXT
 	my $name = $object->object_name();
 
 	if (defined $object->delete()) {
-	    $text .= "Delete OK: [$type] $name\n";
+	    $text .= "Delete OK: [$type] $name\n\n";
 	} else {
-	    $text .= "Update OK: [$type] $name\n";
+	    $text .= "Update OK: [$type] $name\n\n";
 	}
     }
 
@@ -114,9 +114,9 @@ MAILTEXT
             my $type = $object->object_type();
             my $name = $object->object_name();
 	    if (defined $object->delete()) {
-		$text .= "Delete OK: [$type] $name\n";
+		$text .= "Delete OK: [$type] $name\n\n";
 	    } else {
-		$text .= "Update OK: [$type] $name\n";
+		$text .= "Update OK: [$type] $name\n\n";
 	    }
 	}
     }
