@@ -89,6 +89,19 @@ sub objects {
     return @{$self->{_objects}};
 }
 
+sub object_dump {
+    my ($self, $objects) = @_;
+    
+    my $text;
+    for my $type (keys %$objects) {
+        for my $name (keys %{$objects->{$type}}) {
+            $text .= scalar $objects->{$type}->{$name}->text();
+            $text .= "\n";
+        }
+    }
+    return $text;
+}
+    
 sub save {
     my ($self, $objects) = @_;
     my $fh = $self->{_fh};
@@ -106,12 +119,8 @@ sub save {
 	warn "couldn't seek: $!";
 	return undef;
     }
-    
-    for my $type (keys %$objects) {
-	for my $name (keys %{$objects->{$type}}) {
-	    print $fh scalar $objects->{$type}->{$name}->text(), "\n";
-	}
-    }
+
+    print $fh $self->object_dump($objects);
 
     flock ($fh, LOCK_UN);
     $fh->close();

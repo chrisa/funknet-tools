@@ -225,7 +225,9 @@ sub update {
 	}
     }
 
-    unless ($self->{_testing}) {
+    if ($self->{_testing}) {
+        print STDERR $object_file->object_dump($objects);
+    } else {
         $object_file->save($objects);
     }
 
