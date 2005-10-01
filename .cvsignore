@@ -4,3 +4,4 @@ funknet_whois.conf
 funknet_whois.conf-*
 whois-server-FUNKNET.pid
 .rnd
+Makefile
