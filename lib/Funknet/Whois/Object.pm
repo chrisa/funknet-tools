@@ -61,8 +61,8 @@ sub new {
         # first, have we seen any keys?
         if (defined $self->{_order}) {
             if ($line =~ s/^(\+\s?|\s)//) {
-                ${ $self->{_methods}->{$key} }[-1] .= $line;
-                ${ $self->{_content} }[-1] .= $line;
+                ${ $self->{_methods}->{$key} }[-1] .= " $line";
+                ${ $self->{_content} }[-1] .= " $line";
                 next LINE;
             }
         }
