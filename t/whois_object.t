@@ -4,12 +4,14 @@ use Data::Dumper;
 #use Test::More tests => 0;
 use Test::More qw/ no_plan /;
 
+my ($text, $obj);
+
 BEGIN { use_ok ( 'Funknet::Whois::Object' ); }
 
 # Parsing objects without timestamp: attribute.
 
 # 1: aut-num
-my $text = <<'TEXT';
+$text = <<'TEXT';
 
 aut-num:      AS65001
 as-name:      MUNKY-NODNOL-ORG
@@ -29,7 +31,7 @@ source:       FUNKNET
 
 TEXT
 
-my $obj = Funknet::Whois::Object->new($text);
+$obj = Funknet::Whois::Object->new($text);
 
 ok( defined $obj,                                'parse ok' );
 is( ref $obj,          'Funknet::Whois::Object', 'correct class' );
@@ -113,7 +115,7 @@ dKfDmM3fm4yYRr8nDYCaLBlO3gCY5WoFkwVKmMBxJt3NH4C//xffVw==
 -----END PGP PUBLIC KEY BLOCK-----
 TEXT
 
-my $obj = Funknet::Whois::Object->new($text);
+$obj = Funknet::Whois::Object->new($text);
 
 ok( defined $obj,                                'parse ok' );
 is( ref $obj,          'Funknet::Whois::Object', 'correct class' );
@@ -128,7 +130,7 @@ is( $obj_rawtext,      $rawtext,                 'rawtext ok' );
 
 # 1: aut-num with correct timestamp
 
-my $text = <<'TEXT';
+$text = <<'TEXT';
 
 aut-num:      AS65001
 as-name:      MUNKY-NODNOL-ORG
@@ -149,7 +151,7 @@ source:       FUNKNET
 
 TEXT
 
-my $obj = Funknet::Whois::Object->new($text, TimeStamp => 1);
+$obj = Funknet::Whois::Object->new($text, TimeStamp => 1);
 
 ok( defined $obj,                                'parse ok' );
 is( ref $obj,          'Funknet::Whois::Object', 'correct class' );
@@ -160,7 +162,7 @@ is( $obj->epoch_time,  1128178140,               'epoch time correct' );
 
 # 1: aut-num with invalid timestamp
 
-my $text = <<'TEXT';
+$text = <<'TEXT';
 
 aut-num:      AS65001
 as-name:      MUNKY-NODNOL-ORG
@@ -181,6 +183,6 @@ source:       FUNKNET
 
 TEXT
 
-my $obj = Funknet::Whois::Object->new($text, TimeStamp => 1);
+$obj = Funknet::Whois::Object->new($text, TimeStamp => 1);
 
 ok( !defined $obj, 'failed parse ok' );
