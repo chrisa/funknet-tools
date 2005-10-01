@@ -5,3 +5,12 @@ V	050801123734Z		04	unknown	/C=AU/ST=Some-State/O=Internet Widgits Pty Ltd/OU=Fo
 V	050801123905Z		05	unknown	/C=AU/ST=Some-State/O=Internet Widgits Pty Ltd/OU=FooOrg/CN=FooCommonName2
 V	050903182155Z		06	unknown	/C=AU/ST=Some-State/O=Internet Widgits Pty Ltd/OU=TestOU7593/CN=TestCN7593
 V	050903182253Z		07	unknown	/C=AU/ST=Some-State/O=Internet Widgits Pty Ltd/OU=TestOU7609/CN=TestCN7609
+V	061001151204Z		08	unknown	/C=AU/ST=Some-State/O=Internet Widgits Pty Ltd/OU=TestOU4279/CN=TestCN4279
+V	061001151236Z		09	unknown	/C=AU/ST=Some-State/O=Internet Widgits Pty Ltd/OU=TestOU4314/CN=TestCN4314
+V	061001160549Z		0A	unknown	/C=AU/ST=Some-State/O=Internet Widgits Pty Ltd/OU=TestOU4953/CN=TestCN4953
+V	061001160700Z		0B	unknown	/C=AU/ST=Some-State/O=Internet Widgits Pty Ltd/OU=TestOU5019/CN=TestCN5019
+V	061001161032Z		0C	unknown	/C=AU/ST=Some-State/O=Internet Widgits Pty Ltd/OU=TestOU5133/CN=TestCN5133
+V	061001161405Z		0D	unknown	/C=AU/ST=Some-State/O=Internet Widgits Pty Ltd/OU=TestOU5233/CN=TestCN5233
+V	061001161515Z		0E	unknown	/C=AU/ST=Some-State/O=Internet Widgits Pty Ltd/OU=TestOU5295/CN=TestCN5295
+V	061001161539Z		0F	unknown	/C=AU/ST=Some-State/O=Internet Widgits Pty Ltd/OU=TestOU5344/CN=TestCN5344
+V	061001162422Z		10	unknown	/C=AU/ST=Some-State/O=Internet Widgits Pty Ltd/OU=TestOU5479/CN=TestCN5479
