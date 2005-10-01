@@ -222,15 +222,16 @@ sub check_auth {
 
     $self->type('mntner');
 
-  AUTH:
+  MNTNER:
     for my $mnt_by ($object->mnt_by) {
 	my $mntner = $self->query($mnt_by);
-	for my $auth ($mntner->auth) {
-	    if ($auth eq "PGPKEY-$keyid") {
-		$auth_ok = 1;
-		last AUTH;
-	    }
-	}
+        next MNTNER unless defined $mntner;
+        for my $auth ($mntner->auth) {
+            if ($auth eq "PGPKEY-$keyid") {
+                $auth_ok = 1;
+                last MNTNER;
+            }
+        }
     }
     return $auth_ok;
 }
