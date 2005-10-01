@@ -215,7 +215,6 @@ Returns the object's timestamp in epoch (unix) time seconds.
 
 sub epoch_time {
     my ($self) = @_;
-    warn "epoch_time undef" unless defined $self->{_epoch_time};
     return $self->{_epoch_time};
 }
 
