@@ -208,17 +208,14 @@ sub update {
             }
             my $old_object = $objects->{$object->object_type}->{$object->object_name};
             
-            if (defined $old_object) {
-                if ($self->{_timestamp}) {
-                    if ($object->epoch_time > $old_object->epoch_time) {
-                        $success++;
-                        $objects->{$object->object_type}->{$object->object_name} = $object;
-                    } else {
-                        $object->error('timestamp precedes existing object');
-                        $fail++;
-                    }
-                }
-	    } else {
+            if (defined $old_object && $self->{_timestamp} && 
+                ($object->epoch_time < $old_object->epoch_time)) 
+            {
+                $fail++;
+                $object->error('timestamp precedes existing object');
+            } 
+            else 
+            {
                 $success++;
                 $objects->{$object->object_type}->{$object->object_name} = $object;
             }
