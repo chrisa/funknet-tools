@@ -13,7 +13,6 @@ bin/tunnelspace-list.pl
 bin/whois-server
 bin/whois-update
 bin/whois2gv.pl
-bin/create-whole-config
 doc/INSTALL.central_nerd
 doc/INSTALL.nerd
 doc/README.persistent-config
@@ -119,7 +118,6 @@ lib/Funknet/Whois/Policy.pm
 lib/Funknet/Whois/Server.pm
 lib/Funknet/Whois/Templates.pm
 lib/Funknet/Whois/Update.pm
-lib/Funknet/Nodes.pm
 src/vtysh-helper.c
 t/updater-tests/test-update-failure.txt.asc
 t/updater-tests/test-update-partfail.txt.asc
@@ -131,7 +129,6 @@ t/all_objects.txt
 t/certserver.t
 t/diff.t
 t/directmysql.t
-t/get_bgp.t
 t/host.t
 t/racoon_conf.pl
 t/setkey_conf.pl
