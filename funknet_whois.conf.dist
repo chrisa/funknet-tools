@@ -10,3 +10,5 @@ fromname			= Update Robot Thing
 
 pubring				= /home/funknet/.gnupg/pubring.gpg
 secring				= /home/funknet/.gnupg/secring.gpg
+
+timestamp                       = 1
