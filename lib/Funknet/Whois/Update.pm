@@ -224,8 +224,10 @@ sub update {
             }
 	}
     }
-    
-    $object_file->save($objects);
+
+    unless ($self->{_testing}) {
+        $object_file->save($objects);
+    }
 
     # reply.
 
