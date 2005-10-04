@@ -31,7 +31,7 @@
 
 package Funknet::Whois::Object;
 use strict;
-use Data::Dumper;
+use Funknet::Whois::ObjectDefs;
 use DateTime::Format::W3CDTF;
 
 use vars qw/ $AUTOLOAD /;
@@ -96,18 +96,20 @@ sub new {
     }
 
     if (scalar @{ $self->{_content} } > 0) {
-	return $self;
+	return $self->validate();
     } else {
-	return undef;
+	return;
     }
 }
 
 sub error {
     my ($self, $errortext) = @_;
     if (defined $errortext) {
-	$self->{_updater_errortext} = $errortext;
+	$self->{_updater_errortext} .= "$errortext\n";
     }
-    return $self->{_updater_errortext};
+    $errortext = $self->{_updater_errortext};
+    $errortext =~ s/\n?$//;
+    return $errortext;
 }
 
 sub object_type {
@@ -231,5 +233,70 @@ sub epoch_time {
     my ($self) = @_;
     return $self->{_epoch_time};
 }
+
+=head2 validate
+
+Validates the object according to the ObjectDefs file. Returns the
+object, with error() set to the problems found.
+
+=cut
+
+sub validate {
+    my ($self) = @_;
+    my $t = Funknet::Whois::ObjectDefs::objectdefs();
+    
+    # check for type, retrieve known object's def. 
+    my $def = $t->{$self->object_type};
+    unless ($def) {
+        $self->error("Unknown object type: ". $self->object_type());
+        return $self;
+    }
+    
+    # check for all mandatory keys
+    my @missing;
+    for my $key (sort grep { $def->{$_}->{mandatory} eq 'mandatory' } keys %$def) {
+        if (!exists $self->{_methods}->{$key}) {
+            push @missing, $key;
+        }
+    }
+    if (scalar @missing > 1) {
+        $self->error("Missing mandatory attributes: ".( join ', ',@missing ));
+    }
+    if (scalar @missing == 1) {
+        $self->error("Missing mandatory attribute: ".$missing[0]);
+    }
+
+    # check for 'unique' keys used more than once
+    my @used;
+    for my $key (sort grep { $def->{$_}->{count} eq 'single' } keys %$def) {
+        if (exists $self->{_methods}->{$key}) {
+            if (scalar @{$self->{_methods}->{$key}} > 1) {
+                push @used, $key;
+            }
+        }
+    }
+    if (scalar @used > 1) {
+        $self->error("Unique attributes ".( join ', ',@used )." used multiple times");
+    }
+    if (scalar @used == 1) {
+        $self->error("Unique attribute ".$used[0]." used multiple times");
+    }
+    
+    # check for keys not in the definition
+    my @unknown;
+    for my $attr (sort keys %{$self->{_methods}}) {
+        unless (exists $def->{$attr} || $attr eq $self->object_type()) {
+            push @unknown, $attr;
+        }
+    }
+    if (scalar @unknown > 1) {
+        $self->error("Unknown attributes ".( join ', ',@unknown ));
+    }
+    if (scalar @unknown == 1) {
+        $self->error("Unknown attribute ".$unknown[0]);
+    }
+
+    return $self;
+} 
 
 1;

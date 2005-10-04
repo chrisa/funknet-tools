@@ -226,3 +226,151 @@ is( scalar @array,  2,                  'multiple import lines via ximport' );
 is( $array[0],      'from AS65000 action pref=100;  accept AS-FUNKTRANSIT and not AS65001', 'import line 1 ok' );
 is( $array[1],      ' from AS65023 action pref=100;  accept AS-FUNKTRANSIT and not AS65001', 'import line 2 ok' );
 
+# parsing an object that doesn't exist
+
+$text = <<'TEXT';
+
+fictional:   attribute
+another:     fictional
+attribute:   here
+
+TEXT
+
+$obj = Funknet::Whois::Object->new($text);
+
+ok( defined $obj,                                    'parse ok');
+is( $obj->error(), 'Unknown object type: fictional', 'fictional object detected');
+
+# single missing mandatory key
+
+$text = <<'TEXT';
+
+route:        192.168.101.0/24
+descr:        MUNKYII-XEN
+origin:       AS65001
+mnt-by:       CHRIS
+changed:      chris@nodnol.org 20040321
+
+TEXT
+
+$obj = Funknet::Whois::Object->new($text);
+
+ok( defined $obj,                                         'parse ok');
+is( $obj->error(), 'Missing mandatory attribute: source', 'missing attribute detected');
+
+# multiple missing mandatory key
+
+$text = <<'TEXT';
+
+route:        192.168.101.0/24
+descr:        MUNKYII-XEN
+origin:       AS65001
+changed:      chris@nodnol.org 20040321
+
+TEXT
+
+$obj = Funknet::Whois::Object->new($text);
+
+ok( defined $obj,                                                  'parse ok');
+is( $obj->error(), 'Missing mandatory attributes: mnt-by, source', 'missing attributes detected');
+
+# one 'single'-defined attribute used more than once
+
+$text = <<'TEXT';
+
+route:        192.168.101.0/24
+descr:        MUNKYII-XEN
+origin:       AS65001
+mnt-by:       CHRIS
+changed:      chris@nodnol.org 20040321
+source:       FUNKNET
+source:       NOTFUNKNET
+
+TEXT
+
+$obj = Funknet::Whois::Object->new($text);
+
+ok( defined $obj,                                                 'parse ok');
+is( $obj->error(), 'Unique attribute source used multiple times', 'unique attribute used >1 detected');
+
+# multiple 'single'-defined attributes used more than once
+
+$text = <<'TEXT';
+
+route:        192.168.101.0/24
+descr:        MUNKYII-XEN
+origin:       AS65001
+origin:       AS65002
+mnt-by:       CHRIS
+changed:      chris@nodnol.org 20040321
+source:       FUNKNET
+source:       NOTFUNKNET
+
+TEXT
+
+$obj = Funknet::Whois::Object->new($text);
+
+ok( defined $obj,                                                          'parse ok');
+is( $obj->error(), 'Unique attributes origin, source used multiple times', 'multiple unique attributes used >1 detected');
+
+# one unknown attribute
+
+$text = <<'TEXT';
+
+route:        192.168.101.0/24
+descr:        MUNKYII-XEN
+origin:       AS65001
+mnt-by:       CHRIS
+changed:      chris@nodnol.org 20040321
+source:       FUNKNET
+jibjib:       woo
+
+TEXT
+
+$obj = Funknet::Whois::Object->new($text);
+
+ok( defined $obj,                              'parse ok');
+is( $obj->error(), 'Unknown attribute jibjib', 'unknown attribute detected');
+
+# multiple unknown attributes
+
+$text = <<'TEXT';
+
+route:        192.168.101.0/24
+descr:        MUNKYII-XEN
+origin:       AS65001
+mnt-by:       CHRIS
+changed:      chris@nodnol.org 20040321
+source:       FUNKNET
+jibjib:       woo
+woo:          jibjib
+
+TEXT
+
+$obj = Funknet::Whois::Object->new($text);
+
+ok( defined $obj,                                    'parse ok');
+is( $obj->error(), 'Unknown attributes jibjib, woo', 'multiple unknown attributes detected');
+
+# combination
+
+$text = <<'TEXT';
+
+route:        192.168.101.0/24
+descr:        MUNKYII-XEN
+mnt-by:       CHRIS
+changed:      chris@nodnol.org 20040321
+jibjib:       woo
+source:       FUNKNET
+source:       NOTFUNKNET
+woo:          jibjib
+
+TEXT
+
+$obj = Funknet::Whois::Object->new($text);
+
+ok( defined $obj,                                    'parse ok');
+is( $obj->error(), 
+    "Missing mandatory attribute: origin\n" . 
+    "Unique attribute source used multiple times\n" .
+    "Unknown attributes jibjib, woo", 'multiple problems detected');
