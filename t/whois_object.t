@@ -223,6 +223,6 @@ is( $obj->source,      'FUNKNET',                'source ok' );
 
 @array = $obj->ximport; 
 is( scalar @array,  2,                  'multiple import lines via ximport' );
-is( $array[0],      'from AS65000 action pref=100; accept AS-FUNKTRANSIT and not AS65001', 'import line 1 ok' );
-is( $array[1],      'from AS65023 action pref=100; accept AS-FUNKTRANSIT and not AS65001', 'import line 2 ok' );
+is( $array[0],      'from AS65000 action pref=100;  accept AS-FUNKTRANSIT and not AS65001', 'import line 1 ok' );
+is( $array[1],      ' from AS65023 action pref=100;  accept AS-FUNKTRANSIT and not AS65001', 'import line 2 ok' );
 
