@@ -369,8 +369,45 @@ TEXT
 
 $obj = Funknet::Whois::Object->new($text);
 
-ok( defined $obj,                                    'parse ok');
+ok( defined $obj, 'parse ok');
 is( $obj->error(), 
     "Missing mandatory attribute: origin\n" . 
     "Unique attribute source used multiple times\n" .
     "Unknown attributes jibjib, woo", 'multiple problems detected');
+
+# regexing
+
+$text = <<'TEXT';
+
+route:        192.168.101.0/24/16
+descr:        MUNKYII-XEN
+mnt-by:       CHRIS
+origin:       AS65001
+changed:      chris@nodnol.org 20040321
+source:       FUNKNET
+
+TEXT
+
+$obj = Funknet::Whois::Object->new($text);
+
+ok( defined $obj,                                                                   'parse ok');
+is( $obj->error(), 'Invalid value \'192.168.101.0/24/16\' for attribute \'route\'', 'bad prefix detected');
+
+$text = <<'TEXT';
+
+route:        192.168.101.0/24/16
+descr:        MUNKYII-XEN
+mnt-by:       CHRIS
+origin:       AS650014242424
+changed:      chris@nodnol.org 20040321
+source:       FUNKNET
+
+TEXT
+
+$obj = Funknet::Whois::Object->new($text);
+
+ok( defined $obj, 'parse ok');
+is( $obj->error(), 
+    "Invalid values '192.168.101.0/24/16' for attribute 'route', " .  
+                   "'AS650014242424' for attribute 'origin'",
+    'multiple bad values detected');
