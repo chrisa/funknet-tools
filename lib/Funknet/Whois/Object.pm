@@ -32,6 +32,7 @@
 package Funknet::Whois::Object;
 use strict;
 use Funknet::Whois::ObjectDefs;
+use Funknet::Whois::ObjectSyntax;
 use DateTime::Format::W3CDTF;
 
 use vars qw/ $AUTOLOAD /;
@@ -244,6 +245,7 @@ object, with error() set to the problems found.
 sub validate {
     my ($self) = @_;
     my $t = Funknet::Whois::ObjectDefs::objectdefs();
+    my $s = Funknet::Whois::ObjectSyntax::syntax();
     
     # check for type, retrieve known object's def. 
     my $def = $t->{$self->object_type};
@@ -294,6 +296,29 @@ sub validate {
     }
     if (scalar @unknown == 1) {
         $self->error("Unknown attribute ".$unknown[0]);
+    }
+
+    # check each value against its regexp
+    my @invalid;
+  ATTR:
+    for my $attr (sort keys %{$self->{_methods}}) {
+        next unless defined $def->{$attr}->{validation};
+        if (defined $s->{$def->{$attr}->{validation}}) {
+            my $re = $s->{$def->{$attr}->{validation}};
+            next ATTR unless ref $re eq 'Regexp';
+            for my $val (@{ $self->{_methods}->{$attr} }) {
+                if ($val !~ $re) {
+                    push @invalid, { attr => $attr, val => $val };
+                }
+            }
+        }
+    }
+
+    if (scalar @invalid > 1) {
+        $self->error("Invalid values ".( join ', ', (map { "'".$_->{val}."' for attribute '".$_->{attr}."'" } sort @invalid)  ));
+    }
+    if (scalar @invalid == 1) {
+        $self->error("Invalid value '".$invalid[0]->{val}."' for attribute '".$invalid[0]->{attr}."'");
     }
 
     return $self;
