@@ -53,11 +53,15 @@ while (my $line = <TMPL>) {
         next LINE;
     }
 
-    # RIPE template format goes:
-    # attribute: [mandatory?] [count] [type of key]
+    # FUNKNET extended RIPE template format goes:
+    # attribute: [mandatory?] [count] [type of key] [field length] [validation syntax]
     
-    my ($attribute, $mandatory, $count, $key) = 
-      $line =~ /^([a-z0-9-]+):\s+\[(\w+)\]\s+\[(\w+)\]\s+\[(.*|\s)\]/;
+    my ($attribute, $mandatory, $count, $key, $len, $validation) = 
+      $line =~ /^([a-z0-9-]+):\s+\[(\w+)\]\s+\[(\w+)\]\s+\[(.*|\s)\]\s+\[(\d+)\]\s+\[([a-z0-9-]+)\]/;
+
+    if (!$attribute) {
+        print "missing: $line\n";
+    }
 
     $key =~ s! key$!!;
     $key =~ s!primary/lookup!primary!;
@@ -69,10 +73,12 @@ while (my $line = <TMPL>) {
     }
     
     if ($this_object_type) {
-        $t->{$this_object_type}->{$attribute}->{mandatory} = $mandatory;
-        $t->{$this_object_type}->{$attribute}->{count}     = $count;
+        $t->{$this_object_type}->{$attribute}->{mandatory}  = $mandatory;
+        $t->{$this_object_type}->{$attribute}->{count}      = $count;
+        $t->{$this_object_type}->{$attribute}->{validation} = $validation;
+        $t->{$this_object_type}->{$attribute}->{len}        = $len;
         if ($key) {
-            $t->{$this_object_type}->{$attribute}->{key}       = $key;
+            $t->{$this_object_type}->{$attribute}->{key} = $key;
         }
     }
 }
