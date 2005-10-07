@@ -69,7 +69,6 @@ while (my $line = <TMPL>) {
 
     unless ($this_object_type) {
         $this_object_type = $attribute;
-        next LINE;
     }
     
     if ($this_object_type) {
