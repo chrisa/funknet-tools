@@ -12,1057 +12,1648 @@ sub objectdefs {
 my $t = {
        'aut-num' => {
                       'source' => {
+                                    'len' => '80',
                                     'count' => 'single',
+                                    'validation' => 'registry-name',
                                     'mandatory' => 'mandatory'
                                   },
                       'mnt-routes' => {
+                                        'len' => '80',
                                         'count' => 'multiple',
+                                        'validation' => 'object-name',
                                         'mandatory' => 'optional',
                                         'key' => 'inverse'
                                       },
                       'cross-nfy' => {
+                                       'len' => '80',
                                        'count' => 'multiple',
+                                       'validation' => 'e-mail',
                                        'mandatory' => 'optional',
                                        'key' => 'inverse'
                                      },
                       'cross-mnt' => {
+                                       'len' => '80',
                                        'count' => 'multiple',
+                                       'validation' => 'object-name',
                                        'mandatory' => 'optional',
                                        'key' => 'inverse'
                                      },
                       'member-of' => {
+                                       'len' => '80',
                                        'count' => 'multiple',
+                                       'validation' => 'as-set',
                                        'mandatory' => 'optional',
                                        'key' => 'inverse'
                                      },
+                      'aut-num' => {
+                                     'len' => '10',
+                                     'count' => 'single',
+                                     'validation' => 'as-number',
+                                     'mandatory' => 'mandatory',
+                                     'key' => 'primary'
+                                   },
                       'tech-c' => {
+                                    'len' => '30',
                                     'count' => 'multiple',
+                                    'validation' => 'nic-handle',
                                     'mandatory' => 'mandatory',
                                     'key' => 'inverse'
                                   },
-                      'export' => {
-                                    'count' => 'multiple',
-                                    'mandatory' => 'optional'
-                                  },
                       'remarks' => {
+                                     'len' => '80',
                                      'count' => 'multiple',
+                                     'validation' => 'free-form',
                                      'mandatory' => 'optional'
                                    },
+                      'export' => {
+                                    'len' => '80',
+                                    'count' => 'multiple',
+                                    'validation' => 'rpsl',
+                                    'mandatory' => 'optional'
+                                  },
                       'mnt-lower' => {
+                                       'len' => '80',
                                        'count' => 'multiple',
+                                       'validation' => 'object-name',
                                        'mandatory' => 'optional',
                                        'key' => 'inverse'
                                      },
                       'notify' => {
+                                    'len' => '80',
                                     'count' => 'multiple',
+                                    'validation' => 'e-mail',
                                     'mandatory' => 'optional',
                                     'key' => 'inverse'
                                   },
                       'mnt-by' => {
+                                    'len' => '80',
                                     'count' => 'multiple',
+                                    'validation' => 'object-name',
                                     'mandatory' => 'mandatory',
                                     'key' => 'inverse'
                                   },
                       'default' => {
+                                     'len' => '80',
                                      'count' => 'multiple',
+                                     'validation' => 'default',
                                      'mandatory' => 'optional'
                                    },
                       'descr' => {
+                                   'len' => '80',
                                    'count' => 'multiple',
+                                   'validation' => 'free-form',
                                    'mandatory' => 'mandatory'
                                  },
                       'import' => {
+                                    'len' => '80',
                                     'count' => 'multiple',
+                                    'validation' => 'rpsl',
                                     'mandatory' => 'optional'
                                   },
                       'changed' => {
+                                     'len' => '80',
                                      'count' => 'multiple',
+                                     'validation' => 'changed',
+                                     'mandatory' => 'mandatory'
+                                   },
+                      'as-name' => {
+                                     'len' => '80',
+                                     'count' => 'single',
+                                     'validation' => 'object-name',
                                      'mandatory' => 'mandatory'
                                    },
                       'admin-c' => {
+                                     'len' => '30',
                                      'count' => 'multiple',
+                                     'validation' => 'nic-handle',
                                      'mandatory' => 'mandatory',
                                      'key' => 'inverse'
                                    },
-                      'as-name' => {
-                                     'count' => 'single',
-                                     'mandatory' => 'mandatory'
-                                   }
+                      'tun' => {
+                                 'len' => '80',
+                                 'count' => 'multiple',
+                                 'validation' => 'object-name',
+                                 'mandatory' => 'optional'
+                               }
                     },
        'inet-rtr' => {
                        'source' => {
+                                     'len' => '80',
                                      'count' => 'single',
+                                     'validation' => 'registry-name',
                                      'mandatory' => 'mandatory'
                                    },
                        'mnt-by' => {
+                                     'len' => '80',
                                      'count' => 'multiple',
+                                     'validation' => 'object-name',
                                      'mandatory' => 'mandatory',
                                      'key' => 'inverse'
                                    },
                        'local-as' => {
+                                       'len' => '10',
                                        'count' => 'single',
+                                       'validation' => 'as-number',
                                        'mandatory' => 'mandatory',
                                        'key' => 'inverse'
                                      },
                        'ifaddr' => {
+                                     'len' => '20',
                                      'count' => 'multiple',
+                                     'validation' => 'ipv4-address',
                                      'mandatory' => 'mandatory',
                                      'key' => 'lookup'
                                    },
                        'member-of' => {
+                                        'len' => '80',
                                         'count' => 'multiple',
+                                        'validation' => 'rtr-set',
                                         'mandatory' => 'optional',
                                         'key' => 'inverse'
                                       },
                        'descr' => {
+                                    'len' => '80',
                                     'count' => 'multiple',
+                                    'validation' => 'free-form',
                                     'mandatory' => 'mandatory'
                                   },
                        'tech-c' => {
+                                     'len' => '30',
                                      'count' => 'multiple',
+                                     'validation' => 'nic-handle',
                                      'mandatory' => 'mandatory',
                                      'key' => 'inverse'
                                    },
+                       'inet-rtr' => {
+                                       'len' => '254',
+                                       'count' => 'single',
+                                       'validation' => 'domain-name',
+                                       'mandatory' => 'mandatory',
+                                       'key' => 'primary'
+                                     },
                        'changed' => {
+                                      'len' => '80',
                                       'count' => 'multiple',
+                                      'validation' => 'changed',
                                       'mandatory' => 'mandatory'
                                     },
                        'admin-c' => {
+                                      'len' => '30',
                                       'count' => 'multiple',
+                                      'validation' => 'nic-handle',
                                       'mandatory' => 'mandatory',
                                       'key' => 'inverse'
                                     },
                        'peer' => {
+                                   'len' => '80',
                                    'count' => 'multiple',
+                                   'validation' => 'peer',
                                    'mandatory' => 'optional'
                                  },
                        'remarks' => {
+                                      'len' => '80',
                                       'count' => 'multiple',
+                                      'validation' => 'free-form',
                                       'mandatory' => 'optional'
                                     },
                        'notify' => {
+                                     'len' => '80',
                                      'count' => 'multiple',
+                                     'validation' => 'e-mail',
                                      'mandatory' => 'optional',
                                      'key' => 'inverse'
                                    },
                        'alias' => {
+                                    'len' => '80',
                                     'count' => 'multiple',
+                                    'validation' => 'free-form',
                                     'mandatory' => 'optional'
                                   }
                      },
        'domain' => {
                      'source' => {
+                                   'len' => '80',
                                    'count' => 'single',
+                                   'validation' => 'registry-name',
                                    'mandatory' => 'mandatory'
                                  },
                      'mnt-by' => {
+                                   'len' => '80',
                                    'count' => 'multiple',
+                                   'validation' => 'object-name',
                                    'mandatory' => 'optional',
                                    'key' => 'inverse'
                                  },
                      'nserver' => {
+                                    'len' => '254',
                                     'count' => 'multiple',
+                                    'validation' => 'domain-name',
                                     'mandatory' => 'optional',
                                     'key' => 'inverse'
                                   },
                      'sub-dom' => {
+                                    'len' => '254',
                                     'count' => 'multiple',
+                                    'validation' => 'subdomain-name',
                                     'mandatory' => 'optional',
                                     'key' => 'inverse'
                                   },
                      'descr' => {
+                                  'len' => '80',
                                   'count' => 'multiple',
+                                  'validation' => 'free-form',
                                   'mandatory' => 'mandatory'
                                 },
                      'tech-c' => {
+                                   'len' => '30',
                                    'count' => 'multiple',
+                                   'validation' => 'nic-handle',
                                    'mandatory' => 'mandatory',
                                    'key' => 'inverse'
                                  },
                      'zone-c' => {
+                                   'len' => '30',
                                    'count' => 'multiple',
+                                   'validation' => 'nic-handle',
                                    'mandatory' => 'mandatory',
                                    'key' => 'inverse'
                                  },
+                     'domain' => {
+                                   'len' => '254',
+                                   'count' => 'single',
+                                   'validation' => 'domain-name',
+                                   'mandatory' => 'mandatory',
+                                   'key' => 'primary'
+                                 },
                      'changed' => {
+                                    'len' => '80',
                                     'count' => 'multiple',
+                                    'validation' => 'changed',
                                     'mandatory' => 'mandatory'
                                   },
                      'dom-net' => {
+                                    'len' => '20',
                                     'count' => 'multiple',
+                                    'validation' => 'ipv4-address',
                                     'mandatory' => 'optional'
                                   },
                      'admin-c' => {
+                                    'len' => '30',
                                     'count' => 'multiple',
+                                    'validation' => 'nic-handle',
                                     'mandatory' => 'mandatory',
                                     'key' => 'inverse'
                                   },
                      'remarks' => {
+                                    'len' => '80',
                                     'count' => 'multiple',
+                                    'validation' => 'free-form',
                                     'mandatory' => 'optional'
                                   },
                      'mnt-lower' => {
+                                      'len' => '80',
                                       'count' => 'multiple',
+                                      'validation' => 'object-name',
                                       'mandatory' => 'optional',
                                       'key' => 'inverse'
                                     },
                      'notify' => {
+                                   'len' => '80',
                                    'count' => 'multiple',
+                                   'validation' => 'e-mail',
                                    'mandatory' => 'optional',
                                    'key' => 'inverse'
                                  },
                      'refer' => {
+                                  'len' => '80',
                                   'count' => 'single',
+                                  'validation' => 'refer',
                                   'mandatory' => 'optional'
                                 }
                    },
        'filter-set' => {
                          'source' => {
+                                       'len' => '80',
                                        'count' => 'single',
+                                       'validation' => 'registry-name',
                                        'mandatory' => 'mandatory'
                                      },
                          'mnt-by' => {
+                                       'len' => '80',
                                        'count' => 'multiple',
+                                       'validation' => 'object-name',
                                        'mandatory' => 'mandatory',
                                        'key' => 'inverse'
                                      },
                          'filter' => {
+                                       'len' => '80',
                                        'count' => 'single',
+                                       'validation' => 'filter',
                                        'mandatory' => 'mandatory'
                                      },
                          'descr' => {
+                                      'len' => '80',
                                       'count' => 'multiple',
+                                      'validation' => 'free-form',
                                       'mandatory' => 'mandatory'
                                     },
                          'tech-c' => {
+                                       'len' => '30',
                                        'count' => 'multiple',
+                                       'validation' => 'nic-handle',
                                        'mandatory' => 'mandatory',
                                        'key' => 'inverse'
                                      },
+                         'filter-set' => {
+                                           'len' => '80',
+                                           'count' => 'single',
+                                           'validation' => 'filter-set',
+                                           'mandatory' => 'mandatory',
+                                           'key' => 'primary'
+                                         },
                          'changed' => {
+                                        'len' => '80',
                                         'count' => 'multiple',
+                                        'validation' => 'changed',
                                         'mandatory' => 'mandatory'
                                       },
                          'admin-c' => {
+                                        'len' => '30',
                                         'count' => 'multiple',
+                                        'validation' => 'nic-handle',
                                         'mandatory' => 'mandatory',
                                         'key' => 'inverse'
                                       },
                          'remarks' => {
+                                        'len' => '80',
                                         'count' => 'multiple',
+                                        'validation' => 'free-form',
                                         'mandatory' => 'optional'
                                       },
                          'notify' => {
+                                       'len' => '80',
                                        'count' => 'multiple',
+                                       'validation' => 'e-mail',
                                        'mandatory' => 'optional',
                                        'key' => 'inverse'
                                      }
                        },
        'key-cert' => {
                        'source' => {
+                                     'len' => '80',
                                      'count' => 'single',
+                                     'validation' => 'registry-name',
                                      'mandatory' => 'mandatory'
                                    },
                        'mnt-by' => {
+                                     'len' => '80',
                                      'count' => 'multiple',
+                                     'validation' => 'object-name',
                                      'mandatory' => 'mandatory',
                                      'key' => 'inverse'
                                    },
                        'owner' => {
+                                    'len' => '80',
                                     'count' => 'multiple',
+                                    'validation' => 'free-form',
                                     'mandatory' => 'generated'
                                   },
                        'fingerpr' => {
+                                       'len' => '80',
                                        'count' => 'single',
+                                       'validation' => 'fingerpr',
                                        'mandatory' => 'generated'
                                      },
                        'changed' => {
+                                      'len' => '80',
                                       'count' => 'multiple',
+                                      'validation' => 'changed',
                                       'mandatory' => 'mandatory'
                                     },
+                       'key-cert' => {
+                                       'len' => '80',
+                                       'count' => 'single',
+                                       'validation' => 'key-cert',
+                                       'mandatory' => 'mandatory',
+                                       'key' => 'primary'
+                                     },
                        'certif' => {
+                                     'len' => '80',
                                      'count' => 'multiple',
+                                     'validation' => 'free-form',
                                      'mandatory' => 'mandatory'
                                    },
                        'method' => {
+                                     'len' => '10',
                                      'count' => 'single',
+                                     'validation' => 'method',
                                      'mandatory' => 'generated'
                                    },
                        'remarks' => {
+                                      'len' => '80',
                                       'count' => 'multiple',
+                                      'validation' => 'free-form',
                                       'mandatory' => 'optional'
                                     },
                        'notify' => {
+                                     'len' => '80',
                                      'count' => 'multiple',
+                                     'validation' => 'e-mail',
                                      'mandatory' => 'optional',
                                      'key' => 'inverse'
                                    }
                      },
        'person' => {
                      'source' => {
+                                   'len' => '80',
                                    'count' => 'single',
+                                   'validation' => 'registry-name',
                                    'mandatory' => 'mandatory'
                                  },
                      'mnt-by' => {
+                                   'len' => '80',
                                    'count' => 'multiple',
+                                   'validation' => 'object-name',
                                    'mandatory' => 'optional',
                                    'key' => 'inverse'
                                  },
                      'phone' => {
+                                  'len' => '80',
                                   'count' => 'multiple',
+                                  'validation' => 'free-form',
                                   'mandatory' => 'mandatory'
                                 },
                      'nic-hdl' => {
+                                    'len' => '30',
                                     'count' => 'single',
+                                    'validation' => 'nic-handle',
                                     'mandatory' => 'mandatory',
                                     'key' => 'primary'
                                   },
                      'fax-no' => {
+                                   'len' => '80',
                                    'count' => 'multiple',
+                                   'validation' => 'free-form',
                                    'mandatory' => 'optional'
                                  },
                      'e-mail' => {
+                                   'len' => '80',
                                    'count' => 'multiple',
+                                   'validation' => 'e-mail',
                                    'mandatory' => 'optional',
                                    'key' => 'lookup'
                                  },
                      'changed' => {
+                                    'len' => '80',
                                     'count' => 'multiple',
+                                    'validation' => 'changed',
                                     'mandatory' => 'mandatory'
                                   },
+                     'person' => {
+                                   'len' => '80',
+                                   'count' => 'single',
+                                   'validation' => 'person-name',
+                                   'mandatory' => 'mandatory',
+                                   'key' => 'lookup'
+                                 },
                      'address' => {
+                                    'len' => '80',
                                     'count' => 'multiple',
+                                    'validation' => 'free-form',
                                     'mandatory' => 'mandatory'
                                   },
                      'remarks' => {
+                                    'len' => '80',
                                     'count' => 'multiple',
+                                    'validation' => 'free-form',
                                     'mandatory' => 'optional'
                                   },
                      'notify' => {
+                                   'len' => '80',
                                    'count' => 'multiple',
+                                   'validation' => 'e-mail',
                                    'mandatory' => 'optional',
                                    'key' => 'inverse'
                                  }
                    },
        'limerick' => {
                        'source' => {
+                                     'len' => '80',
                                      'count' => 'single',
+                                     'validation' => 'registry-name',
                                      'mandatory' => 'mandatory'
                                    },
                        'mnt-by' => {
+                                     'len' => '80',
                                      'count' => 'multiple',
+                                     'validation' => 'object-name',
                                      'mandatory' => 'mandatory',
                                      'key' => 'inverse'
                                    },
                        'author' => {
+                                     'len' => '30',
                                      'count' => 'multiple',
+                                     'validation' => 'nic-handle',
                                      'mandatory' => 'mandatory',
                                      'key' => 'inverse'
                                    },
                        'descr' => {
+                                    'len' => '80',
                                     'count' => 'multiple',
+                                    'validation' => 'free-form',
                                     'mandatory' => 'optional'
                                   },
                        'changed' => {
+                                      'len' => '80',
                                       'count' => 'multiple',
+                                      'validation' => 'changed',
                                       'mandatory' => 'mandatory'
                                     },
                        'text' => {
+                                   'len' => '80',
                                    'count' => 'multiple',
+                                   'validation' => 'free-form',
                                    'mandatory' => 'mandatory'
                                  },
                        'admin-c' => {
+                                      'len' => '30',
                                       'count' => 'multiple',
+                                      'validation' => 'nic-handle',
                                       'mandatory' => 'mandatory',
                                       'key' => 'inverse'
                                     },
+                       'limerick' => {
+                                       'len' => '80',
+                                       'count' => 'single',
+                                       'validation' => 'object-name',
+                                       'mandatory' => 'mandatory',
+                                       'key' => 'primary'
+                                     },
                        'remarks' => {
+                                      'len' => '80',
                                       'count' => 'multiple',
+                                      'validation' => 'free-form',
                                       'mandatory' => 'optional'
                                     },
                        'notify' => {
+                                     'len' => '80',
                                      'count' => 'multiple',
+                                     'validation' => 'e-mail',
                                      'mandatory' => 'optional',
                                      'key' => 'inverse'
                                    }
                      },
        'route-set' => {
                         'source' => {
+                                      'len' => '80',
                                       'count' => 'single',
+                                      'validation' => 'registry-name',
                                       'mandatory' => 'mandatory'
                                     },
                         'mnt-by' => {
+                                      'len' => '80',
                                       'count' => 'multiple',
+                                      'validation' => 'object-name',
                                       'mandatory' => 'mandatory',
                                       'key' => 'inverse'
                                     },
                         'mbrs-by-ref' => {
+                                           'len' => '80',
                                            'count' => 'multiple',
+                                           'validation' => 'mbrs-by-ref',
                                            'mandatory' => 'optional',
                                            'key' => 'inverse'
                                          },
                         'descr' => {
+                                     'len' => '80',
                                      'count' => 'multiple',
+                                     'validation' => 'free-form',
                                      'mandatory' => 'mandatory'
                                    },
                         'members' => {
+                                       'len' => '80',
                                        'count' => 'multiple',
+                                       'validation' => 'members-rs',
                                        'mandatory' => 'optional'
                                      },
                         'tech-c' => {
+                                      'len' => '30',
                                       'count' => 'multiple',
+                                      'validation' => 'nic-handle',
                                       'mandatory' => 'mandatory',
                                       'key' => 'inverse'
                                     },
                         'changed' => {
+                                       'len' => '80',
                                        'count' => 'multiple',
+                                       'validation' => 'changed',
                                        'mandatory' => 'mandatory'
                                      },
                         'admin-c' => {
+                                       'len' => '30',
                                        'count' => 'multiple',
+                                       'validation' => 'nic-handle',
                                        'mandatory' => 'mandatory',
                                        'key' => 'inverse'
                                      },
+                        'route-set' => {
+                                         'len' => '80',
+                                         'count' => 'single',
+                                         'validation' => 'route-set',
+                                         'mandatory' => 'mandatory',
+                                         'key' => 'primary'
+                                       },
                         'remarks' => {
+                                       'len' => '80',
                                        'count' => 'multiple',
+                                       'validation' => 'free-form',
                                        'mandatory' => 'optional'
                                      },
                         'notify' => {
+                                      'len' => '80',
                                       'count' => 'multiple',
+                                      'validation' => 'e-mail',
                                       'mandatory' => 'optional',
                                       'key' => 'inverse'
                                     }
                       },
        'irt' => {
                   'source' => {
+                                'len' => '80',
                                 'count' => 'single',
+                                'validation' => 'registry-name',
                                 'mandatory' => 'mandatory'
                               },
-                  'mnt-by' => {
-                                'count' => 'multiple',
-                                'mandatory' => 'mandatory',
-                                'key' => 'inverse'
-                              },
-                  'encryption' => {
-                                    'count' => 'multiple',
-                                    'mandatory' => 'mandatory'
-                                  },
-                  'phone' => {
-                               'count' => 'multiple',
-                               'mandatory' => 'optional'
-                             },
-                  'irt-nfy' => {
-                                 'count' => 'multiple',
-                                 'mandatory' => 'optional',
-                                 'key' => 'inverse'
-                               },
                   'tech-c' => {
+                                'len' => '30',
                                 'count' => 'multiple',
+                                'validation' => 'nic-handle',
                                 'mandatory' => 'mandatory',
                                 'key' => 'inverse'
                               },
                   'auth' => {
+                              'len' => '80',
                               'count' => 'multiple',
+                              'validation' => 'key-cert',
                               'mandatory' => 'mandatory'
                             },
-                  'fax-no' => {
-                                'count' => 'multiple',
-                                'mandatory' => 'optional'
-                              },
-                  'e-mail' => {
-                                'count' => 'multiple',
-                                'mandatory' => 'mandatory',
-                                'key' => 'lookup'
-                              },
-                  'changed' => {
-                                 'count' => 'multiple',
-                                 'mandatory' => 'mandatory'
-                               },
-                  'signature' => {
-                                   'count' => 'multiple',
-                                   'mandatory' => 'mandatory'
-                                 },
-                  'admin-c' => {
-                                 'count' => 'multiple',
-                                 'mandatory' => 'mandatory',
-                                 'key' => 'inverse'
-                               },
                   'remarks' => {
+                                 'len' => '80',
                                  'count' => 'multiple',
+                                 'validation' => 'free-form',
                                  'mandatory' => 'optional'
                                },
                   'address' => {
+                                 'len' => '80',
                                  'count' => 'multiple',
+                                 'validation' => 'free-form',
                                  'mandatory' => 'mandatory'
                                },
                   'notify' => {
+                                'len' => '80',
                                 'count' => 'multiple',
+                                'validation' => 'e-mail',
                                 'mandatory' => 'optional',
                                 'key' => 'inverse'
-                              }
+                              },
+                  'irt' => {
+                             'len' => '80',
+                             'count' => 'single',
+                             'validation' => 'irt-name',
+                             'mandatory' => 'mandatory',
+                             'key' => 'primary'
+                           },
+                  'mnt-by' => {
+                                'len' => '80',
+                                'count' => 'multiple',
+                                'validation' => 'object-name',
+                                'mandatory' => 'mandatory',
+                                'key' => 'inverse'
+                              },
+                  'encryption' => {
+                                    'len' => '80',
+                                    'count' => 'multiple',
+                                    'validation' => 'key-cert',
+                                    'mandatory' => 'mandatory'
+                                  },
+                  'phone' => {
+                               'len' => '80',
+                               'count' => 'multiple',
+                               'validation' => 'free-form',
+                               'mandatory' => 'optional'
+                             },
+                  'irt-nfy' => {
+                                 'len' => '80',
+                                 'count' => 'multiple',
+                                 'validation' => 'e-mail',
+                                 'mandatory' => 'optional',
+                                 'key' => 'inverse'
+                               },
+                  'e-mail' => {
+                                'len' => '80',
+                                'count' => 'multiple',
+                                'validation' => 'e-mail',
+                                'mandatory' => 'mandatory',
+                                'key' => 'lookup'
+                              },
+                  'fax-no' => {
+                                'len' => '80',
+                                'count' => 'multiple',
+                                'validation' => 'free-form',
+                                'mandatory' => 'optional'
+                              },
+                  'signature' => {
+                                   'len' => '80',
+                                   'count' => 'multiple',
+                                   'validation' => 'key-cert',
+                                   'mandatory' => 'mandatory'
+                                 },
+                  'changed' => {
+                                 'len' => '80',
+                                 'count' => 'multiple',
+                                 'validation' => 'changed',
+                                 'mandatory' => 'mandatory'
+                               },
+                  'admin-c' => {
+                                 'len' => '30',
+                                 'count' => 'multiple',
+                                 'validation' => 'nic-handle',
+                                 'mandatory' => 'mandatory',
+                                 'key' => 'inverse'
+                               }
                 },
        'rtr-set' => {
                       'source' => {
+                                    'len' => '80',
                                     'count' => 'single',
+                                    'validation' => 'registry-name',
                                     'mandatory' => 'mandatory'
                                   },
                       'mnt-by' => {
+                                    'len' => '80',
                                     'count' => 'multiple',
+                                    'validation' => 'object-name',
                                     'mandatory' => 'mandatory',
                                     'key' => 'inverse'
                                   },
                       'mbrs-by-ref' => {
+                                         'len' => '80',
                                          'count' => 'multiple',
+                                         'validation' => 'mbrs-by-ref',
                                          'mandatory' => 'optional',
                                          'key' => 'inverse'
                                        },
+                      'rtr-set' => {
+                                     'len' => '80',
+                                     'count' => 'single',
+                                     'validation' => 'rtr-set',
+                                     'mandatory' => 'mandatory',
+                                     'key' => 'primary'
+                                   },
                       'descr' => {
+                                   'len' => '80',
                                    'count' => 'multiple',
+                                   'validation' => 'free-form',
                                    'mandatory' => 'mandatory'
                                  },
                       'members' => {
+                                     'len' => '80',
                                      'count' => 'multiple',
+                                     'validation' => 'members-rs',
                                      'mandatory' => 'optional'
                                    },
                       'tech-c' => {
+                                    'len' => '30',
                                     'count' => 'multiple',
+                                    'validation' => 'nic-handle',
                                     'mandatory' => 'mandatory',
                                     'key' => 'inverse'
                                   },
                       'changed' => {
+                                     'len' => '80',
                                      'count' => 'multiple',
+                                     'validation' => 'changed',
                                      'mandatory' => 'mandatory'
                                    },
                       'admin-c' => {
+                                     'len' => '30',
                                      'count' => 'multiple',
+                                     'validation' => 'nic-handle',
                                      'mandatory' => 'mandatory',
                                      'key' => 'inverse'
                                    },
                       'remarks' => {
+                                     'len' => '80',
                                      'count' => 'multiple',
+                                     'validation' => 'free-form',
                                      'mandatory' => 'optional'
                                    },
                       'notify' => {
+                                    'len' => '80',
                                     'count' => 'multiple',
+                                    'validation' => 'e-mail',
                                     'mandatory' => 'optional',
                                     'key' => 'inverse'
                                   }
                     },
        'route' => {
                     'source' => {
+                                  'len' => '80',
                                   'count' => 'single',
+                                  'validation' => 'registry-name',
                                   'mandatory' => 'mandatory'
                                 },
                     'mnt-routes' => {
+                                      'len' => '80',
                                       'count' => 'multiple',
+                                      'validation' => 'object-name',
                                       'mandatory' => 'optional',
                                       'key' => 'inverse'
                                     },
                     'aggr-bndry' => {
+                                      'len' => '80',
                                       'count' => 'single',
+                                      'validation' => 'aggr-bndry',
                                       'mandatory' => 'optional'
                                     },
                     'export-comps' => {
+                                        'len' => '80',
                                         'count' => 'single',
+                                        'validation' => 'filter',
                                         'mandatory' => 'optional'
                                       },
                     'cross-nfy' => {
+                                     'len' => '80',
                                      'count' => 'multiple',
+                                     'validation' => 'e-mail',
                                      'mandatory' => 'optional',
                                      'key' => 'inverse'
                                    },
                     'components' => {
+                                      'len' => '80',
                                       'count' => 'single',
+                                      'validation' => 'components',
                                       'mandatory' => 'optional'
                                     },
                     'cross-mnt' => {
+                                     'len' => '80',
                                      'count' => 'multiple',
+                                     'validation' => 'object-name',
                                      'mandatory' => 'optional',
                                      'key' => 'inverse'
                                    },
                     'member-of' => {
+                                     'len' => '80',
                                      'count' => 'multiple',
+                                     'validation' => 'route-set',
                                      'mandatory' => 'optional',
                                      'key' => 'inverse'
                                    },
                     'inject' => {
+                                  'len' => '80',
                                   'count' => 'multiple',
+                                  'validation' => 'inject',
                                   'mandatory' => 'optional'
                                 },
                     'remarks' => {
+                                   'len' => '80',
                                    'count' => 'multiple',
+                                   'validation' => 'free-form',
                                    'mandatory' => 'optional'
                                  },
                     'mnt-lower' => {
+                                     'len' => '80',
                                      'count' => 'multiple',
+                                     'validation' => 'object-name',
                                      'mandatory' => 'optional',
                                      'key' => 'inverse'
                                    },
                     'notify' => {
+                                  'len' => '80',
                                   'count' => 'multiple',
+                                  'validation' => 'e-mail',
                                   'mandatory' => 'optional',
                                   'key' => 'inverse'
                                 },
                     'mnt-by' => {
+                                  'len' => '80',
                                   'count' => 'multiple',
+                                  'validation' => 'object-name',
                                   'mandatory' => 'mandatory',
                                   'key' => 'inverse'
                                 },
                     'aggr-mtd' => {
+                                    'len' => '80',
                                     'count' => 'single',
+                                    'validation' => 'aggr-mtd',
                                     'mandatory' => 'optional'
                                   },
                     'holes' => {
+                                 'len' => '80',
                                  'count' => 'multiple',
+                                 'validation' => 'address-prefix',
                                  'mandatory' => 'optional'
                                },
                     'origin' => {
+                                  'len' => '10',
                                   'count' => 'single',
+                                  'validation' => 'as-number',
                                   'mandatory' => 'mandatory',
                                   'key' => 'primary/inverse'
                                 },
+                    'route' => {
+                                 'len' => '20',
+                                 'count' => 'single',
+                                 'validation' => 'address-prefix',
+                                 'mandatory' => 'mandatory',
+                                 'key' => 'primary'
+                               },
                     'descr' => {
+                                 'len' => '80',
                                  'count' => 'multiple',
+                                 'validation' => 'free-form',
                                  'mandatory' => 'mandatory'
                                },
                     'changed' => {
+                                   'len' => '80',
                                    'count' => 'multiple',
+                                   'validation' => 'changed',
                                    'mandatory' => 'mandatory'
                                  }
                   },
        'inetnum' => {
                       'source' => {
+                                    'len' => '80',
                                     'count' => 'single',
+                                    'validation' => 'registry-name',
                                     'mandatory' => 'mandatory'
                                   },
                       'mnt-routes' => {
+                                        'len' => '80',
                                         'count' => 'multiple',
+                                        'validation' => 'object-name',
                                         'mandatory' => 'optional',
                                         'key' => 'inverse'
                                       },
-                      'mnt-by' => {
-                                    'count' => 'multiple',
-                                    'mandatory' => 'mandatory',
-                                    'key' => 'inverse'
-                                  },
-                      'country' => {
-                                     'count' => 'multiple',
-                                     'mandatory' => 'mandatory'
-                                   },
-                      'netname' => {
-                                     'count' => 'single',
-                                     'mandatory' => 'mandatory',
-                                     'key' => 'lookup'
-                                   },
                       'status' => {
+                                    'len' => '20',
                                     'count' => 'single',
+                                    'validation' => 'status-in',
                                     'mandatory' => 'mandatory'
                                   },
-                      'descr' => {
-                                   'count' => 'multiple',
-                                   'mandatory' => 'mandatory'
-                                 },
                       'tech-c' => {
+                                    'len' => '30',
                                     'count' => 'multiple',
+                                    'validation' => 'nic-handle',
                                     'mandatory' => 'mandatory',
                                     'key' => 'inverse'
                                   },
-                      'changed' => {
-                                     'count' => 'multiple',
-                                     'mandatory' => 'mandatory'
-                                   },
-                      'admin-c' => {
-                                     'count' => 'multiple',
-                                     'mandatory' => 'mandatory',
-                                     'key' => 'inverse'
-                                   },
                       'remarks' => {
+                                     'len' => '80',
                                      'count' => 'multiple',
+                                     'validation' => 'free-form',
                                      'mandatory' => 'optional'
                                    },
                       'mnt-irt' => {
+                                     'len' => '80',
                                      'count' => 'multiple',
+                                     'validation' => 'object-name',
                                      'mandatory' => 'optional',
                                      'key' => 'inverse'
                                    },
                       'mnt-lower' => {
+                                       'len' => '80',
                                        'count' => 'multiple',
+                                       'validation' => 'object-name',
                                        'mandatory' => 'optional',
                                        'key' => 'inverse'
                                      },
                       'notify' => {
+                                    'len' => '80',
                                     'count' => 'multiple',
+                                    'validation' => 'e-mail',
                                     'mandatory' => 'optional',
                                     'key' => 'inverse'
                                   },
                       'rev-srv' => {
+                                     'len' => '254',
                                      'count' => 'multiple',
+                                     'validation' => 'domain-name',
                                      'mandatory' => 'optional',
+                                     'key' => 'inverse'
+                                   },
+                      'country' => {
+                                     'len' => '2',
+                                     'count' => 'multiple',
+                                     'validation' => 'country-code',
+                                     'mandatory' => 'mandatory'
+                                   },
+                      'mnt-by' => {
+                                    'len' => '80',
+                                    'count' => 'multiple',
+                                    'validation' => 'object-name',
+                                    'mandatory' => 'mandatory',
+                                    'key' => 'inverse'
+                                  },
+                      'netname' => {
+                                     'len' => '80',
+                                     'count' => 'single',
+                                     'validation' => 'netname',
+                                     'mandatory' => 'mandatory',
+                                     'key' => 'lookup'
+                                   },
+                      'inetnum' => {
+                                     'len' => '80',
+                                     'count' => 'single',
+                                     'validation' => 'inetnum',
+                                     'mandatory' => 'mandatory',
+                                     'key' => 'primary'
+                                   },
+                      'descr' => {
+                                   'len' => '80',
+                                   'count' => 'multiple',
+                                   'validation' => 'free-form',
+                                   'mandatory' => 'mandatory'
+                                 },
+                      'changed' => {
+                                     'len' => '80',
+                                     'count' => 'multiple',
+                                     'validation' => 'changed',
+                                     'mandatory' => 'mandatory'
+                                   },
+                      'admin-c' => {
+                                     'len' => '30',
+                                     'count' => 'multiple',
+                                     'validation' => 'nic-handle',
+                                     'mandatory' => 'mandatory',
                                      'key' => 'inverse'
                                    }
                     },
        'as-set' => {
                      'source' => {
+                                   'len' => '80',
                                    'count' => 'single',
+                                   'validation' => 'registry-name',
                                    'mandatory' => 'mandatory'
                                  },
                      'mnt-by' => {
+                                   'len' => '80',
                                    'count' => 'multiple',
+                                   'validation' => 'object-name',
                                    'mandatory' => 'mandatory',
                                    'key' => 'inverse'
                                  },
                      'mbrs-by-ref' => {
+                                        'len' => '80',
                                         'count' => 'multiple',
+                                        'validation' => 'mbrs-by-ref',
                                         'mandatory' => 'optional',
                                         'key' => 'inverse'
                                       },
                      'descr' => {
+                                  'len' => '80',
                                   'count' => 'multiple',
+                                  'validation' => 'free-form',
                                   'mandatory' => 'mandatory'
                                 },
+                     'as-set' => {
+                                   'len' => '80',
+                                   'count' => 'single',
+                                   'validation' => 'as-set',
+                                   'mandatory' => 'mandatory',
+                                   'key' => 'primary'
+                                 },
                      'members' => {
+                                    'len' => '80',
                                     'count' => 'multiple',
+                                    'validation' => 'members-as',
                                     'mandatory' => 'optional'
                                   },
                      'tech-c' => {
+                                   'len' => '30',
                                    'count' => 'multiple',
+                                   'validation' => 'nic-handle',
                                    'mandatory' => 'mandatory',
                                    'key' => 'inverse'
                                  },
                      'changed' => {
+                                    'len' => '80',
                                     'count' => 'multiple',
+                                    'validation' => 'changed',
                                     'mandatory' => 'mandatory'
                                   },
                      'admin-c' => {
+                                    'len' => '30',
                                     'count' => 'multiple',
+                                    'validation' => 'nic-handle',
                                     'mandatory' => 'mandatory',
                                     'key' => 'inverse'
                                   },
                      'remarks' => {
+                                    'len' => '80',
                                     'count' => 'multiple',
+                                    'validation' => 'free-form',
                                     'mandatory' => 'optional'
                                   },
                      'notify' => {
+                                   'len' => '80',
                                    'count' => 'multiple',
+                                   'validation' => 'e-mail',
                                    'mandatory' => 'optional',
                                    'key' => 'inverse'
                                  }
                    },
        'inet6num' => {
                        'source' => {
+                                     'len' => '80',
                                      'count' => 'single',
+                                     'validation' => 'registry-name',
                                      'mandatory' => 'mandatory'
                                    },
                        'mnt-by' => {
+                                     'len' => '80',
                                      'count' => 'multiple',
+                                     'validation' => 'object-name',
                                      'mandatory' => 'mandatory',
                                      'key' => 'inverse'
                                    },
                        'country' => {
+                                      'len' => '2',
                                       'count' => 'multiple',
+                                      'validation' => 'country-code',
                                       'mandatory' => 'mandatory'
                                     },
                        'netname' => {
+                                      'len' => '80',
                                       'count' => 'single',
+                                      'validation' => 'netname',
                                       'mandatory' => 'mandatory',
                                       'key' => 'lookup'
                                     },
                        'status' => {
+                                     'len' => '20',
                                      'count' => 'single',
+                                     'validation' => 'status-i6',
                                      'mandatory' => 'mandatory'
                                    },
                        'descr' => {
+                                    'len' => '80',
                                     'count' => 'multiple',
+                                    'validation' => 'free-form',
                                     'mandatory' => 'mandatory'
                                   },
+                       'inet6num' => {
+                                       'len' => '80',
+                                       'count' => 'single',
+                                       'validation' => 'inet6num',
+                                       'mandatory' => 'mandatory',
+                                       'key' => 'primary'
+                                     },
                        'tech-c' => {
+                                     'len' => '30',
                                      'count' => 'multiple',
+                                     'validation' => 'nic-handle',
                                      'mandatory' => 'mandatory',
                                      'key' => 'inverse'
                                    },
                        'changed' => {
+                                      'len' => '80',
                                       'count' => 'multiple',
+                                      'validation' => 'changed',
                                       'mandatory' => 'mandatory'
                                     },
                        'admin-c' => {
+                                      'len' => '30',
                                       'count' => 'multiple',
+                                      'validation' => 'nic-handle',
                                       'mandatory' => 'mandatory',
                                       'key' => 'inverse'
                                     },
                        'remarks' => {
+                                      'len' => '80',
                                       'count' => 'multiple',
+                                      'validation' => 'free-form',
                                       'mandatory' => 'optional'
                                     },
                        'mnt-irt' => {
+                                      'len' => '80',
                                       'count' => 'multiple',
+                                      'validation' => 'object-name',
                                       'mandatory' => 'optional',
                                       'key' => 'inverse'
                                     },
                        'mnt-lower' => {
+                                        'len' => '80',
                                         'count' => 'multiple',
+                                        'validation' => 'object-name',
                                         'mandatory' => 'optional',
                                         'key' => 'inverse'
                                       },
                        'notify' => {
+                                     'len' => '80',
                                      'count' => 'multiple',
+                                     'validation' => 'e-mail',
                                      'mandatory' => 'optional',
                                      'key' => 'inverse'
                                    },
                        'rev-srv' => {
+                                      'len' => '254',
                                       'count' => 'multiple',
+                                      'validation' => 'domain-name',
                                       'mandatory' => 'optional',
                                       'key' => 'inverse'
                                     }
                      },
        'tunnel' => {
                      'source' => {
+                                   'len' => '80',
                                    'count' => 'single',
+                                   'validation' => 'registry-name',
                                    'mandatory' => 'mandatory'
                                  },
                      'mnt-by' => {
+                                   'len' => '80',
                                    'count' => 'multiple',
+                                   'validation' => 'object-name',
                                    'mandatory' => 'mandatory',
                                    'key' => 'inverse'
                                  },
                      'tech-c' => {
+                                   'len' => '30',
                                    'count' => 'single',
+                                   'validation' => 'nic-handle',
                                    'mandatory' => 'mandatory',
                                    'key' => 'inverse'
                                  },
+                     'changed' => {
+                                    'len' => '80',
+                                    'count' => 'multiple',
+                                    'validation' => 'changed',
+                                    'mandatory' => 'mandatory'
+                                  },
+                     'tunnel' => {
+                                   'len' => '80',
+                                   'count' => 'single',
+                                   'validation' => 'tunnel',
+                                   'mandatory' => 'mandatory',
+                                   'key' => 'primary'
+                                 },
                      'as' => {
+                               'len' => '10',
                                'count' => 'multiple',
+                               'validation' => 'as-number',
                                'mandatory' => 'mandatory',
                                'key' => 'inverse'
                              },
-                     'changed' => {
-                                    'count' => 'multiple',
-                                    'mandatory' => 'mandatory'
-                                  },
                      'admin-c' => {
+                                    'len' => '30',
                                     'count' => 'single',
+                                    'validation' => 'nic-handle',
                                     'mandatory' => 'mandatory',
                                     'key' => 'inverse'
                                   },
                      'type' => {
+                                 'len' => '10',
                                  'count' => 'single',
+                                 'validation' => 'tunnel-type',
                                  'mandatory' => 'mandatory'
                                },
                      'address' => {
+                                    'len' => '20',
                                     'count' => 'multiple',
+                                    'validation' => 'ipv4-address',
                                     'mandatory' => 'mandatory'
                                   },
                      'notify' => {
+                                   'len' => '80',
                                    'count' => 'multiple',
+                                   'validation' => 'e-mail',
                                    'mandatory' => 'optional',
                                    'key' => 'inverse'
                                  },
                      'endpoint' => {
+                                     'len' => '20',
                                      'count' => 'multiple',
+                                     'validation' => 'ipv4-address',
                                      'mandatory' => 'mandatory',
                                      'key' => 'inverse'
                                    }
                    },
        'mntner' => {
                      'source' => {
+                                   'len' => '80',
                                    'count' => 'single',
+                                   'validation' => 'registry-name',
                                    'mandatory' => 'mandatory'
                                  },
                      'mnt-by' => {
+                                   'len' => '80',
                                    'count' => 'multiple',
+                                   'validation' => 'object-name',
                                    'mandatory' => 'mandatory',
                                    'key' => 'inverse'
                                  },
                      'referral-by' => {
+                                        'len' => '80',
                                         'count' => 'single',
+                                        'validation' => 'object-name',
                                         'mandatory' => 'mandatory',
                                         'key' => 'inverse'
                                       },
                      'descr' => {
+                                  'len' => '80',
                                   'count' => 'multiple',
+                                  'validation' => 'free-form',
                                   'mandatory' => 'mandatory'
                                 },
                      'tech-c' => {
+                                   'len' => '30',
                                    'count' => 'multiple',
+                                   'validation' => 'nic-handle',
                                    'mandatory' => 'optional',
                                    'key' => 'inverse'
                                  },
                      'auth' => {
+                                 'len' => '80',
                                  'count' => 'multiple',
+                                 'validation' => 'key-cert',
                                  'mandatory' => 'mandatory'
                                },
                      'changed' => {
+                                    'len' => '80',
                                     'count' => 'multiple',
+                                    'validation' => 'changed',
                                     'mandatory' => 'mandatory'
                                   },
                      'admin-c' => {
+                                    'len' => '30',
                                     'count' => 'multiple',
+                                    'validation' => 'nic-handle',
                                     'mandatory' => 'mandatory',
                                     'key' => 'inverse'
                                   },
+                     'mntner' => {
+                                   'len' => '80',
+                                   'count' => 'single',
+                                   'validation' => 'object-name',
+                                   'mandatory' => 'mandatory',
+                                   'key' => 'primary'
+                                 },
                      'remarks' => {
+                                    'len' => '80',
                                     'count' => 'multiple',
+                                    'validation' => 'free-form',
                                     'mandatory' => 'optional'
                                   },
                      'upd-to' => {
+                                   'len' => '80',
                                    'count' => 'multiple',
+                                   'validation' => 'e-mail',
                                    'mandatory' => 'mandatory',
                                    'key' => 'inverse'
                                  },
                      'notify' => {
+                                   'len' => '80',
                                    'count' => 'multiple',
+                                   'validation' => 'e-mail',
                                    'mandatory' => 'optional',
                                    'key' => 'inverse'
                                  },
                      'mnt-nfy' => {
+                                    'len' => '80',
                                     'count' => 'multiple',
+                                    'validation' => 'e-mail',
                                     'mandatory' => 'optional',
                                     'key' => 'inverse'
                                   }
                    },
        'as-block' => {
                        'source' => {
+                                     'len' => '80',
                                      'count' => 'single',
+                                     'validation' => 'registry-name',
                                      'mandatory' => 'mandatory'
                                    },
                        'mnt-by' => {
+                                     'len' => '80',
                                      'count' => 'multiple',
+                                     'validation' => 'object-name',
                                      'mandatory' => 'mandatory',
                                      'key' => 'inverse'
                                    },
                        'descr' => {
+                                    'len' => '80',
                                     'count' => 'multiple',
+                                    'validation' => 'free-form',
                                     'mandatory' => 'optional'
                                   },
                        'tech-c' => {
+                                     'len' => '30',
                                      'count' => 'multiple',
+                                     'validation' => 'nic-handle',
                                      'mandatory' => 'mandatory',
                                      'key' => 'inverse'
                                    },
                        'changed' => {
+                                      'len' => '80',
                                       'count' => 'multiple',
+                                      'validation' => 'changed',
                                       'mandatory' => 'mandatory'
                                     },
                        'admin-c' => {
+                                      'len' => '30',
                                       'count' => 'multiple',
+                                      'validation' => 'nic-handle',
                                       'mandatory' => 'mandatory',
                                       'key' => 'inverse'
                                     },
+                       'as-block' => {
+                                       'len' => '20',
+                                       'count' => 'single',
+                                       'validation' => 'as-block',
+                                       'mandatory' => 'mandatory',
+                                       'key' => 'primary'
+                                     },
                        'remarks' => {
+                                      'len' => '80',
                                       'count' => 'multiple',
+                                      'validation' => 'free-form',
                                       'mandatory' => 'optional'
                                     },
                        'notify' => {
+                                     'len' => '80',
                                      'count' => 'multiple',
+                                     'validation' => 'e-mail',
                                      'mandatory' => 'optional',
                                      'key' => 'inverse'
                                    },
                        'mnt-lower' => {
+                                        'len' => '80',
                                         'count' => 'multiple',
+                                        'validation' => 'object-name',
                                         'mandatory' => 'optional',
                                         'key' => 'inverse'
                                       }
                      },
        'role' => {
                    'source' => {
+                                 'len' => '80',
                                  'count' => 'single',
+                                 'validation' => 'registry-name',
                                  'mandatory' => 'mandatory'
                                },
                    'mnt-by' => {
+                                 'len' => '80',
                                  'count' => 'multiple',
+                                 'validation' => 'object-name',
                                  'mandatory' => 'optional',
                                  'key' => 'inverse'
                                },
                    'trouble' => {
+                                  'len' => '80',
                                   'count' => 'multiple',
+                                  'validation' => 'free-form',
                                   'mandatory' => 'optional'
                                 },
                    'phone' => {
+                                'len' => '80',
                                 'count' => 'multiple',
+                                'validation' => 'free-form',
                                 'mandatory' => 'optional'
                               },
                    'tech-c' => {
+                                 'len' => '30',
                                  'count' => 'multiple',
+                                 'validation' => 'nic-handle',
                                  'mandatory' => 'mandatory',
                                  'key' => 'inverse'
                                },
                    'nic-hdl' => {
+                                  'len' => '30',
                                   'count' => 'single',
+                                  'validation' => 'nic-handle',
                                   'mandatory' => 'mandatory',
                                   'key' => 'primary'
                                 },
                    'fax-no' => {
+                                 'len' => '80',
                                  'count' => 'multiple',
+                                 'validation' => 'free-form',
                                  'mandatory' => 'optional'
                                },
                    'e-mail' => {
+                                 'len' => '80',
                                  'count' => 'multiple',
+                                 'validation' => 'e-mail',
                                  'mandatory' => 'mandatory',
                                  'key' => 'lookup'
                                },
                    'changed' => {
+                                  'len' => '80',
                                   'count' => 'multiple',
+                                  'validation' => 'changed',
                                   'mandatory' => 'mandatory'
                                 },
                    'admin-c' => {
+                                  'len' => '30',
                                   'count' => 'multiple',
+                                  'validation' => 'nic-handle',
                                   'mandatory' => 'mandatory',
                                   'key' => 'inverse'
                                 },
                    'remarks' => {
+                                  'len' => '80',
                                   'count' => 'multiple',
+                                  'validation' => 'free-form',
                                   'mandatory' => 'optional'
                                 },
                    'address' => {
+                                  'len' => '80',
                                   'count' => 'multiple',
+                                  'validation' => 'free-form',
                                   'mandatory' => 'mandatory'
                                 },
                    'notify' => {
+                                 'len' => '80',
                                  'count' => 'multiple',
+                                 'validation' => 'e-mail',
                                  'mandatory' => 'optional',
                                  'key' => 'inverse'
-                               }
+                               },
+                   'role' => {
+                               'len' => '80',
+                               'count' => 'single',
+                               'validation' => 'person-name',
+                               'mandatory' => 'mandatory',
+                               'key' => 'lookup'
+                             }
                  },
        'peering-set' => {
                           'source' => {
+                                        'len' => '80',
                                         'count' => 'single',
+                                        'validation' => 'registry-name',
                                         'mandatory' => 'mandatory'
                                       },
                           'mnt-by' => {
+                                        'len' => '80',
                                         'count' => 'multiple',
+                                        'validation' => 'object-name',
                                         'mandatory' => 'mandatory',
                                         'key' => 'inverse'
                                       },
                           'peering' => {
+                                         'len' => '80',
                                          'count' => 'multiple',
+                                         'validation' => 'free-form',
                                          'mandatory' => 'mandatory'
                                        },
                           'descr' => {
+                                       'len' => '80',
                                        'count' => 'multiple',
+                                       'validation' => 'free-form',
                                        'mandatory' => 'mandatory'
                                      },
                           'tech-c' => {
+                                        'len' => '30',
                                         'count' => 'multiple',
+                                        'validation' => 'nic-handle',
                                         'mandatory' => 'mandatory',
                                         'key' => 'inverse'
                                       },
                           'changed' => {
+                                         'len' => '80',
                                          'count' => 'multiple',
+                                         'validation' => 'changed',
                                          'mandatory' => 'mandatory'
                                        },
                           'admin-c' => {
+                                         'len' => '30',
                                          'count' => 'multiple',
+                                         'validation' => 'nic-handle',
                                          'mandatory' => 'mandatory',
                                          'key' => 'inverse'
                                        },
                           'remarks' => {
+                                         'len' => '80',
                                          'count' => 'multiple',
+                                         'validation' => 'free-form',
                                          'mandatory' => 'optional'
                                        },
                           'notify' => {
+                                        'len' => '80',
                                         'count' => 'multiple',
+                                        'validation' => 'e-mail',
                                         'mandatory' => 'optional',
                                         'key' => 'inverse'
-                                      }
+                                      },
+                          'peering-set' => {
+                                             'len' => '80',
+                                             'count' => 'single',
+                                             'validation' => 'peering-set',
+                                             'mandatory' => 'mandatory',
+                                             'key' => 'primary'
+                                           }
                         }
      };
 
