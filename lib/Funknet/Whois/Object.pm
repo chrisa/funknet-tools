@@ -302,14 +302,12 @@ sub validate {
     my @invalid;
   ATTR:
     for my $attr (sort keys %{$self->{_methods}}) {
-        next unless defined $def->{$attr}->{validation};
-        if (defined $s->{$def->{$attr}->{validation}}) {
-            my $re = $s->{$def->{$attr}->{validation}};
-            next ATTR unless ref $re eq 'Regexp';
-            for my $val (@{ $self->{_methods}->{$attr} }) {
-                if ($val !~ $re) {
-                    push @invalid, { attr => $attr, val => $val };
-                }
+        my $re = $s->{$def->{$attr}->{validation}};
+        next ATTR unless defined $re && ref $re eq 'Regexp';
+
+        for my $val (@{ $self->{_methods}->{$attr} }) {
+            if ($val !~ $re) {
+                push @invalid, { attr => $attr, val => $val };
             }
         }
     }
