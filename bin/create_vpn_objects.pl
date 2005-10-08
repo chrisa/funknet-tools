@@ -1,7 +1,6 @@
 #!/usr/bin/perl -w
 
 use strict;
-use Carp;
 use Data::Dumper;
 
 use lib './lib';
@@ -14,8 +13,8 @@ my @node_objects;
 my @cnode_objects;
 my @tunnels;
 
-my @required_node_values = qw/ networks endpoint /;
-my @required_cnode_values = qw/ transit_networks endpoint /;
+my @required_node_values = qw/ endpoint mntner name networks /;
+my @required_cnode_values = qw/ endpoint mntner name transit_networks /;
 
 
 my $contact = 'VPN-CONTACT';
