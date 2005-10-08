@@ -17,13 +17,13 @@ sub new {
 
 	print STDOUT "Network: $net\n";
 
-	my $net_ip_object = new NetAddr::IP $net;
+	my $net_ip_object = NetAddr::IP->new($net);
 
 	my $first_network_address = $net_ip_object->network->addr();
 	my $last_broadcast_address = $net_ip_object->broadcast->addr();
 
-	my $first_net_ip_object = new NetAddr::IP ("$first_network_address/30");
-	my $last_net_ip_object = new NetAddr::IP ("$last_broadcast_address/30");
+	my $first_net_ip_object = NetAddr::IP->new("$first_network_address/30");
+	my $last_net_ip_object = NetAddr::IP->new("$last_broadcast_address/30");
 
 	my $first_net_object = $first_net_ip_object->network();
 	my $last_net_object = $last_net_ip_object->network();
@@ -36,7 +36,7 @@ sub new {
 
 	CHUG:	while ($counter->network() <= $last_net_object->network()) {
 		my $this_net_address = $counter->addr();
-		my $this_net = new NetAddr::IP("$this_net_address/30");
+		my $this_net = NetAddr::IP->new("$this_net_address/30");
 		push (@usable_nets, $this_net->network());
 	
 		$counter = ($counter + 4);
@@ -45,7 +45,7 @@ sub new {
 
     }
 
-    print $#usable_nets+1 . " nets available\n\n";
+    print scalar @usable_nets, " nets available\n\n";
 
     $self->{_transit_nets} = [ @usable_nets ];
     $self->{_name} = $args{name};
