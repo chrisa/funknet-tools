@@ -115,6 +115,7 @@ lib/Funknet/Whois/DirectMysql.pm
 lib/Funknet/Whois/Object.pm
 lib/Funknet/Whois/ObjectDefs.pm
 lib/Funknet/Whois/ObjectGenerator.pm
+lib/Funknet/Whois/ObjectSyntax.pm
 lib/Funknet/Whois/Policy.pm
 lib/Funknet/Whois/Server.pm
 lib/Funknet/Whois/Templates.pm
