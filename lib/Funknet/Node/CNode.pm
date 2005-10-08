@@ -12,8 +12,10 @@ sub new {
     my @whole_lot = @$nets;
     my @usable_nets;
 
+    print STDOUT "CNode: $args{name}\n";
     foreach my $net (@whole_lot) {
-	print Dumper $net;
+
+	print STDOUT "Network: $net\n";
 
 	my $net_ip_object = new NetAddr::IP $net;
 
@@ -32,14 +34,9 @@ sub new {
 
 	my $counter = $net_ip_object->network();
 
-	print Dumper $counter->network->addr();
-	print Dumper $last_net_object->network->addr();
-
 	CHUG:	while ($counter->network() <= $last_net_object->network()) {
-#		print STDOUT "Smaller\n";
 		my $this_net_address = $counter->addr();
 		my $this_net = new NetAddr::IP("$this_net_address/30");
-#		print STDOUT "this net address $this_net_address\n";
 		push (@usable_nets, $this_net->network());
 	
 		$counter = ($counter + 4);
@@ -48,10 +45,7 @@ sub new {
 
     }
 
-    foreach my $twat (@usable_nets) {
-	print $twat->network() . "\n";
-    }
-    print $#usable_nets+1 . " nets available\n";
+    print $#usable_nets+1 . " nets available\n\n";
 
     $self->{_transit_nets} = [ @usable_nets ];
     $self->{_name} = $args{name};
