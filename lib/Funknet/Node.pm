@@ -37,16 +37,23 @@ sub new_tunnel {
 #						    'e_mail' => $update_to,
 #						  );
 
-    return ("tunnel:\t\t$cnode_name-$node_name\n" . 
-	     "as:\t\t$cnode_as\n" .
-	     "as:\t\t$node_as\n" .
-	     "endpoint:\t$cnode_endpoint\n" .
-	     "endpoint:\t$node_endpoint\n" .
-	     "address:\t$cnode_address\n" .
-	     "address:\t$node_address\n" .
-	     "admin-c:\t$contact\n" . 
-	     "tech-c:\t\t$contact\n" .
-	     "mnt-by:\t\t$mntner\n");
+    # turn this into a FW::Object, for validation and pretty printing. 
+    my $obj = Funknet::Whois::Object->new("tunnel:  $cnode_name-$node_name\n" . 
+                                          "as:  $cnode_as\n" .
+                                          "as:  $node_as\n" .
+                                          "endpoint: $cnode_endpoint\n" .
+                                          "endpoint: $node_endpoint\n" .
+                                          "address: $cnode_address\n" .
+                                          "address: $node_address\n" .
+                                          "admin-c: $contact\n" . 
+                                          "tech-c:  $contact\n" .
+                                          "mnt-by:  $mntner\n");
+    if ($obj->error()) {
+        return $obj->error();
+    }
+    else{
+        return $obj->text();
+    }
 }
 
 sub as {
