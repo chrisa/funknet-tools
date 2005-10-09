@@ -150,7 +150,6 @@ sub AUTOLOAD {
 	} else {
 	    $self->{_methods}->{$name} = [ $new ];
 	}
-        $self->validate();
     }
 
     return wantarray 
