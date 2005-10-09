@@ -92,8 +92,12 @@ for my $node (@$node_list) {
 for my $cnode (@cnode_objects) {
     for my $node (@node_objects) {
 	my $transit_net = $cnode->next_transit_net;
-	my $tunnel = Funknet::Node->new_tunnel($cnode, $node, $transit_net,
-						$create_email, $source, $tunnel_type);
+	my $tunnel = Funknet::Node->new_tunnel(cnode	   => $cnode,
+					       node	   => $node,
+					       transit_net => $transit_net,
+					       changed     => $create_email,
+					       source	   => $source,
+					       tunnel_type => $tunnel_type);
 	print "$tunnel\n";
 	push (@tunnels, $tunnel);
     }

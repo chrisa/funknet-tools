@@ -10,26 +10,25 @@ use Data::Dumper;
 use NetAddr::IP;
 
 sub new_tunnel {
-    my ($class, $cnode, $node, $transit_net, $create_email, $source, $type) = @_;
-    my $self = bless {}, $class;
+    my ($class, %args) = @_;
 
     #Get 1st Address
-    $transit_net++;
+    $args{transit_net}++;
 
-    my $cnode_name = $cnode->name;
-    my $cnode_as = $cnode->as;
-    my $cnode_endpoint = $cnode->endpoint;
-    my $cnode_address = $transit_net->addr();
-    my $contact = $cnode->contact;
-    my $mntner = $cnode->mntner;
+    my $cnode_name = $args{cnode}->name;
+    my $cnode_as = $args{cnode}->as;
+    my $cnode_endpoint = $args{cnode}->endpoint;
+    my $cnode_address = $args{transit_net}->addr();
+    my $contact = $args{cnode}->contact;
+    my $mntner = $args{cnode}->mntner;
 
     #Get 2nd Address
-    $transit_net++;
+    $args{transit_net}++;
     
-    my $node_name = $node->name;
-    my $node_as = $node->as;
-    my $node_endpoint = $node->endpoint;
-    my $node_address = $transit_net->addr();
+    my $node_name = $args{node}->name;
+    my $node_as = $args{node}->as;
+    my $node_endpoint = $args{node}->endpoint;
+    my $node_address = $args{transit_net}->addr();
 
     # turn this into a FW::Object, for validation and pretty printing. 
     my $obj = Funknet::Whois::Object->new("tunnel:  $cnode_name-$node_name\n" . 
@@ -41,9 +40,9 @@ sub new_tunnel {
                                           "address: $node_address\n" .
                                           "admin-c: $contact\n" . 
                                           "tech-c:  $contact\n" .
-                                          "changed: $create_email\n" .
-                                          "source:  $source\n" .
-                                          "type:    $type\n" .
+                                          "changed: $args{changed}\n" .
+                                          "source:  $args{source}\n" .
+                                          "type:    $args{tunnel_type}\n" .
                                           "mnt-by:  $mntner\n");
     if ($obj->error()) {
         return $obj->error();
