@@ -1280,7 +1280,7 @@ my $t = {
                                  },
                      'tech-c' => {
                                    'len' => '30',
-                                   'count' => 'single',
+                                   'count' => 'multiple',
                                    'validation' => 'nic-handle',
                                    'mandatory' => 'mandatory',
                                    'key' => 'inverse'
@@ -1307,7 +1307,7 @@ my $t = {
                              },
                      'admin-c' => {
                                     'len' => '30',
-                                    'count' => 'single',
+                                    'count' => 'multiple',
                                     'validation' => 'nic-handle',
                                     'mandatory' => 'mandatory',
                                     'key' => 'inverse'
