@@ -31,24 +31,27 @@ sub new_tunnel {
     my $node_address = $args{transit_net}->addr();
 
     # turn this into a FW::Object, for validation and pretty printing. 
-    my $obj = Funknet::Whois::Object->new("tunnel:  $cnode_name-$node_name\n" . 
-                                          "as:  $cnode_as\n" .
-                                          "as:  $node_as\n" .
-                                          "endpoint: $cnode_endpoint\n" .
-                                          "endpoint: $node_endpoint\n" .
-                                          "address: $cnode_address\n" .
-                                          "address: $node_address\n" .
-                                          "admin-c: $contact\n" . 
-                                          "tech-c:  $contact\n" .
-                                          "changed: $args{changed}\n" .
-                                          "source:  $args{source}\n" .
-                                          "type:    $args{tunnel_type}\n" .
-                                          "mnt-by:  $mntner\n");
-    if ($obj->error()) {
-        return $obj->error();
+
+    my $og = Funknet::Whois::ObjectGenerator->new( source  => $args{source},
+						   mntner  => $mntner,
+						   e_mail  => $args{changed},
+						   person  => $contact,
+						 );
+
+    my $tunnel_obj = $og->tunnel(	'name'	   => "$cnode_name-$node_name",
+				'as'	   => [ $cnode_as, $node_as ],
+				'endpoint' => [ $cnode_endpoint, $node_endpoint ],
+				'address' => [ $cnode_address, $node_address ],
+				'type'    => $args{tunnel_type},
+			     );
+#print scalar $tunnel_obj->text . "\n";
+#print Dumper $tunnel_obj;
+
+    if ($tunnel_obj->error()) {
+        return $tunnel_obj->error();
     }
     else{
-        return $obj->text();
+        return $tunnel_obj->text();
     }
 }
 
