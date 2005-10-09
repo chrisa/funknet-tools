@@ -97,7 +97,12 @@ sub new {
     }
 
     if (scalar @{ $self->{_content} } > 0) {
-	return $self->validate();
+        unless ($args{NoValidate}) {
+            return $self->validate();
+        }
+        else {
+            return $self;
+        }
     } else {
 	return;
     }
@@ -145,6 +150,7 @@ sub AUTOLOAD {
 	} else {
 	    $self->{_methods}->{$name} = [ $new ];
 	}
+        $self->validate();
     }
 
     return wantarray 
@@ -306,7 +312,9 @@ sub validate {
     my @invalid;
   ATTR:
     for my $attr (sort keys %{$self->{_methods}}) {
+        next unless (defined $def->{$attr}->{validation});
         my $re = $s->{$def->{$attr}->{validation}};
+
         next ATTR unless defined $re && ref $re eq 'Regexp';
 
         for my $val (@{ $self->{_methods}->{$attr} }) {

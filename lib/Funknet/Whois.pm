@@ -42,30 +42,47 @@ Routines for dealing with whois objects.
    
 =cut
 
+=cut
+
 use vars qw/ @EXPORT_OK @ISA /;
 @EXPORT_OK = qw/ parse_object check_auth 
                  object_exists get_object 
-                 pretty_object get_object_inverse /;
+                 pretty_object get_object_inverse
+                 load_template /;
 @ISA = qw/ Exporter /;
 use Exporter; 
 
 use IO::Scalar;
 use Funknet::Whois::Object;
+use Funknet::Whois::Templates qw / tmpl /;
 
 =head2 parse_object
 
 Takes a whois object as text, returns a Funknet::Whois::Object
-object (this is only here because the Funknet::Whois::Object
-constructor expects a handle, and we have a string).
-
-Yeah, this should probably proxy through a Funknet::Whois::Object 
-constructor.
+object.
 
 =cut
 
 sub parse_object {
     my ($object_text) = @_;
     my $object = Funknet::Whois::Object->new($object_text);
+    return $object;
+}
+
+=head2 load_template {
+
+Given an object type returns a Funknet::Whois::Object with the methods
+defined, but no values, and no errors recorded. 
+
+=cut
+
+sub load_template {
+    my ($object_type) = @_;
+
+    my $object_text = tmpl($object_type);
+    defined $object_text or return undef;
+
+    my $object = Funknet::Whois::Object->new($object_text, NoValidate => 1);
     return $object;
 }
 

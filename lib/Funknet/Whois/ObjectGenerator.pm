@@ -215,8 +215,7 @@ aut-num objects.
 =cut
 
 use Funknet::Config::Validate qw/ is_ipv4 is_valid_as / ;
-use Funknet::Whois qw / get_object parse_object /;
-use Funknet::Whois::Templates qw / tmpl /;
+use Funknet::Whois qw / get_object load_template /;
 use Funknet::Whois::Policy qw / assign_as assign_tunnel_inetnum /;
 use Net::IPv4Addr qw/ ipv4_network ipv4_broadcast /;
 use Data::Dumper;
@@ -265,7 +264,7 @@ sub mntner {
 	
 	my $mnt_by = $args{mnt_by} || $args{name};
 
-	my $m = parse_object(tmpl('mntner'));
+	my $m = load_template('mntner');
 	$m->mntner($args{name});
 	$m->descr ($args{descr});
 	$m->upd_to($args{e_mail});
@@ -299,7 +298,7 @@ sub key_cert {
 
 	# create a key-cert.
 
-	my $k = parse_object(tmpl('key-cert'));
+	my $k = load_template('key-cert');
 
 	$k->key_cert($args{name});
 	$k->certif  ($args{certif});
@@ -343,7 +342,7 @@ sub person {
 
 	# create a new object.
 	
-	my $p = parse_object(tmpl('person'));
+	my $p = load_template('person');
 	$p->person ($args{name});
 	$p->address($args{address});
 	$p->phone  ($args{phone});
@@ -389,7 +388,7 @@ sub aut_num {
 	defined $args{import} &&
 	defined $args{export}) {
 	
-	my $m = parse_object(tmpl('aut-num'));
+	my $m = load_template('aut-num');
 	$m->as_name($args{name});
 	$m->descr ($args{descr});
 	$m->aut_num ($args{aut_num});
@@ -452,7 +451,7 @@ sub inetnum {
     if (defined $args{name} &&
 	defined $args{network}) {
 	
-	my $m = parse_object(tmpl('inetnum'));
+	my $m = load_template('inetnum');
 
 	my $inetnum = cidr_to_inetnum($args{network});
 	unless (defined $inetnum) {
@@ -520,7 +519,7 @@ sub tunnel {
 	defined $args{address} &&
 	defined $args{endpoint}) {
 	
-	my $m = parse_object(tmpl('tunnel'));
+	my $m = load_template('tunnel');
 
 	$m->xtunnel($args{name});
 	$m->type($args{type});
@@ -554,7 +553,7 @@ sub route {
 	defined $args{route} &&
 	defined $args{origin}) {
 	
-	my $m = parse_object(tmpl('route'));
+	my $m = load_template('route');
 
 	$m->route($args{route});
 	$m->descr($args{descr});
