@@ -109,7 +109,11 @@ sub error {
 	$self->{_updater_errortext} .= "$errortext\n";
     }
     $errortext = $self->{_updater_errortext};
-    $errortext =~ s/\n?$//;
+
+    if ($errortext) {
+	$errortext =~ s/\n?$//;
+    }
+
     return $errortext;
 }
 
