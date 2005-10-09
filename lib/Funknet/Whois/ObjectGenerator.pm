@@ -90,22 +90,22 @@ This can be done in three mails.
 
   # we can now generate all types of object, as we have a mntner and contacts. 
 
-  my $autnum = $gen->aut_num( 'name' => 'FOONET',
-                              'as'   => undef,
-                              'tuns' => [ 'FOO-CENTRAL1', 'FOO-CENTRAL2' ]
+  my $autnum = $gen->aut_num( 'name'    => 'FOONET',
+                              'aut_num' => 'AS65090',
+                              'tuns'    => [ 'FOO-CENTRAL1', 'FOO-CENTRAL2' ],
+                              'import'  => "",
+                              'export'  => "",
                             );
 
-  my $tun = $gen->tunnel( 'name'    => 'FOO-CENTRAL1',
-                          'as'      => ['AS65000','AS65001'],
-                          'ep'      => ['1.2.3.4', '5.6.7.8'],
-                          'addr'    => ['10.2.2.1', '10.2.2.2'],
+  my $tun = $gen->tunnel( 'name'     => 'FOO-CENTRAL1',
+                          'type'     => 'ipip',
+                          'as'       => ['AS65000','AS65001'],
+                          'endpoint' => ['1.2.3.4', '5.6.7.8'],
+                          'address'  => ['10.2.2.1', '10.2.2.2'],
                         );
 
-  my $inetnum = $gen->inetnum( 'start' => '10.2.2.0',
-                               'end'   => '10.2.2.3'
-                             );
-
-  my $range = $gen->inetnum( 'network' => '10.2.2.0/30' );
+  my $range = $gen->inetnum( 'name'    => 'FOONET-FOOCENTRAL1',
+                             'network' => '10.2.2.0/30' );
 
   my $route = $gen->route( 'name'    => 'FOOTUNNELS',
                            'origin'  => 'AS65000',
@@ -156,15 +156,12 @@ attributes.
 This returns the same aut-num object as sub aut_num, but auto-assigns
 an AS number. No locking is done, but maybe it should be...
 
-=head2 inetnum ( name => $name, start => $start, end => $end )
-
 =head2 inetnum ( name => $name, network => $cidr_net )
 
 These methods generate inetnum objects. 
 
-inetnum() expects start and end of range IP addresses as
-dotted-decimal. inetnum_net() expects an IP network specified as a
-CIDR network (x.x.x.x/a).
+inetnum() expects an IP network specified as a CIDR network
+(x.x.x.x/a).
 
 These methods will check that the inetnum object to be generated
 does not exist in the database. They will *not* check for overlapping
