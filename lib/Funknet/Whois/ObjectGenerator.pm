@@ -215,9 +215,9 @@ aut-num objects.
 =cut
 
 use Funknet::Config::Validate qw/ is_ipv4 is_valid_as / ;
-use Funknet::Whois qw / get_object load_template /;
-use Funknet::Whois::Policy qw / assign_as assign_tunnel_inetnum /;
+use Funknet::Whois::Policy qw/ assign_as assign_tunnel_inetnum /;
 use Net::IPv4Addr qw/ ipv4_network ipv4_broadcast /;
+use Funknet::Whois qw/ get_object load_template /;
 use Data::Dumper;
 
 our @errors;
@@ -264,7 +264,7 @@ sub mntner {
 	
 	my $mnt_by = $args{mnt_by} || $args{name};
 
-	my $m = load_template('mntner');
+	my $m = Funknet::Whois::load_template('mntner');
 	$m->mntner($args{name});
 	$m->descr ($args{descr});
 	$m->upd_to($args{e_mail});
@@ -298,7 +298,7 @@ sub key_cert {
 
 	# create a key-cert.
 
-	my $k = load_template('key-cert');
+	my $k = Funknet::Whois::load_template('key-cert');
 
 	$k->key_cert($args{name});
 	$k->certif  ($args{certif});
@@ -342,7 +342,7 @@ sub person {
 
 	# create a new object.
 	
-	my $p = load_template('person');
+	my $p = Funknet::Whois::load_template('person');
 	$p->person ($args{name});
 	$p->address($args{address});
 	$p->phone  ($args{phone});
@@ -388,7 +388,7 @@ sub aut_num {
 	defined $args{import} &&
 	defined $args{export}) {
 	
-	my $m = load_template('aut-num');
+	my $m = Funknet::Whois::load_template('aut-num');
 	$m->as_name($args{name});
 	$m->descr ($args{descr});
 	$m->aut_num ($args{aut_num});
@@ -451,7 +451,7 @@ sub inetnum {
     if (defined $args{name} &&
 	defined $args{network}) {
 	
-	my $m = load_template('inetnum');
+	my $m = Funknet::Whois::load_template('inetnum');
 
 	my $inetnum = cidr_to_inetnum($args{network});
 	unless (defined $inetnum) {
@@ -518,8 +518,8 @@ sub tunnel {
 	defined $args{as} &&
 	defined $args{address} &&
 	defined $args{endpoint}) {
-	
-	my $m = load_template('tunnel');
+
+	my $m = Funknet::Whois::load_template('tunnel');
 
 	$m->xtunnel($args{name});
 	$m->type($args{type});
@@ -553,7 +553,7 @@ sub route {
 	defined $args{route} &&
 	defined $args{origin}) {
 	
-	my $m = load_template('route');
+	my $m = Funknet::Whois::load_template('route');
 
 	$m->route($args{route});
 	$m->descr($args{descr});
