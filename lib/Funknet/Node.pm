@@ -10,7 +10,7 @@ use Data::Dumper;
 use NetAddr::IP;
 
 sub new_tunnel {
-    my ($class, $cnode, $node, $transit_net) = @_;
+    my ($class, $cnode, $node, $transit_net, $create_email, $source, $type) = @_;
     my $self = bless {}, $class;
 
     #Get 1st Address
@@ -31,12 +31,6 @@ sub new_tunnel {
     my $node_endpoint = $node->endpoint;
     my $node_address = $transit_net->addr();
 
-#    my $gen = Funknet::Whois::ObjectGenerator->new( 'source' => 'FUNKNET',
-#						    'mntner' => $mntner,
-#						    'person' => $contact,
-#						    'e_mail' => $update_to,
-#						  );
-
     # turn this into a FW::Object, for validation and pretty printing. 
     my $obj = Funknet::Whois::Object->new("tunnel:  $cnode_name-$node_name\n" . 
                                           "as:  $cnode_as\n" .
@@ -47,6 +41,9 @@ sub new_tunnel {
                                           "address: $node_address\n" .
                                           "admin-c: $contact\n" . 
                                           "tech-c:  $contact\n" .
+                                          "changed: $create_email\n" .
+                                          "source:  $source\n" .
+                                          "type:    $type\n" .
                                           "mnt-by:  $mntner\n");
     if ($obj->error()) {
         return $obj->error();

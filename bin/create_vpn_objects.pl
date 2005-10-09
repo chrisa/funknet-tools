@@ -16,11 +16,13 @@ my @tunnels;
 my @required_node_values = qw/ endpoint mntner name networks /;
 my @required_cnode_values = qw/ endpoint mntner name transit_networks /;
 
-
 my $contact = 'VPN-CONTACT';
 my $mntner = 'VPN-MNT';
+my $create_email = 'dunc@bleh.org';
+my $source = 'FUNKNET';
+my $tunnel_type = 'ipip';
 
-my $first_as = 66000;
+my $first_as = 61000;
 
 my $node_list = [
     {	name => 'nodeA', networks => [ '192.168.10.0/24' ],
@@ -67,7 +69,7 @@ for my $cnode (@$cnode_list) {
 						endpoint => $cnode->{endpoint},
 						contact => $contact,
 						mntner => $cnode->{mntner},
-					        as   => $next_as,);
+					        as   => "AS$next_as",);
     push (@cnode_objects, $new_cnode);
     $next_as++;
 }
@@ -80,7 +82,7 @@ for my $node (@$node_list) {
 						endpoint => $node->{endpoint},
 						contact => $contact,
 						mntner => $node->{mntner},
-						as   => $next_as,);
+						as   => "AS$next_as",);
     push (@node_objects, $new_node);
     $next_as++;
 }
@@ -88,12 +90,10 @@ for my $node (@$node_list) {
 # Iterate through Cnode->Node combinations
 
 for my $cnode (@cnode_objects) {
-
-    my @transit_nets = $cnode->transitnets;
-    
     for my $node (@node_objects) {
-	my $transit_net = shift(@transit_nets);
-	my $tunnel = Funknet::Node->new_tunnel($cnode, $node, $transit_net);
+	my $transit_net = $cnode->next_transit_net;
+	my $tunnel = Funknet::Node->new_tunnel($cnode, $node, $transit_net,
+						$create_email, $source, $tunnel_type);
 	print "$tunnel\n";
 	push (@tunnels, $tunnel);
     }
