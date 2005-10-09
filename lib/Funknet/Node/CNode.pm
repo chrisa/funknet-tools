@@ -62,4 +62,9 @@ sub transitnets {
     return @{ $self->{_transit_nets} };
 }
 
+sub next_transit_net {
+    my ($self) = @_;
+    return (shift @{$self->{_transit_nets}});
+}
+
 1;
