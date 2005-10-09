@@ -12,11 +12,12 @@ my %transit_networks;
 my @node_objects;
 my @cnode_objects;
 my @tunnels;
+my @autnums;
 
 my @required_node_values = qw/ endpoint mntner name networks /;
 my @required_cnode_values = qw/ endpoint mntner name transit_networks /;
 
-my $contact = 'VPN-CONTACT';
+my $person = 'VPN-CONTACT';
 my $mntner = 'VPN-MNT';
 my $create_email = 'dunc@bleh.org';
 my $source = 'FUNKNET';
@@ -67,7 +68,7 @@ for my $cnode (@$cnode_list) {
     my $new_cnode = Funknet::Node::CNode->new(	$cnode->{transit_networks},
 					        name => $cnode->{name},
 						endpoint => $cnode->{endpoint},
-						contact => $contact,
+						contact => $person,
 						mntner => $cnode->{mntner},
 					        as   => "AS$next_as",);
     push (@cnode_objects, $new_cnode);
@@ -80,7 +81,7 @@ for my $node (@$node_list) {
     my $new_node = Funknet::Node::Node->new(	$node->{networks},
 						name => $node->{name},
 						endpoint => $node->{endpoint},
-						contact => $contact,
+						contact => $person,
 						mntner => $node->{mntner},
 						as   => "AS$next_as",);
     push (@node_objects, $new_node);
@@ -97,8 +98,9 @@ for my $cnode (@cnode_objects) {
 					       transit_net => $transit_net,
 					       changed     => $create_email,
 					       source	   => $source,
-					       tunnel_type => $tunnel_type);
-	print "$tunnel\n";
+					       tunnel_type => $tunnel_type
+						);
+	print $tunnel . "\n\n";
 	push (@tunnels, $tunnel);
     }
 }
