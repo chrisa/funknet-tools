@@ -54,7 +54,7 @@ use Exporter;
 
 use IO::Scalar;
 use Funknet::Whois::Object;
-use Funknet::Whois::Templates qw / tmpl /;
+use Funknet::Whois::Templates;
 
 =head2 parse_object
 
@@ -79,7 +79,7 @@ defined, but no values, and no errors recorded.
 sub load_template {
     my ($object_type) = @_;
 
-    my $object_text = tmpl($object_type);
+    my $object_text = Funknet::Whois::Templates::tmpl($object_type);
     defined $object_text or return undef;
 
     my $object = Funknet::Whois::Object->new($object_text, NoValidate => 1);
