@@ -34,6 +34,7 @@ TEXT
 $obj = Funknet::Whois::Object->new($text);
 
 ok( defined $obj,                                'parse ok' );
+is( _nw(scalar $obj->text),        _nw($text),   'text correct');
 is( ref $obj,          'Funknet::Whois::Object', 'correct class' );
 is( $obj->object_type, 'aut-num',                'correct type' );
 is( $obj->object_name, 'AS65001',                'correct name' );
@@ -118,6 +119,7 @@ TEXT
 $obj = Funknet::Whois::Object->new($text);
 
 ok( defined $obj,                                'parse ok' );
+is( _nw(scalar $obj->text),        _nw($text),   'text correct');
 is( ref $obj,          'Funknet::Whois::Object', 'correct class' );
 is( $obj->object_type, 'key-cert',               'correct type' );
 is( $obj->object_name, 'PGPKEY-B355A313',        'correct name' );
@@ -154,6 +156,7 @@ TEXT
 $obj = Funknet::Whois::Object->new($text, TimeStamp => 1);
 
 ok( defined $obj,                                'parse ok' );
+is( _nw(scalar $obj->text),        _nw($text),   'text correct');
 is( ref $obj,          'Funknet::Whois::Object', 'correct class' );
 is( $obj->object_type, 'aut-num',                'correct type' );
 is( $obj->object_name, 'AS65001',                'correct name' );
@@ -216,6 +219,7 @@ TEXT
 $obj = Funknet::Whois::Object->new($text, TimeStamp => 1);
 
 ok( defined $obj,                                'parse ok' );
+is( _nw(scalar $obj->text), _nw($text),          'text correct');
 is( ref $obj,          'Funknet::Whois::Object', 'correct class' );
 is( $obj->object_type, 'aut-num',                'correct type' );
 is( $obj->object_name, 'AS65001',                'correct name' );
@@ -239,6 +243,7 @@ TEXT
 $obj = Funknet::Whois::Object->new($text);
 
 ok( defined $obj,                                    'parse ok');
+is( _nw(scalar $obj->text),    _nw($text),           'text correct');
 is( $obj->error(), 'Unknown object type: fictional', 'fictional object detected');
 
 # single missing mandatory key
@@ -256,6 +261,7 @@ TEXT
 $obj = Funknet::Whois::Object->new($text);
 
 ok( defined $obj,                                         'parse ok');
+is( _nw(scalar $obj->text),    _nw($text),                'text correct');
 is( $obj->error(), 'Missing mandatory attribute: source', 'missing attribute detected');
 
 # multiple missing mandatory key
@@ -272,6 +278,7 @@ TEXT
 $obj = Funknet::Whois::Object->new($text);
 
 ok( defined $obj,                                                  'parse ok');
+is( _nw(scalar $obj->text),    _nw($text),                         'text correct');
 is( $obj->error(), 'Missing mandatory attributes: mnt-by, source', 'missing attributes detected');
 
 # one 'single'-defined attribute used more than once
@@ -291,6 +298,7 @@ TEXT
 $obj = Funknet::Whois::Object->new($text);
 
 ok( defined $obj,                                                 'parse ok');
+is( _nw(scalar $obj->text),    _nw($text),                        'text correct');
 is( $obj->error(), 'Unique attribute source used multiple times', 'unique attribute used >1 detected');
 
 # multiple 'single'-defined attributes used more than once
@@ -311,6 +319,7 @@ TEXT
 $obj = Funknet::Whois::Object->new($text);
 
 ok( defined $obj,                                                          'parse ok');
+is( _nw(scalar $obj->text),    _nw($text),                                 'text correct');
 is( $obj->error(), 'Unique attributes origin, source used multiple times', 'multiple unique attributes used >1 detected');
 
 # one unknown attribute
@@ -330,6 +339,7 @@ TEXT
 $obj = Funknet::Whois::Object->new($text);
 
 ok( defined $obj,                              'parse ok');
+is( _nw(scalar $obj->text),    _nw($text),     'text correct');
 is( $obj->error(), 'Unknown attribute jibjib', 'unknown attribute detected');
 
 # multiple unknown attributes
@@ -350,6 +360,7 @@ TEXT
 $obj = Funknet::Whois::Object->new($text);
 
 ok( defined $obj,                                    'parse ok');
+is( _nw(scalar $obj->text),    _nw($text),           'text correct');
 is( $obj->error(), 'Unknown attributes jibjib, woo', 'multiple unknown attributes detected');
 
 # combination
@@ -370,6 +381,7 @@ TEXT
 $obj = Funknet::Whois::Object->new($text);
 
 ok( defined $obj, 'parse ok');
+is( _nw(scalar $obj->text), _nw($text), 'text correct');
 is( $obj->error(), 
     "Missing mandatory attribute: origin\n" . 
     "Unique attribute source used multiple times\n" .
@@ -391,6 +403,7 @@ TEXT
 $obj = Funknet::Whois::Object->new($text);
 
 ok( defined $obj,                                                                   'parse ok');
+is( _nw(scalar $obj->text), _nw($text),                                             'text correct');
 is( $obj->error(), 'Invalid value \'192.168.101.0/24/16\' for attribute \'route\'', 'bad prefix detected');
 
 $text = <<'TEXT';
@@ -407,7 +420,90 @@ TEXT
 $obj = Funknet::Whois::Object->new($text);
 
 ok( defined $obj, 'parse ok');
+is( _nw(scalar $obj->text), _nw($text), 'text correct');
 is( $obj->error(), 
     "Invalid values '192.168.101.0/24/16' for attribute 'route', " .  
                    "'AS650014242424' for attribute 'origin'",
     'multiple bad values detected');
+
+$text = <<'TEXT';
+
+aut-num:      AS65027
+as-name:      COLON
+descr:        colon.colondot.net own AS, to facilitate later routing to home
+descr:        NO giving me non-RFC1918. :-P
+remarks:      ==================================
+remarks:      Central Nodes (transit routes)
+remarks:      ----------------------------------
+remarks:      SPLURBY (AS65000)
+import:       from AS65000 action pref=100; accept AS-FUNKTRANSIT AND NOT AS-SEMICOLONDOT AND {10.0.0.0/8^+ , 172.16.0.0/12^+ , 192.168.0.0/16^+}
+export:       to AS65000 announce AS-SEMICOLONDOT
+remarks:      ----------------------------------
+remarks:      BLANK (AS65023)
+import:       from AS65023 action pref=100; accept AS-FUNKTRANSIT AND NOT AS-SEMICOLONDOT AND {10.0.0.0/8^+ , 172.16.0.0/12^+ , 192.168.0.0/16^+}
+export:       to AS65023 announce AS-SEMICOLONDOT
+remarks:      ----------------------------------
+remarks:      MUNKYII (AS65030)
+import:       from AS65030 action pref=100; accept AS-FUNKTRANSIT AND NOT AS-SEMICOLONDOT AND {10.0.0.0/8^+ , 172.16.0.0/12^+ , 192.168.0.0/16^+}
+export:       to AS65030 announce AS-SEMICOLONDOT
+remarks:      ==================================
+tun:          COLON-SPLURBY
+tun:          COLON-BLANK
+tun:          COLON-MUNKYII
+admin-c:      MB1-FUNKNET
+tech-c:       MB1-FUNKNET
+mnt-by:       MBM-MNT
+notify:       mbm+funknet@colondot.net
+changed:      mbm@colondot.net 20040222
+changed:      mbm@colondot.net 20040707
+changed:      mbm@colondot.net 20040707
+source:       FUNKNET
+
+TEXT
+
+$obj = Funknet::Whois::Object->new($text);
+
+ok( defined $obj, 'parse ok');
+is( _nw(scalar $obj->text), _nw($text), 'text correct');
+
+$text = <<'TEXT';
+
+aut-num:      AS65027
+as-name:      COLON
+descr:        colon.colondot.net own AS, to facilitate later routing to home
+descr:        NO giving me non-RFC1918. :-P
+import:       from AS65000 action pref=100; accept AS-FUNKTRANSIT AND NOT AS-SEMICOLONDOT AND {10.0.0.0/8^+ , 172.16.0.0/12^+ , 192.168.0.0/16^+}
+export:       to AS65000 announce AS-SEMICOLONDOT
+import:       from AS65023 action pref=100; accept AS-FUNKTRANSIT AND NOT AS-SEMICOLONDOT AND {10.0.0.0/8^+ , 172.16.0.0/12^+ , 192.168.0.0/16^+}
+export:       to AS65023 announce AS-SEMICOLONDOT
+import:       from AS65030 action pref=100; accept AS-FUNKTRANSIT AND NOT AS-SEMICOLONDOT AND {10.0.0.0/8^+ , 172.16.0.0/12^+ , 192.168.0.0/16^+}
+export:       to AS65030 announce AS-SEMICOLONDOT
+tun:          COLON-SPLURBY
+tun:          COLON-BLANK
+tun:          COLON-MUNKYII
+admin-c:      MB1-FUNKNET
+tech-c:       MB1-FUNKNET
+mnt-by:       MBM-MNT
+notify:       mbm+funknet@colondot.net
+changed:      mbm@colondot.net 20040222
+changed:      mbm@colondot.net 20040707
+changed:      mbm@colondot.net 20040707
+source:       FUNKNET
+
+TEXT
+
+$obj = Funknet::Whois::Object->new($text);
+
+ok( defined $obj, 'parse ok');
+is( _nw(scalar $obj->text), _nw($text), 'text correct');
+
+
+# "normalise whitespace" -- so we can compare the text
+# of the parsed object with the original text.
+sub _nw {
+    my ($text) = @_;
+    $text =~ s/^(\s|\n|\r)+//s;
+    $text =~ s/(\s+|\n|\r)+$//s;
+    $text =~ s/:\s+/: /sg;
+    return "$text\n";
+}
