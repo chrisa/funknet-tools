@@ -33,7 +33,6 @@ package Funknet::Whois::Object;
 use strict;
 use Funknet::Whois::ObjectDefs;
 use Funknet::Whois::ObjectSyntax;
-use DateTime::Format::W3CDTF;
 
 use vars qw/ $AUTOLOAD /;
 
@@ -49,6 +48,7 @@ sub new {
 
     my $f;
     if ($args{TimeStamp}) {
+        require DateTime::Format::W3CDTF;
         $f = DateTime::Format::W3CDTF->new;
     }
     
