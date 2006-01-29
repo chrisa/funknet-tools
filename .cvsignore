@@ -5,3 +5,6 @@ funknet_whois.conf-*
 whois-server-FUNKNET.pid
 .rnd
 Makefile
+META.yml
+blib
+pm_to_blib
