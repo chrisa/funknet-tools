@@ -150,6 +150,10 @@ sub new {
 	    $self->{_name} = $args{name};
 	}
     }
+    
+    # some tunnel types may want to use the 'order' argument to determine
+    # e.g. client/server preference. (OpenVPN does this.)
+    $self->{_order} = $args{order} if defined $args{order};
 
     # support the 'local_source' parameter. if it exists, and is a valid
     # ipv4 address, then replace $self->{_local_endpoint} with it, and 
@@ -179,7 +183,7 @@ sub new {
  	# validate this os, and get its corresponding 
  	# class name (correct capitalisation really).
  	my $tclass;
- 	next unless ($tclass = is_valid_os($t));	
+ 	next unless ($tclass = is_valid_os($t));
 
 	# i'd so use "no strict refs" here, but it 
 	# just makes my perl go "Unknown error":
@@ -189,12 +193,19 @@ sub new {
 	my $type = &{"Funknet::Config::Tunnel::".$tclass."::valid_type"}($self->{_type});
  	if ($type) {
  	    bless $self, "Funknet::Config::Tunnel::$tclass";
+            # give the reblessed object an opportunity to do 
+            # class-specific initialisation. 
+            $self->initialise();
  	    return $self;
  	}
     }
-    
+
     $self->warn("no tunnel class accepted $self->{_type}");
     return undef;
+}
+
+sub initialise {
+     # virtual
 }
 
 sub encryption {

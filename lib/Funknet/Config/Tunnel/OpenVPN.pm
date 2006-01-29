@@ -122,12 +122,6 @@ sub new_from_ovpn_conf {
     close CONF;
 
     my $conf = _parse_openvpn_conf($text);
-
-    print STDERR "$filename:\n$text\n\n";
-
-    use Data::Dumper;
-    print STDERR Dumper $conf;
-    
     my ($local_address, $remote_address) = $conf->{ifconfig} =~ /(.*) (.*)/;
     my ($iftype, $ifnum) = $conf->{dev} =~ /^([a-z]+)(\d+)$/;
 
@@ -139,7 +133,7 @@ sub new_from_ovpn_conf {
 	$remote_endpoint = $conf->{remote};
 	$local_endpoint  = $conf->{fn_local_endpoint};
     } else {
-	# not sure what good this does us.
+	# not sure what good this does us.
 	$remote_endpoint = $conf->{fn_remote_endpoint};
 	$local_endpoint  = $conf->{fn_local_endpoint};
     }
@@ -160,12 +154,15 @@ sub new_from_ovpn_conf {
     $tunnel->{_ovpn_port}    = $conf->{port};
     $tunnel->{_ovpn_file}    = $filename;
     $tunnel->{_ovpn_pidfile} = $conf->{writepid};
+    if (exists $conf->{'tls-server'}) {
+         $tunnel->{_ovpn_server} = 1;
+    }
+    if (exists $conf->{'tls-client'}) {
+         $tunnel->{_ovpn_client} = 1;
+    }
 
     # name is a whois-only param (for now)
     $tunnel->{_name} = $conf->{fn_name};
-
-    use Data::Dumper;
-    print STDERR Dumper $tunnel;
 
     return $tunnel;
 }
@@ -198,17 +195,6 @@ sub create {
     # (firewall rule gen needs this later)
     $self->{_ifname} = "$self->{_ovpn_type}$inter";
 
-    # decide if we're going to be client or server.
-    # (ignoring NAT/dynamic issues here)
-    # 
-    # lower endpoint ip address gets to be server. 
-    #
-    if (dq_to_int($self->{_local_endpoint}) < dq_to_int($self->{_remote_endpoint})) {
-	$self->{_ovpn_server}++;
-    } else {
-	$self->{_ovpn_client}++;
-    }
-    
     # allocate a port
     # here we use 5000+ifindex
     $self->{_ovpn_port} = 5000 + $self->{_ovpn_inter};
@@ -226,6 +212,19 @@ sub create {
 						      path => $self->{_ovpn_file} );
 					      
     return $ovpn_file;
+}
+
+sub initialise {
+     my ($self) = @_;
+     # decide if we're going to be client or server.
+     # (ignoring NAT/dynamic issues here)
+     # 
+     # the 'top' endpoint in the object will be the server, 'bottom' is the client. 
+     if ($self->{order}) {
+          $self->{_ovpn_client} = 1;
+     } else {
+          $self->{_ovpn_server} = 1;
+     }
 }
 
 sub enc_data {

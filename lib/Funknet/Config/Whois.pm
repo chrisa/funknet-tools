@@ -32,7 +32,7 @@
 # LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 # SUCH DAMAGE.
-
+     
 
 package Funknet::Config::Whois;
 use strict;
@@ -189,6 +189,7 @@ sub tunnels {
 							type => $tun->type,
 							source => 'whois',
 							proto => '4',
+                                                        order => $i,
 						       );
 
             # handle the case where we have a local_public_endpoint parameter
@@ -204,6 +205,7 @@ sub tunnels {
 							type => $tun->type,
 							source => 'whois',
 							proto => '4',
+                                                        order => $i,
 						       );
             }
 	    if (defined $tun_obj) {
@@ -309,6 +311,7 @@ sub sessions {
 							       peer_addr   => $ad[1-$i],
 							       dir         => 'import',
 							       source      => 'whois',
+                                                               order       => $i,
 							     );
 		
 		my $acl_out = Funknet::Config::AccessList->new( source_as   => $as[$i],
@@ -317,6 +320,7 @@ sub sessions {
 								peer_addr   => $ad[1-$i],
 								dir         => 'export',
 								source      => 'whois',
+                                                                order       => $i,
 							      );
 		
 		$bgp->add_session(
