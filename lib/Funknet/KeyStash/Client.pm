@@ -110,6 +110,7 @@ material itself is returned, for writing into the ipsec config.
 
 sub get_key {
     my ($self, $cn) = @_;
+    $cn =~ s!/!,!;
 
     # check local keystash
     if (my $data = $self->_check_file('key', $cn)) {
@@ -159,6 +160,7 @@ material itself is returned, for writing into the ipsec config.
 
 sub get_cert {
     my ($self, $name) = @_;
+    $name =~ s!/!,!;
 
     # check local keystash
     if (my $data = $self->_check_file('cert', $name)) {

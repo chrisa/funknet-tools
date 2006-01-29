@@ -80,12 +80,12 @@ sub new {
 
     # this is mandatory for whois source only.
     if ($self->{_source} eq 'whois') {
-    unless (defined $args{type} && is_valid_encryption($args{type})) {
-	$self->warn("encryption: missing or invalid type");
-	return undef;
-    } else {
-	$self->{_type} = $args{type};
-    }
+         unless (defined $args{type} && is_valid_encryption($args{type})) {
+              $self->warn("encryption: missing or invalid type");
+              return undef;
+         } else {
+              $self->{_type} = $args{type};
+         }
     }
 
     # If this object is source 'whois', call the Encryption-type-specific init method.
@@ -121,7 +121,7 @@ sub _host_init {
     my $tun = $self->{_tun};
     my $l = Funknet::ConfigFile::Tools->local;
 
-    if (defined $l->{ipsec} && $tun->type ne 'openvpn') {
+    if (defined $l->{ipsec} && $tun->type ne 'tun') {
 
 	if ($l->{ipsec} eq 'kame') {
 	    bless $self, 'Funknet::Config::Encryption::IPSec::KAME';
@@ -132,11 +132,15 @@ sub _host_init {
 	}
     }
 
-    if ($tun->type eq 'openvpn') {
+    if ($tun->type eq 'tun') {
 	bless $self, 'Funknet::Config::Encryption::OpenVPN';
     }
 
     return $self->host_init($tun);
+}
+
+sub host_init {
+     # virtual
 }
 
 sub apply {
@@ -174,9 +178,12 @@ sub get_keycert {
 	$self->warn("using raw cert file contents");
 	$text = join '', @{ $cert->{_content} };
     }
+    my $filename = $param;
+    $filename =~ s!/!,!;
+
     my $certfile = Funknet::Config::SystemFile->new(
 						    text => $text,
-						    path => "$e->{certpath}/$param",
+						    path => "$e->{certpath}/$filename",
 						   );
 
     # get the private key that corresponds to this cert
@@ -194,9 +201,12 @@ sub get_keycert {
 	$self->warn("key not found: $cn");
 	return undef;
     }
+    $filename = $cn;
+    $filename =~ s!/!,!;
+
     my $keyfile = Funknet::Config::SystemFile->new(
 						   text => $key,
-						   path => "$e->{keypath}/$cn",
+						   path => "$e->{keypath}/$filename",
 						  );
 
 
