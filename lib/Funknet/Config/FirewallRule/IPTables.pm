@@ -59,21 +59,18 @@ rule from the chain named the same as the whois_source name.
 
 =cut
 
-sub delete {
-    my ($self) = @_;
-
-    my $whois_source = Funknet::ConfigFile::Tools->whois_source || 'FUNKNET';
-    my $port_str     = _ports($self);
-    my $src_str      = _src($self);
-    my $dst_str      = _dst($self);
-    my $proto_str    = _proto($self);
-    my $inter_str    = _inter($self);
-
-    return ("iptables -D $whois_source -t filter".$inter_str.$proto_str.$src_str.$dst_str.$port_str."-j ACCEPT");
-}
-
 sub create {
     my ($self) = @_;
+    return $self->_iptables_cmd('-A');
+}
+
+sub delete {
+    my ($self) = @_;
+    return $self->_iptables_cmd('-D');
+}
+
+sub _iptables_cmd {
+    my ($self, $action) = @_;
 
     my $whois_source = Funknet::ConfigFile::Tools->whois_source || 'FUNKNET';
     my $port_str     = _ports($self);
@@ -81,8 +78,10 @@ sub create {
     my $dst_str      = _dst($self);
     my $proto_str    = _proto($self);
     my $inter_str    = _inter($self);
+    my $table_str    = _table($self);
+    my $j_str        = _j($self);
 
-    return ("iptables -A $whois_source -t filter".$inter_str.$proto_str.$src_str.$dst_str.$port_str."-j ACCEPT");
+    return ("iptables $action $whois_source".$table_str.$inter_str.$proto_str.$src_str.$dst_str.$port_str.$j_str);
 }
 
 sub create_chain {
@@ -149,5 +148,34 @@ sub _inter {
     }
     return $inter_str;
 }
+
+sub _table {
+     my ($self) = @_;
+     
+     my $table_str = " ";
+     if (defined $self->{_type}) {
+          if ($self->{_type} eq 'filter') {
+               $table_str .= '-t filter ';
+          }
+          if ($self->{_type} eq 'nat') {
+               $table_str .= '-t nat ';
+          }
+     }
+     return $table_str;
+}
+
+sub _j {
+     my ($self) = @_;
+     
+     my $j_str = " ";
+     if ($self->{_type} eq 'nat' && defined $self->{_to_port}) {
+          $j_str .= "-j DNAT --to $self->{_to_addr}:$self->{_to_port}";
+     }
+     if ($self->{_type} eq 'filter') {
+          $j_str .= "-j ACCEPT ";
+     }
+     return $j_str;
+}
+          
 
 1;

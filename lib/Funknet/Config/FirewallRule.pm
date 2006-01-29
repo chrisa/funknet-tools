@@ -33,7 +33,7 @@
 package Funknet::Config::FirewallRule;
 use strict;
 
-use Funknet::Config::Validate qw/ is_ipv4 is_ipv6 is_valid_type 
+use Funknet::Config::Validate qw/ is_ipv4 is_ipv6 is_valid_ruletype 
                                   is_valid_proto is_valid_ifname /;
 use Funknet::Config::FirewallRule::IPTables;
 use Funknet::Config::FirewallRule::IPFW;
@@ -74,6 +74,12 @@ sub new {
 	$self->warn("firewall_rule: missing or invalid source");
 	return undef;
     } else {
+        $self->{_type}                = $args{type}                || 'filter'; 
+        unless (is_valid_ruletype($self->{_type})) {
+             $self->warn("firewall_rule: invalid type: $self->{_type}");
+             return undef;
+        }
+
 	$self->{_source}              = $args{source};
 	$self->{_source_address}      = $args{source_address}      || '0.0.0.0'; 
 	$self->{_destination_address} = $args{destination_address} || '0.0.0.0';
@@ -82,6 +88,8 @@ sub new {
 	$self->{_proto}               = $args{proto}               || 'all';
 	$self->{_in_interface}        = $args{in_interface};
 	$self->{_out_interface}       = $args{out_interface};
+        $self->{_to_port}             = $args{to_port};
+        $self->{_to_addr}             = $args{to_addr};
 
 	if(defined($args{rule_num})) {
 	    $self->{_rule_num} = $args{rule_num};
@@ -116,7 +124,7 @@ sub new {
 sub as_hashkey {
     my ($self) = @_;
     
-    my $hash =  "$self->{_proto}-" .
+    my $hash =  "$self->{_type}-$self->{_proto}-$self->{_to_addr}-$self->{_to_port}-" .
 		"$self->{_source_address}-$self->{_source_port}-" .
 		"$self->{_in_interface}-$self->{_out_interface}-" .  
 		"$self->{_destination_address}-$self->{_destination_port}";
@@ -169,6 +177,16 @@ sub remote_endpoint {
 sub local_endpoint {
     my ($self) = @_;
     return $self->{_local_endpoint};
+}
+
+sub to_port {
+    my ($self) = @_;
+    return $self->{_to_port};
+}
+
+sub to_addr {
+    my ($self) = @_;
+    return $self->{_to_addr};
 }
 
 1;

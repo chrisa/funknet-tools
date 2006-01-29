@@ -200,7 +200,7 @@ sub create {
     $self->{_ovpn_port} = 5000 + $self->{_ovpn_inter};
 
     # generate a filename for our pidfile
-    $self->{_ovpn_pidfile} = '/var/run/openvpn.pid.'.$self->{_ovpn_port};
+    $self->{_ovpn_pidfile} = '/var/run/openvpn.pid.'.$self->{_ovpn_inter};
     
     # generate a filename for our config file (from the whois)
     $self->{_ovpn_file} = '/etc/openvpn/' . $self->{_name} . '.conf';    
@@ -264,14 +264,26 @@ sub firewall_rules {
     my @rules_out;
 
     @rules_out = $self->SUPER::firewall_rules();
-    
+
+    push (@rules_out,
+          Funknet::Config::FirewallRule->new(
+                                             type                => 'nat',
+					     proto               => 'udp',
+					     destination_address => $self->{_local_endpoint},
+					     source_address      => $self->{_remote_endpoint},
+					     source_port         => 1194,
+					     destination_port    => 1194,
+                                             to_addr             => $self->{_local_endpoint},
+                                             to_port             => $self->{_ovpn_port},
+					     source              => $self->{_source},));
+
     push (@rules_out, 
 	  Funknet::Config::FirewallRule->new(
 					     proto               => 'udp',
 					     source_address      => $self->{_local_endpoint},
 					     destination_address => $self->{_remote_endpoint},
-					     source_port         => $self->{_ovpn_port},
-					     destination_port    => $self->{_ovpn_port},
+					     source_port         => 1194,
+					     destination_port    => 1194,
 					     source              => $self->{_source},));
     
     push (@rules_out, 
@@ -279,8 +291,8 @@ sub firewall_rules {
 					     proto               => 'udp',
 					     source_address      => $self->{_remote_endpoint},
 					     destination_address => $self->{_local_endpoint},
-					     source_port         => $self->{_ovpn_port},
-					     destination_port    => $self->{_ovpn_port},
+					     source_port         => 1194,
+					     destination_port    => 1194,
 					     source              => $self->{_source},));
     
     return (@rules_out);
@@ -304,17 +316,18 @@ sub _gen_openvpn_conf {
 #
 # we are client.
 #
-dev            $self->{_ovpn_type}$self->{_ovpn_inter}
+dev            $self->{_ifname}
+local          $self->{_local_endpoint}
 remote         $self->{_remote_endpoint}
 ifconfig       $self->{_local_address} $self->{_remote_address}
 user           openvpn 
 group          openvpn
-port           $self->{_ovpn_port}
+port           1194
 tls-client
 ca             $self->{_ovpn_ca}
 ns-cert-type   server
 tls-cipher     DHE-RSA-AES256-SHA
-replay-persist replay.store.$self->{_ovpn_port}
+replay-persist replay.store.$self->{_ovpn_inter}
 cert           $self->{_ovpn_cert}
 key            $self->{_ovpn_key}
 ping           15
@@ -334,7 +347,7 @@ CLIENTCONFIG
 #
 # we are server.
 #
-dev            $self->{_ovpn_type}$self->{_ovpn_inter}
+dev            $self->{_ifname}
 local          $self->{_local_endpoint}
 ifconfig       $self->{_local_address} $self->{_remote_address}
 user           openvpn
@@ -345,7 +358,7 @@ ca             $self->{_ovpn_ca}
 ns-cert-type   client
 dh             dh1024.pem
 tls-cipher     DHE-RSA-AES256-SHA
-replay-persist replay.store.$self->{_ovpn_port}
+replay-persist replay.store.$self->{_ovpn_inter}
 cert           $self->{_ovpn_cert}
 key            $self->{_ovpn_key}
 ping           15

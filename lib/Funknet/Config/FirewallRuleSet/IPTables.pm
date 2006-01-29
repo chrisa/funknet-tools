@@ -75,7 +75,11 @@ sub local_firewall_rules {
     my $chain = Funknet::ConfigFile::Tools->whois_source || 'FUNKNET';
     debug("arrived in IPTables.pm local_firewall_rules whois_src is $chain");
 
-    if(my $whole_set = `iptables -v -n -L $chain`) {
+    my $whole_set = "";
+    $whole_set .= `iptables -v -n -L $chain -t filter`;
+    $whole_set .= `iptables -v -n -L $chain -t nat`;
+
+    if($whole_set) {
 
 	my @rules = split ('\n', $whole_set);
 	my @rules_out;
@@ -83,12 +87,12 @@ sub local_firewall_rules {
 	foreach my $rule (@rules) {
 	    
 	    my ($src, $dest, $proto, $policy, $src_port, $dst_port, $in_if, $out_if);
-	    my ($first_half, $second_half);
+	    my ($first_half, $second_half, $to_addr, $to_port, $type);
 
 	    chomp($rule);
+	    debug("rule: $rule");
 	    next if $rule =~ /^Chain/;
 	    next if $rule =~ /target/;
-	    debug("$rule");
 
 	    ($first_half, $second_half) = split ('--', $rule);
 
@@ -98,8 +102,14 @@ sub local_firewall_rules {
 	    ($policy, $proto) = split(',',$first_half);
 	    ($in_if, $out_if, $src, $dest) = split(',',$second_half);
 
-	    if($proto == 4) { $proto = 'ipencap'; }
+            debug("policy: $policy proto: $proto in_if: $in_if out_if: $out_if src: $src dest: $dest");
 
+	    if($proto == 4) { $proto = 'ipencap'; }
+            
+            # bit hacky this, we should track what table we're in. 
+            if($policy eq 'ACCEPT') { $type = 'filter'; }
+            if($policy eq 'DNAT') { $type = 'nat'; }
+            
 	    if($rule =~ /spt:/) {
 		$src_port = $rule;
 		$src_port =~ s/^\s+\d+\s+\d+\s+\w+\s+\w+\s+--\s+\S+\s+\S+\s+\d+\.\d+\.\d+\.\d+\s+\d+\.\d+\.\d+\.\d+\s+\w+\s+spt:(\d+).*/$1/;
@@ -114,7 +124,11 @@ sub local_firewall_rules {
 		$dst_port = undef;
 	    }
 
-	    debug("in_if: $in_if out_if: $out_if");
+            if ($rule =~ /to:/) {
+                 ($to_addr, $to_port) = $rule =~ /.*to:(\d+\.\d+\.\d+\.\d+):(\d+)/;
+            }
+
+	    debug("in_if: $in_if out_if: $out_if to_addr: $to_addr to_port: $to_port");
 
 	    # interfaces - iptables says "*" when it means
 	    # "no interface". set to undef if it does. 
@@ -125,6 +139,7 @@ sub local_firewall_rules {
 	    my $new_rule_object = 
 	      Funknet::Config::FirewallRule->new(
 						 source              => 'host',
+                                                 type                => $type,
 						 source_address      => $src,
 						 source_port         => $src_port,
 						 destination_address => $dest,
@@ -132,6 +147,8 @@ sub local_firewall_rules {
 						 proto               => $proto,
 						 in_interface        => $in_if,
 						 out_interface       => $out_if,
+                                                 to_addr             => $to_addr,
+                                                 to_port             => $to_port,
 						);
 	    debug("new_rule_object");
 	    push (@rules_out, $new_rule_object);
