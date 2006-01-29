@@ -345,7 +345,6 @@ port           1194
 tls-client
 ca             $self->{_ovpn_ca}
 ns-cert-type   server
-tls-cipher     DHE-RSA-AES256-SHA
 replay-persist replay.store.$self->{_ovpn_inter}
 cert           $self->{_ovpn_cert}
 key            $self->{_ovpn_key}
@@ -376,7 +375,6 @@ tls-server
 ca             $self->{_ovpn_ca}
 ns-cert-type   client
 dh             dh1024.pem
-tls-cipher     DHE-RSA-AES256-SHA
 replay-persist replay.store.$self->{_ovpn_inter}
 cert           $self->{_ovpn_cert}
 key            $self->{_ovpn_key}
