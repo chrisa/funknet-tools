@@ -137,3 +137,4 @@ t/setkey_conf.pl
 t/systemfile.t
 t/whois.t
 t/get_keycert.pl
+META.yml                                 Module meta-data (added by MakeMaker)
