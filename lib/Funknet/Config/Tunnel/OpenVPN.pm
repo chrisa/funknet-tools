@@ -200,7 +200,7 @@ sub create {
     $self->{_ovpn_port} = 5000 + $self->{_ovpn_inter};
 
     # generate a filename for our pidfile
-    $self->{_ovpn_pidfile} = '/var/run/openvpn.pid.'.$self->{_ovpn_inter};
+    $self->{_ovpn_pidfile} = '/var/run/openvpn.'.$self->{_name}.'.pid';
     
     # generate a filename for our config file (from the whois)
     $self->{_ovpn_file} = '/etc/openvpn/' . $self->{_name} . '.conf';    
