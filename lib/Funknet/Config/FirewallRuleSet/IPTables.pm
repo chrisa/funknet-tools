@@ -110,24 +110,19 @@ sub local_firewall_rules {
             if($policy eq 'ACCEPT') { $type = 'filter'; }
             if($policy eq 'DNAT') { $type = 'nat'; }
             
-	    if($rule =~ /spt:/) {
-		$src_port = $rule;
-		$src_port =~ s/^\s+\d+\s+\d+\s+\w+\s+\w+\s+--\s+\S+\s+\S+\s+\d+\.\d+\.\d+\.\d+\s+\d+\.\d+\.\d+\.\d+\s+\w+\s+spt:(\d+).*/$1/;
-	    } else {
-		$src_port = undef;
+	    if($rule =~ /spt:(\d+)/) {
+                 $src_port = $1;
+	    }
+            
+	    if($rule =~ /dpt:(\d+)/) { 
+                 $dst_port = $1;
 	    }
 
-	    if($rule =~ /dpt:/) {
-		$dst_port = $rule;
-		$dst_port =~ s/.*dpt:(\d+).*/$1/;
-	    } else {
-		$dst_port = undef;
-	    }
-
-            if ($rule =~ /to:/) {
-                 ($to_addr, $to_port) = $rule =~ /.*to:(\d+\.\d+\.\d+\.\d+):(\d+)/;
+            if ($rule =~ /to:(\d+\.\d+\.\d+\.\d+):(\d+)/) {
+                 ($to_addr, $to_port) = ($1, $2);
             }
 
+            debug("src_port: $src_port dst_port: $dst_port");
 	    debug("in_if: $in_if out_if: $out_if to_addr: $to_addr to_port: $to_port");
 
 	    # interfaces - iptables says "*" when it means
