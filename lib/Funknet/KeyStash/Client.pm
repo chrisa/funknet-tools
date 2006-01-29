@@ -73,7 +73,6 @@ sub new {
 	    defined $args{www_pass} &&
 	    defined $args{www_host} &&
 	    defined $args{www_cert} &&
-	    defined $args{www_ca} &&
 	    defined $args{path} &&
 	    defined $args{whois_host} &&
 	    defined $args{whois_port} &&
@@ -86,7 +85,6 @@ sub new {
     $self->{_www_pass} = $args{www_pass};
     $self->{_www_host} = $args{www_host};
     $self->{_www_cert} = $args{www_cert};
-    $self->{_www_ca}   = $args{www_ca};
 
     $self->{_path} = $args{path};
 

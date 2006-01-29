@@ -26,3 +26,6 @@ we should be doing tls-auth in our openvpn configs.
 
 should we have some sort of cert-verify script? 
 (see http://openvpn.net/howto.html#mitm)
+
+If whois object missing then should die nicely instead of:
+Can't call method "diff" on an undefined value at lib/Funknet/Config.pm line 135, <GEN0> line 6.
