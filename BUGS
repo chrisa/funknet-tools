@@ -22,3 +22,7 @@ we don't create the FUNKNET chain ourselves
 there's something funky with bgp soft - takes two goes to have it
 added (it's only in diff, not create?)
 
+we should be doing tls-auth in our openvpn configs.
+
+should we have some sort of cert-verify script? 
+(see http://openvpn.net/howto.html#mitm)
