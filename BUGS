@@ -17,3 +17,8 @@ the whois object parser crashes too easily (list indexes)
 
 permissions should get set on all the cert and key files we write out.
 
+we don't create the FUNKNET chain ourselves
+
+there's something funky with bgp soft - takes two goes to have it
+added (it's only in diff, not create?)
+
