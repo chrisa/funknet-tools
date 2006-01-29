@@ -29,3 +29,7 @@ should we have some sort of cert-verify script?
 
 If whois object missing then should die nicely instead of:
 Can't call method "diff" on an undefined value at lib/Funknet/Config.pm line 135, <GEN0> line 6.
+
+server should chop trailing whitespace on objects in the file
+
+pgp/mime email isn't de-quotedprintable-ed properly (if at all?)
