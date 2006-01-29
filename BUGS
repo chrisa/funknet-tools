@@ -1,0 +1,19 @@
+KNOWN BUGS
+
+(please add to this if anything doesn't work and you don't get a
+sensible error messsage)
+
+ACL lookup does the same BGP neighbour query twice
+
+we don't make directories if they don't exist, we just crash
+
+what user/group should we be specifying in our openvpn configs?
+
+encryption diff isn't even started
+
+we should warn if the live key and cert dirs are the same
+
+the whois object parser crashes too easily (list indexes)
+
+permissions should get set on all the cert and key files we write out.
+
