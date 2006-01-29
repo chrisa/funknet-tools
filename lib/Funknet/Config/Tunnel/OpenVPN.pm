@@ -286,7 +286,7 @@ sub firewall_rules {
     return (@rules_out);
 }
 
-sub tunnel_opvn_file {
+sub tunnel_ovpn_file {
     my ($self) = @_;
     return $self->{_ovpn_file};
 }    
