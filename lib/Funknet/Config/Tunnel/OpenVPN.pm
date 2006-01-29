@@ -307,16 +307,20 @@ sub _gen_openvpn_conf {
 dev            $self->{_ovpn_type}$self->{_ovpn_inter}
 remote         $self->{_remote_endpoint}
 ifconfig       $self->{_local_address} $self->{_remote_address}
-user           nobody  
-group          nobody
+user           openvpn 
+group          openvpn
 port           $self->{_ovpn_port}
 tls-client
 ca             $self->{_ovpn_ca}
+ns-cert-type   server
 tls-cipher     DHE-RSA-AES256-SHA
 replay-persist replay.store.$self->{_ovpn_port}
 cert           $self->{_ovpn_cert}
 key            $self->{_ovpn_key}
 ping           15
+ping-restart   60
+persist-key
+persist-tun
 verb           5
 writepid       $self->{_ovpn_pidfile}
 CLIENTCONFIG
@@ -333,17 +337,21 @@ CLIENTCONFIG
 dev            $self->{_ovpn_type}$self->{_ovpn_inter}
 local          $self->{_local_endpoint}
 ifconfig       $self->{_local_address} $self->{_remote_address}
-user           nobody  
-group          nobody
+user           openvpn
+group          openvpn
 port           $self->{_ovpn_port}
 tls-server
 ca             $self->{_ovpn_ca}
+ns-cert-type   client
 dh             dh1024.pem
 tls-cipher     DHE-RSA-AES256-SHA
 replay-persist replay.store.$self->{_ovpn_port}
 cert           $self->{_ovpn_cert}
 key            $self->{_ovpn_key}
 ping           15
+ping-restart   60
+persist-key
+persist-tun
 verb           5
 writepid       $self->{_ovpn_pidfile}
 SERVERCONFIG
