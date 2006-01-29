@@ -33,6 +33,7 @@ package Funknet::Config::CLI::Zebra::Vtysh;
 use strict;
 use base qw/ Funknet::Config::CLI::Zebra /;
 use Funknet::ConfigFile::Tools;
+use Funknet::Debug;
 use IO::Socket::UNIX;
 
 =head1 NAME
@@ -48,6 +49,7 @@ A derivative of CLI::Zebra using Vtysh to talk to the vty.
 sub cmd {
     my ($self, $cmd) = @_;
     return undef unless defined $self->{t};
+    debug("vtysh running: $cmd");
     my $fh = $self->{t};
     print $fh "$cmd\n";
     
@@ -69,17 +71,12 @@ sub check_login {
 sub exec_enable {
     my ($self, $cmdset) = @_;
 
-    print STDERR "in exec_enable\n";
-
     $self->login;
     my $fh = $self->{t};
     print $fh "enable\n";
     print $fh "$self->{_enable}\n";
     for my $cmd ($cmdset->cmds) {
         for my $cmd_line (split /\n/, $cmd) {
-
-	    print STDERR "$cmd_line\n";
-
             print $fh "$cmd_line\0\0\0";
         }
     }
