@@ -220,7 +220,7 @@ sub initialise {
      # (ignoring NAT/dynamic issues here)
      # 
      # the 'top' endpoint in the object will be the server, 'bottom' is the client. 
-     if ($self->{order}) {
+     if ($self->{_order}) {
           $self->{_ovpn_client} = 1;
      } else {
           $self->{_ovpn_server} = 1;
