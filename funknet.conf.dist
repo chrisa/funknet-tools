@@ -75,15 +75,17 @@ encr_hash2   = sha md5
 encr_proto   = esp
 encr_dhgroup = 5
 
+# paths. these all need to exist already. 
+
 # paths to live dirs for ike daemon and 
 # ipsec policy tool e.g. (racoon+setkey)
-
 encr_ikepath = /tmp/ipsec/racoon
 encr_setkeypath = /tmp/ipsec/setkey
 encr_pskpath = /tmp/ipsec/psk.txt
 
-# where live copies of keys/certs go
-
+# where live copies of keys/certs go. this applies to both ipsec and
+# openvpn. NB these paths *must* be different, as the key and cert have
+# the same filename...
 encr_keypath = /tmp/ipsec/key
 encr_certpath = /tmp/ipsec/cert
 
