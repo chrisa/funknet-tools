@@ -363,7 +363,7 @@ sub encryption {
 
 	if (defined $encr) {
 	    my ($type, $param);
-	    if ($encr =~ /^(X509CERT-.*)/) {
+	    if ($encr =~ /^X509CERT-(.*)/) {
 		$param = $1;
 
 		if (ref $tun eq 'Funknet::Config::Tunnel::Linux') {
