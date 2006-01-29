@@ -265,36 +265,55 @@ sub firewall_rules {
 
     @rules_out = $self->SUPER::firewall_rules();
 
-    push (@rules_out,
-          Funknet::Config::FirewallRule->new(
-                                             type                => 'nat',
-					     proto               => 'udp',
-					     destination_address => $self->{_local_endpoint},
-					     source_address      => $self->{_remote_endpoint},
-					     source_port         => 1194,
-					     destination_port    => 1194,
-                                             to_addr             => $self->{_local_endpoint},
-                                             to_port             => $self->{_ovpn_port},
-					     source              => $self->{_source},));
+    if ($self->{_ovpn_server}) {
+         push (@rules_out,
+               Funknet::Config::FirewallRule->new(
+                                                  type                => 'nat',
+                                                  proto               => 'udp',
+                                                  destination_address => $self->{_local_endpoint},
+                                                  source_address      => $self->{_remote_endpoint},
+                                                  source_port         => 1194,
+                                                  destination_port    => 1194,
+                                                  to_addr             => $self->{_local_endpoint},
+                                                  to_port             => $self->{_ovpn_port},
+                                                  source              => $self->{_source},));
+         push (@rules_out, 
+               Funknet::Config::FirewallRule->new(
+                                                  proto               => 'udp',
+                                                  source_address      => $self->{_local_endpoint},
+                                                  destination_address => $self->{_remote_endpoint},
+                                                  source_port         => $self->{_ovpn_port},
+                                                  destination_port    => 1194,
+                                                  source              => $self->{_source},));
+         push (@rules_out, 
+               Funknet::Config::FirewallRule->new(
+                                                  proto               => 'udp',
+                                                  source_address      => $self->{_remote_endpoint},
+                                                  destination_address => $self->{_local_endpoint},
+                                                  source_port         => 1194,
+                                                  destination_port    => $self->{_ovpn_port},
+                                                  source              => $self->{_source},));
+    }
 
-    push (@rules_out, 
-	  Funknet::Config::FirewallRule->new(
-					     proto               => 'udp',
-					     source_address      => $self->{_local_endpoint},
-					     destination_address => $self->{_remote_endpoint},
-					     source_port         => 1194,
-					     destination_port    => 1194,
-					     source              => $self->{_source},));
-    
-    push (@rules_out, 
-	  Funknet::Config::FirewallRule->new(
-					     proto               => 'udp',
-					     source_address      => $self->{_remote_endpoint},
-					     destination_address => $self->{_local_endpoint},
-					     source_port         => 1194,
-					     destination_port    => 1194,
-					     source              => $self->{_source},));
-    
+    if ($self->{_ovpn_client}) {
+         push (@rules_out, 
+               Funknet::Config::FirewallRule->new(
+                                                  proto               => 'udp',
+                                                  source_address      => $self->{_local_endpoint},
+                                                  destination_address => $self->{_remote_endpoint},
+                                                  source_port         => 1194,
+                                                  destination_port    => 1194,
+                                                  source              => $self->{_source},));
+         push (@rules_out, 
+               Funknet::Config::FirewallRule->new(
+                                                  proto               => 'udp',
+                                                  source_address      => $self->{_remote_endpoint},
+                                                  destination_address => $self->{_local_endpoint},
+                                                  source_port         => 1194,
+                                                  destination_port    => 1194,
+                                                  source              => $self->{_source},));
+    }
+
     return (@rules_out);
 }
 
