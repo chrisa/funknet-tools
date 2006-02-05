@@ -263,8 +263,6 @@ sub nat_firewall_rules {
     my ($self) = @_;
     my @rules_out;
 
-#    @rules_out = $self->SUPER::firewall_rules();
-
     if ($self->{_ovpn_server}) {
          push (@rules_out,
                Funknet::Config::FirewallRule->new(

@@ -35,7 +35,6 @@ use strict;
 use base qw/ Funknet::Config /;
 use Funknet::Config::FirewallChain::IPTables;
 use Funknet::Debug;
-use Data::Dumper;
 
 =head1 NAME
 
@@ -79,8 +78,6 @@ sub new
     debug("my firewall type is $full_object_name");
 
     bless $self, $full_object_name;
-
-    print Dumper $self->{_rules};
 
     return($self);
 }
