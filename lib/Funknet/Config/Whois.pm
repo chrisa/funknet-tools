@@ -43,6 +43,7 @@ use Funknet::Config::TunnelSet;
 use Funknet::Config::BGP;
 use Funknet::Config::Encryption;
 use Funknet::Config::EncryptionSet;
+use Funknet::Config::FirewallChain;
 use Funknet::Config::FirewallRule;
 use Funknet::Config::FirewallRuleSet;
 use Funknet::Debug;
@@ -227,18 +228,43 @@ sub firewall {
     $w->type('aut-num');
     my $as = $w->query($l->{as});
     
-    my @local_fwallrule;
-    
+    my (@local_nat_fwall, @local_filter_fwall);
+    my @chains;
+
     foreach my $tun ($tun_set->tunnels) {
 	
 	my $tun_name = $tun->name;
-	my (@fwall_objs);
+	my (@nat_fwall_objs, @filter_fwall_objs);
 	
-	@fwall_objs = $tun->firewall_rules;
+	@nat_fwall_objs = $tun->nat_firewall_rules;
+	@filter_fwall_objs = $tun->filter_firewall_rules;
 
-	if (@fwall_objs) {push @local_fwallrule, @fwall_objs};
+	if (scalar (@nat_fwall_objs)) {push @local_nat_fwall, @nat_fwall_objs};
+	if (scalar (@filter_fwall_objs)) {push @local_filter_fwall, @filter_fwall_objs};
     }
-    return Funknet::Config::FirewallRuleSet->new( firewall => \@local_fwallrule,
+
+    my $filter_chain;
+    my $nat_chain;
+
+    if (scalar @local_filter_fwall) {
+	$filter_chain = Funknet::Config::FirewallChain->new(
+    					type	=> 'filter',
+					rules	=> \@local_filter_fwall,
+					create	=> 'yes',
+					);
+	push (@chains,$filter_chain);
+    }
+
+    if (scalar @local_nat_fwall) {
+	$nat_chain = Funknet::Config::FirewallChain->new(
+    					type	=> 'nat',
+					rules	=> \@local_nat_fwall,
+					create	=> 'yes',
+					);
+	push (@chains,$nat_chain);
+    }
+
+    return Funknet::Config::FirewallRuleSet->new( chains  => \@chains, 
 					    	  source  => 'whois' );
 }
 	

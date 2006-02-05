@@ -168,14 +168,19 @@ sub config {
 
     my @cmds;
     my $whois_source = Funknet::ConfigFile::Tools->whois_source;
-    my $first_rule = Funknet::Config::FirewallRule::IPTables->create_chain($whois_source);
 
-    push (@cmds, $first_rule);
+    my @chains = $self->chains;
 
-    for my $fwallrule ($self->firewall) {
-	if (defined $fwallrule) {
-	    push @cmds, $fwallrule->create();
+    while (my $chain = pop(@chains)) {
+	if ($chain->needscreate eq 'yes') {
+	    push (@cmds, $chain->create_chain);
 	}
+
+        for my $fwallrule ($chain->firewall) {
+	    if (defined $fwallrule) {
+	        push @cmds, $fwallrule->create();
+	    }
+        }
     }
 
     my $cmdset = Funknet::Config::CommandSet->new( cmds => \@cmds,

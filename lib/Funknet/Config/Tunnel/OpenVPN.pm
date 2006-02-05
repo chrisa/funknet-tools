@@ -259,11 +259,11 @@ sub stop_cmd {
 					   );
 }
 
-sub firewall_rules {
+sub nat_firewall_rules {
     my ($self) = @_;
     my @rules_out;
 
-    @rules_out = $self->SUPER::firewall_rules();
+#    @rules_out = $self->SUPER::firewall_rules();
 
     if ($self->{_ovpn_server}) {
          push (@rules_out,
@@ -277,6 +277,17 @@ sub firewall_rules {
                                                   to_addr             => $self->{_local_endpoint},
                                                   to_port             => $self->{_ovpn_port},
                                                   source              => $self->{_source},));
+    }
+    return (@rules_out);
+}
+
+sub filter_firewall_rules {
+    my ($self) = @_;
+    my @rules_out;
+
+    @rules_out = $self->SUPER::firewall_rules();
+
+    if ($self->{_ovpn_server}) {
          push (@rules_out, 
                Funknet::Config::FirewallRule->new(
                                                   proto               => 'udp',

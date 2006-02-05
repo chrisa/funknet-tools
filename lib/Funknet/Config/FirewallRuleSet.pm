@@ -43,7 +43,7 @@ Funknet::Config::FirewallRuleSet
 
 =head1 DESCRIPTION
 
-Provides a collection object for FirewallRules. Contains the ->diff method
+Provides a collection object for FirewallChains. Contains the ->diff method
 for firewall. 
 
 =head1 METHODS
@@ -68,9 +68,8 @@ sub new
     my $self = bless {}, $class;
     my $l = Funknet::ConfigFile::Tools->local;
 
-    $self->{_firewall} = $args{firewall};
+    $self->{_chains} = $args{chains};
     $self->{_source}   = $args{source};
-    $self->{_cmds}     = $args{cmds};
 
     if (($self->{_source} eq 'whois') or ($self->{_source} eq 'host')) {
 	my $subtype;
@@ -84,7 +83,7 @@ sub new
 	} 
 	
 	my $full_object_name = "Funknet::Config::FirewallRuleSet::$subtype";
-	debug("my firewall type is $full_object_name");
+	debug("my FirewallRuleSet type is $full_object_name");
 
 	bless $self, $full_object_name;
 	return($self);
@@ -95,9 +94,9 @@ sub new
     }
 }
 
-sub firewall {
+sub chains {
     my ($self) = @_;
-    return @{$self->{_firewall}};
+    return @{$self->{_chains}};
 }
 
 sub source {
