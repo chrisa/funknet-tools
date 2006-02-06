@@ -37,6 +37,7 @@ use Funknet::Config::Validate qw/ is_ipv4 is_ipv6 is_valid_ruletype
                                   is_valid_proto is_valid_ifname /;
 use Funknet::Config::FirewallRule::IPTables;
 use Funknet::Config::FirewallRule::IPFW;
+use Funknet::Config::FirewallRule::PF;
 
 use base qw/ Funknet::Config /;
 use Funknet::Debug;
@@ -117,6 +118,8 @@ sub new {
 	bless $self, 'Funknet::Config::FirewallRule::IPTables';
     $l->{firewall_type} eq 'ipfw' and
 	bless $self, 'Funknet::Config::FirewallRule::IPFW';
+    $l->{firewall_type} eq 'pf' and
+	bless $self, 'Funknet::Config::FirewallRule::PF';
 
     return $self;
 }

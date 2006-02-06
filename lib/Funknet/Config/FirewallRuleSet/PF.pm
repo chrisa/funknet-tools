@@ -1,4 +1,4 @@
-# Copyright (c) 2003
+# Copyright (c) 2006
 #	The funknet.org Group.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -30,75 +30,75 @@
 # SUCH DAMAGE.
 
 
-package Funknet::Config::FirewallChain;
+package Funknet::Config::FirewallRuleSet::PF;
 use strict;
-use base qw/ Funknet::Config /;
-use Funknet::Config::FirewallChain::IPTables;
-use Funknet::Config::FirewallChain::PF;
+use base qw/ Funknet::Config::FirewallRuleSet /;
 use Funknet::Debug;
 
 =head1 NAME
 
-Funknet::Config::FirewallChain
+Funknet::Config::FirewallRuleSet::PF
 
 =head1 DESCRIPTION
 
-Provides a collection object for FirewallRules.
+Provides a collection object for FirewallRule::PF objects.
 
 =head1 METHODS
 
-# CHANGEME
-=head2 new(source => 'whois', firewall => \@firewall_rules)
+=head2 config
 
-Takes the source and a listref of FirewallRules. 
+Returns the configuration of the FirewallRule objects as text. This
+should be in roughly the format used by the host. TODO: make this be
+so. Currently we just dump the information in an arbitrary format.
+
+=head2 local_firewall_rules
+
+Returns a FirewallRuleSet::PF object representing the current
+configuration of the host, or undef if the chain doesn't exist
 
 =cut
 
-sub new
-{
-    debug("arrived in FirewallChain new");
+sub new {
     my ($class, %args) = @_;
+    debug("arrived in PF.pm new");
     my $self = bless {}, $class;
-    my $l = Funknet::ConfigFile::Tools->local;
 
-    $self->{_type}	= $args{type};
-    $self->{_rules}	= $args{rules};
-    $self->{_create}	= $args{create};
-
-    my $subtype;
-    my $firewall_type = $l->{firewall_type};
-
-    if ($firewall_type eq 'iptables') {
-        $subtype = 'IPTables';
-    }
-    if ($firewall_type eq 'ipfw') {
-        $subtype = 'IPFW';
-    }
-    if ($firewall_type eq 'pf') {
-        $subtype = 'PF';
-    }
-
-    my $full_object_name = "Funknet::Config::FirewallChain::$subtype";
-    debug("my firewall type is $full_object_name");
-
-    bless $self, $full_object_name;
+    $self->{_source} = $args{source};
+    $self->{_firewall} = $args{firewall};
 
     return($self);
 }
 
-sub firewall {
+sub config {
     my ($self) = @_;
-    return @{$self->{_rules}};
+
+    my $l = Funknet::ConfigFile::Tools->local;
+
+    my @cmds;
+    my $whois_source = Funknet::ConfigFile::Tools->whois_source;
+
+    my @chains = $self->chains;
+
+    while (my $chain = pop(@chains)) {
+
+	push @cmds, $chain->flush();
+
+        for my $fwallrule ($chain->firewall) {
+	    if (defined $fwallrule) {
+	        push @cmds, $fwallrule->create();
+	    }
+        }
+    }
+
+    my $cmdset = Funknet::Config::CommandSet->new( cmds => \@cmds,
+						   target => 'host',
+						 );
+    
+    return Funknet::Config::ConfigSet->new( cmds => [ $cmdset ] );
 }
 
-sub needscreate {
-    my ($self) = @_;
-    return ($self->{_create});
-}
-
-sub type {
-    my ($self) = @_;
-    return ($self->{_type});
+sub local_firewall_rules {
+    die "PF local_firewall_rules not implemented yet";
 }
 
 1;
