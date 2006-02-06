@@ -188,7 +188,11 @@ sub valid_type {
     return 0;
 }
 
-sub firewall_rules {
+sub nat_firewall_rules {
+    return;
+}
+
+sub filter_firewall_rules {
     my ($self) = @_;
     my @rules_out;
 
