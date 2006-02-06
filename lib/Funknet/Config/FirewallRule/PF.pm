@@ -66,8 +66,7 @@ The required rule details are passed in as part of $self.
 
 =head2 delete
 
-Returns a list of strings containing commands to delete an PF anchor
-rule from the anchor named the same as the whois_source name.
+NOP. FLushing entire anchor handled by F::C::FirewallChain::PF::flush
 
 =cut
 
@@ -150,21 +149,6 @@ sub _command {
     else {
 	die "unknown rule type $self->{_type}";
     }
-}
-
-sub _table {
-     my ($self) = @_;
-     
-     my $table_str = " ";
-     if (defined $self->{_type}) {
-          if ($self->{_type} eq 'filter') {
-               $table_str .= '-t filter ';
-          }
-          if ($self->{_type} eq 'nat') {
-               $table_str .= '-t nat ';
-          }
-     }
-     return $table_str;
 }
 
 # bundle src addr & port
