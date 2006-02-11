@@ -354,7 +354,7 @@ port           1194
 tls-client
 ca             $self->{_ovpn_ca}
 ns-cert-type   server
-replay-persist replay.store.$self->{_ovpn_inter}
+replay-persist /var/run/replay.store.$self->{_ovpn_inter}
 cert           $self->{_ovpn_cert}
 key            $self->{_ovpn_key}
 ping           15
@@ -384,7 +384,7 @@ tls-server
 ca             $self->{_ovpn_ca}
 ns-cert-type   client
 dh             dh1024.pem
-replay-persist replay.store.$self->{_ovpn_inter}
+replay-persist /var/run/replay.store.$self->{_ovpn_inter}
 cert           $self->{_ovpn_cert}
 key            $self->{_ovpn_key}
 ping           15
