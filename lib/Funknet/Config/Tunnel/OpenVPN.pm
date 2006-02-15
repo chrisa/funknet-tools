@@ -270,7 +270,6 @@ sub nat_firewall_rules {
                                                   proto               => 'udp',
                                                   destination_address => $self->{_local_endpoint},
                                                   source_address      => $self->{_remote_endpoint},
-                                                  source_port         => 1194,
                                                   destination_port    => 1194,
                                                   to_addr             => $self->{_local_endpoint},
                                                   to_port             => $self->{_ovpn_port},
@@ -292,14 +291,12 @@ sub filter_firewall_rules {
                                                   source_address      => $self->{_local_endpoint},
                                                   destination_address => $self->{_remote_endpoint},
                                                   source_port         => $self->{_ovpn_port},
-                                                  destination_port    => 1194,
                                                   source              => $self->{_source},));
          push (@rules_out, 
                Funknet::Config::FirewallRule->new(
                                                   proto               => 'udp',
                                                   source_address      => $self->{_remote_endpoint},
                                                   destination_address => $self->{_local_endpoint},
-                                                  source_port         => 1194,
                                                   destination_port    => $self->{_ovpn_port},
                                                   source              => $self->{_source},));
     }
@@ -310,7 +307,6 @@ sub filter_firewall_rules {
                                                   proto               => 'udp',
                                                   source_address      => $self->{_local_endpoint},
                                                   destination_address => $self->{_remote_endpoint},
-                                                  source_port         => 1194,
                                                   destination_port    => 1194,
                                                   source              => $self->{_source},));
          push (@rules_out, 
@@ -318,7 +314,6 @@ sub filter_firewall_rules {
                                                   proto               => 'udp',
                                                   source_address      => $self->{_remote_endpoint},
                                                   destination_address => $self->{_local_endpoint},
-                                                  source_port         => 1194,
                                                   destination_port    => 1194,
                                                   source              => $self->{_source},));
     }
@@ -345,8 +340,8 @@ sub _gen_openvpn_conf {
 # we are client.
 #
 dev            $self->{_ifname}
-local          $self->{_local_endpoint}
 remote         $self->{_remote_endpoint}
+nobind
 ifconfig       $self->{_local_address} $self->{_remote_address}
 user           openvpn 
 group          openvpn
