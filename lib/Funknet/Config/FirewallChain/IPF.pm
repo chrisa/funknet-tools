@@ -1,4 +1,4 @@
-# Copyright (c) 2003
+# Copyright (c) 2006
 #	The funknet.org Group.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -30,79 +30,34 @@
 # SUCH DAMAGE.
 
 
-package Funknet::Config::FirewallChain;
+package Funknet::Config::FirewallChain::IPF;
 use strict;
-use base qw/ Funknet::Config /;
-use Funknet::Config::FirewallChain::IPTables;
-use Funknet::Config::FirewallChain::PF;
-use Funknet::Config::FirewallChain::IPF;
+use base qw/ Funknet::Config::FirewallChain /;
+use Funknet::Config;
 use Funknet::Debug;
 
 =head1 NAME
 
-Funknet::Config::FirewallChain
+Funknet::Config::FirewallChain::IPF
 
 =head1 DESCRIPTION
 
-Provides a collection object for FirewallRules.
+Provides a collection object for FirewallRule::IPF objects.
 
 =head1 METHODS
 
-# CHANGEME
-=head2 new(source => 'whois', firewall => \@firewall_rules)
+=head2 config
 
-Takes the source and a listref of FirewallRules. 
+
 
 =cut
 
-sub new
-{
-    debug("arrived in FirewallChain new");
-    my ($class, %args) = @_;
-    my $self = bless {}, $class;
-    my $l = Funknet::ConfigFile::Tools->local;
-
-    $self->{_type}	= $args{type};
-    $self->{_rules}	= $args{rules};
-    $self->{_create}	= $args{create};
-
-    my $subtype;
-    my $firewall_type = $l->{firewall_type};
-
-    if ($firewall_type eq 'iptables') {
-        $subtype = 'IPTables';
-    }
-    if ($firewall_type eq 'ipfw') {
-        $subtype = 'IPFW';
-    }
-    if ($firewall_type eq 'pf') {
-        $subtype = 'PF';
-    }
-    if ($firewall_type eq 'ipf') {
-        $subtype = 'IPF';
-    }
-
-    my $full_object_name = "Funknet::Config::FirewallChain::$subtype";
-    debug("my firewall type is $full_object_name");
-
-    bless $self, $full_object_name;
-
-    return($self);
-}
-
-sub firewall {
+sub flush {
     my ($self) = @_;
-    return @{$self->{_rules}};
-}
+    my $anchor = Funknet::ConfigFile::Tools->whois_source || 'FUNKNET';
 
-sub needscreate {
-    my ($self) = @_;
-    return ($self->{_create});
-}
-
-sub type {
-    my ($self) = @_;
-    return ($self->{_type});
+    # flush anchor of all rules, regardless if they're filter/rdr/nat
+    return("pfctl -a $anchor -F all");
 }
 
 1;

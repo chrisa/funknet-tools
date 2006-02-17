@@ -288,6 +288,7 @@ sub filter_firewall_rules {
          push (@rules_out, 
                Funknet::Config::FirewallRule->new(
                                                   proto               => 'udp',
+						  direction	      => 'out',
                                                   source_address      => $self->{_local_endpoint},
                                                   destination_address => $self->{_remote_endpoint},
                                                   source_port         => $self->{_ovpn_port},
@@ -295,6 +296,7 @@ sub filter_firewall_rules {
          push (@rules_out, 
                Funknet::Config::FirewallRule->new(
                                                   proto               => 'udp',
+						  direction	      => 'in',
                                                   source_address      => $self->{_remote_endpoint},
                                                   destination_address => $self->{_local_endpoint},
                                                   destination_port    => $self->{_ovpn_port},
@@ -305,6 +307,7 @@ sub filter_firewall_rules {
          push (@rules_out, 
                Funknet::Config::FirewallRule->new(
                                                   proto               => 'udp',
+						  direction	      => 'out',
                                                   source_address      => $self->{_local_endpoint},
                                                   destination_address => $self->{_remote_endpoint},
                                                   destination_port    => 1194,
@@ -312,6 +315,7 @@ sub filter_firewall_rules {
          push (@rules_out, 
                Funknet::Config::FirewallRule->new(
                                                   proto               => 'udp',
+						  direction	      => 'in',
                                                   source_address      => $self->{_remote_endpoint},
                                                   destination_address => $self->{_local_endpoint},
                                                   destination_port    => 1194,

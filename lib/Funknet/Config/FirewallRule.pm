@@ -38,6 +38,7 @@ use Funknet::Config::Validate qw/ is_ipv4 is_ipv6 is_valid_ruletype
 use Funknet::Config::FirewallRule::IPTables;
 use Funknet::Config::FirewallRule::IPFW;
 use Funknet::Config::FirewallRule::PF;
+use Funknet::Config::FirewallRule::IPF;
 
 use base qw/ Funknet::Config /;
 use Funknet::Debug;
@@ -91,6 +92,7 @@ sub new {
 	$self->{_out_interface}       = $args{out_interface};
         $self->{_to_port}             = $args{to_port};
         $self->{_to_addr}             = $args{to_addr};
+        $self->{_direction}	      = $args{direction};
 
 	if(defined($args{rule_num})) {
 	    $self->{_rule_num} = $args{rule_num};
@@ -120,6 +122,8 @@ sub new {
 	bless $self, 'Funknet::Config::FirewallRule::IPFW';
     $l->{firewall_type} eq 'pf' and
 	bless $self, 'Funknet::Config::FirewallRule::PF';
+    $l->{firewall_type} eq 'ipf' and
+	bless $self, 'Funknet::Config::FirewallRule::IPF';
 
     return $self;
 }
@@ -190,6 +194,11 @@ sub to_port {
 sub to_addr {
     my ($self) = @_;
     return $self->{_to_addr};
+}
+
+sub direction {
+    my ($self) = @_;
+    return $self->{_direction};
 }
 
 1;

@@ -36,6 +36,7 @@ use base qw/ Funknet::Config /;
 use Funknet::Config::FirewallRuleSet::IPTables;
 use Funknet::Config::FirewallRuleSet::IPFW;
 use Funknet::Config::FirewallRuleSet::PF;
+use Funknet::Config::FirewallRuleSet::IPF;
 use Funknet::Debug;
 
 =head1 NAME
@@ -84,6 +85,9 @@ sub new
 	} 
 	if ($firewall_type eq 'pf') { 
 	    $subtype = 'PF';
+	} 
+	if ($firewall_type eq 'ipf') { 
+	    $subtype = 'IPF';
 	} 
 	
 	my $full_object_name = "Funknet::Config::FirewallRuleSet::$subtype";

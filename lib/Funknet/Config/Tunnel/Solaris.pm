@@ -165,30 +165,36 @@ sub valid_type {
     return 0;
 }
 
-sub firewall_rules {
+sub nat_firewall_rules {
+    return;
+}
+
+sub filter_firewall_rules {
     my ($self) = @_;
     my @rules_out;
 
     @rules_out = $self->SUPER::firewall_rules();
-    
+
     my $proto;
     if ($self->{_type} eq 'ipip') { $proto = '4' };
     if ($self->{_type} eq 'gre')  { $proto = 'gre' };
-    
-    push (@rules_out, 
-	  Funknet::Config::FirewallRule->new(
-					     proto               => $proto,
-					     source_address      => $self->{_local_endpoint},
-					     destination_address => $self->{_remote_endpoint},
-					     source              => $self->{_source},));
-    
-    push (@rules_out, 
-	  Funknet::Config::FirewallRule->new(
-					     proto               => $proto,
-					     source_address      => $self->{_remote_endpoint},
-					     destination_address => $self->{_local_endpoint},
-					     source              => $self->{_source},));
-    
+
+    push (@rules_out,
+          Funknet::Config::FirewallRule->new(
+                                             proto               => $proto,
+                                             source_address      => $self->{_local_endpoint},
+                                             destination_address => $self->{_remote_endpoint},
+					     direction		 => 'out',
+                                             source              => $self->{_source},));
+
+    push (@rules_out,
+          Funknet::Config::FirewallRule->new(
+                                             proto               => $proto,
+                                             source_address      => $self->{_remote_endpoint},
+                                             destination_address => $self->{_local_endpoint},
+					     direction		 => 'in',
+                                             source              => $self->{_source},));
+
     return (@rules_out);
 }
 

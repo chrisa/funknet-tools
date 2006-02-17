@@ -285,11 +285,13 @@ sub firewall_rules {
     push (@rules_out, 
 	  Funknet::Config::FirewallRule->new(
 					     in_interface  => $self->{_ifname},
+					     direction	   => 'in',
 					     source        => $self->{_source},));
     
     push (@rules_out, 
 	  Funknet::Config::FirewallRule->new(
 					     out_interface => $self->{_ifname},
+					     direction	   => 'out',
 					     source        => $self->{_source},));
 
     return @rules_out;

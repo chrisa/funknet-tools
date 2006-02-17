@@ -20,9 +20,10 @@ whois_host = whois.funknet.org
 whois_port = 4343
 whois_source = FUNKNET
 
-# can be ipfw, iptables
+# can be ipfw, iptables, ipf, pf
 firewall_type = iptables
 
+ipf_group_number = 100
 min_ipfw_rule = 10000
 max_ipfw_rule = 20000
 
