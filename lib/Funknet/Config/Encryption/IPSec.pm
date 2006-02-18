@@ -283,6 +283,7 @@ sub get_keycert {
      my ($key_text, $cert_text) = $self->SUPER::get_keycert($param);
      my $e = Funknet::ConfigFile::Tools->encryption;
 
+     $param =~ s!/!,!g;
      my $keyfile = Funknet::Config::SystemFile->new(
                                                     text  => $key_text,
                                                     user  => 'root',
