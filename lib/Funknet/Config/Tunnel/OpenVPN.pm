@@ -253,16 +253,9 @@ sub valid_type {
     return 0;
 }
 
-sub start_cmd {
+sub restart_cmd {
     my ($self) = @_;
-    return Funknet::Config::CommandSet->new( cmds => [ '/usr/sbin/openvpn -f '.$self->{_ovpn_file} ],
-					     target => 'host',
-					   );
-}
-
-sub stop_cmd {
-    my ($self) = @_;
-    return Funknet::Config::CommandSet->new( cmds => [ 'kill -TERM `cat '.$self->{_ovpn_pidfile}.'`' ],
+    return Funknet::Config::CommandSet->new( cmds => [ '/etc/init.d/openvpn restart' ],
 					     target => 'host',
 					   );
 }

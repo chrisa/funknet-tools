@@ -100,9 +100,9 @@ sub config {
 	} 
 
 	# also add a "start" command, careful not to push an undef. 
-	my $start = $tun->start_cmd();
-	if (defined $start) {
-	    push @cmds, $start;
+	my $restart = $tun->restart_cmd();
+	if (defined $restart) {
+	    push @cmds, $restart;
 	}
 
 	$i++;
@@ -152,12 +152,6 @@ sub diff {
     for my $h ($host->tunnels) {
 	unless ($whois_tuns->{$h->as_hashkey}) {
 	    push @cmds, $h->delete;
-
-	    # also add a "stop" command, careful not to push an undef. 
-	    my $stop = $h->stop_cmd();
-	    if (defined $stop) {
-		push @cmds, $stop;
-	    }
 	}
     }
 
@@ -179,10 +173,10 @@ sub diff {
 		push @cmds, $create_obj;
 	    } 
 
-	    # also add a "start" command, careful not to push an undef. 
-	    my $start = $w->start_cmd();
-	    if (defined $start) {
-		push @cmds, $start;
+	    # also add a "restart" command, careful not to push an undef. 
+	    my $restart = $w->restart_cmd();
+	    if (defined $restart) {
+		push @cmds, $restart;
 	    }
 
 	    $if_num++;
