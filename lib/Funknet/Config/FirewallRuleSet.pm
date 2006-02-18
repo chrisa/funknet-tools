@@ -200,9 +200,6 @@ sub diff {
     for my $fwall ($host->firewall) {
 	$host_fwall->{$fwall->as_hashkey}++;
     }
-    for my $fwall ($host->firewall) {
-	$host_fwall->{$fwall->as_hashkey}++;
-    }
     
     for my $h ($host->firewall) {
 	unless ($whois_fwall->{$h->as_hashkey}) {
