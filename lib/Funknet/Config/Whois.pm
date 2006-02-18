@@ -256,7 +256,7 @@ sub firewall {
 	$filter_chain = Funknet::Config::FirewallChain->new(
     					type	=> 'filter',
 					rules	=> [],
-					create	=> 'yes',
+					create	=> 'no',
 					);
     }
     push (@chains,$filter_chain);
@@ -271,7 +271,7 @@ sub firewall {
 	$nat_chain = Funknet::Config::FirewallChain->new(
     					type	=> 'nat',
 					rules	=> [],
-					create	=> 'yes',
+					create	=> 'no',
 					);
     }
     push (@chains,$nat_chain);
