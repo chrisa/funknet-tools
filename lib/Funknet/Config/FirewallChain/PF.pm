@@ -61,7 +61,7 @@ sub anchor {
     if (!defined $self) { warn 'bad args to _anchor'; }
 
     my $base = Funknet::ConfigFile::Tools->whois_source || 'FUNKNET';
-    my $suffix;
+    my $suffix = '';
     if (defined $self->{_type}) {
 	if ($self->{_type} eq 'nat') {
 	    $suffix="-nat";
