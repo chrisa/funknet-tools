@@ -55,9 +55,6 @@ sub whois_init {
     my ($self, $tun, $param) = @_;
     my $e = Funknet::ConfigFile::Tools->encryption;
     
-    # get key and cert SystemFile objects.
-    my ($keyfile, $certfile) = $self->get_keycert($param);
-    
     # policy
     my $policy;
     my $tun_type = $tun->type;
@@ -80,6 +77,10 @@ sub whois_init {
     } else {
 	return undef;
     }
+
+    # get key and cert SystemFile objects.
+    my ($keyfile, $certfile) = $self->get_keycert($param);
+    
     $self->init(
 		policy         => $policy,
 		peer           => $tun->remote_endpoint,
