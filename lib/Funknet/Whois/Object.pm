@@ -37,8 +37,6 @@ use Funknet::Whois::ObjectSyntax;
 
 use vars qw/ $AUTOLOAD /;
 
-use Data::Dumper;
-
 =head1 NAME
 
 Funknet::Whois::Object
