@@ -301,4 +301,31 @@ sub get_keycert {
      return ($keyfile, $certfile);
 }
 
+sub filter_firewall_rules {
+     my ($self) = @_;
+     my @rules;
+
+     push @rules,
+          Funknet::Config::FirewallRule->new(
+                                             type                => 'filter',
+                                             proto               => 'udp',
+                                             destination_address => $self->{_peer},
+                                             source_address      => $self->{_local},
+                                             source_port         => 500,
+                                             destination_port    => 500,
+                                             source              => $self->{_source},
+                                            );
+     push @rules,
+          Funknet::Config::FirewallRule->new(
+                                             type                => 'filter',
+                                             proto               => 'udp',
+                                             destination_address => $self->{_local},
+                                             source_address      => $self->{_peer},
+                                             source_port         => 500,
+                                             destination_port    => 500,
+                                             source              => $self->{_source},
+                                            );
+     return (@rules);
+}
+
 1;

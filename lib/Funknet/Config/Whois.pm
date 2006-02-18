@@ -220,7 +220,7 @@ sub tunnels {
 }
 
 sub firewall {
-    my ($self, $tun_set) = @_;
+    my ($self, $tun_set, $enc_set) = @_;
     debug("Creating Firewall config from Whois data");
 
     my $w = $self->{_fwc};
@@ -228,54 +228,28 @@ sub firewall {
     $w->type('aut-num');
     my $as = $w->query($l->{as});
     
-    my (@local_nat_fwall, @local_filter_fwall);
-    my @chains;
+    my (@nat, @filter);
 
     foreach my $tun ($tun_set->tunnels) {
-	
-	my $tun_name = $tun->name;
-	my (@nat_fwall_objs, @filter_fwall_objs);
-	
-	@nat_fwall_objs = $tun->nat_firewall_rules;
-	@filter_fwall_objs = $tun->filter_firewall_rules;
-
-	if (scalar (@nat_fwall_objs)) {push @local_nat_fwall, @nat_fwall_objs};
-	if (scalar (@filter_fwall_objs)) {push @local_filter_fwall, @filter_fwall_objs};
+	push @nat,    $tun->nat_firewall_rules;
+	push @filter, $tun->filter_firewall_rules;
+    }
+    foreach my $enc ($enc_set->encryptions) {
+	push @nat,    $enc->nat_firewall_rules;
+	push @filter, $enc->filter_firewall_rules;
     }
 
-    my $filter_chain;
-    my $nat_chain;
-
-    if (scalar @local_filter_fwall) {
-	$filter_chain = Funknet::Config::FirewallChain->new(
-    					type	=> 'filter',
-					rules	=> \@local_filter_fwall,
-					create	=> 'yes',
-					);
-    } else {
-	$filter_chain = Funknet::Config::FirewallChain->new(
-    					type	=> 'filter',
-					rules	=> [],
-					create	=> 'no',
-					);
-    }
-    push (@chains,$filter_chain);
-
-    if (scalar @local_nat_fwall) {
-	$nat_chain = Funknet::Config::FirewallChain->new(
-    					type	=> 'nat',
-					rules	=> \@local_nat_fwall,
-					create	=> 'yes',
-					);
-    } else {
-	$nat_chain = Funknet::Config::FirewallChain->new(
-    					type	=> 'nat',
-					rules	=> [],
-					create	=> 'no',
-					);
-    }
-    push (@chains,$nat_chain);
-
+    my $filter_chain = Funknet::Config::FirewallChain->new(
+                                                           type   => 'filter',
+                                                           rules  => \@filter,
+                                                           create => 'yes',
+                                                          );
+    my $nat_chain = Funknet::Config::FirewallChain->new(
+                                                        type   => 'nat',
+                                                        rules  => \@nat,
+                                                        create => 'yes',
+                                                       );
+    
     return Funknet::Config::FirewallRuleSet->new( chains  => { 
                                                               filter => $filter_chain,
                                                               nat    => $nat_chain,

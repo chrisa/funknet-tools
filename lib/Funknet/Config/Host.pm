@@ -148,7 +148,7 @@ sub tunnels {
 }
 
 sub firewall {
-    my ($self, $tun_set) = @_;
+    my ($self, $tun_set, $enc_set) = @_;
     debug("Creating firewall config from Host data");
 
     my @local_fwall;

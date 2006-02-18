@@ -193,4 +193,12 @@ sub get_keycert {
 # stub, this only applies to OpenVPN
 sub tun_data {}
 
+# virtuals for firewall rules
+sub nat_firewall_rules {
+     return;
+}
+sub filter_firewall_rules {
+     return;
+}
+
 1;

@@ -150,13 +150,13 @@ sub tun_diff {
 }
 
 sub fwall_diff {
-    my ($self, $tun_set) = @_;
+    my ($self, $tun_set, $enc_set) = @_;
     
     my $whois = Funknet::Config::Whois->new();
     my $host = Funknet::Config::Host->new();
 
-    my $whois_fwall = $whois->firewall ( $tun_set );
-    my $host_fwall = $host->firewall( $tun_set );
+    my $whois_fwall = $whois->firewall ($tun_set, $enc_set);
+    my $host_fwall = $host->firewall($tun_set, $enc_set);
     
     my $diff = $whois_fwall->diff($host_fwall);
     return ($diff, $whois_fwall, $host_fwall);
@@ -168,11 +168,11 @@ sub enc_diff {
     my $whois = Funknet::Config::Whois->new();
     my $host = Funknet::Config::Host->new();
 
-    my $whois_enc = $whois->encryption( $whois_tun );
-    my $host_enc = $host->encryption( $host_tun );
+    my $whois_enc = $whois->encryption($whois_tun);
+    my $host_enc = $host->encryption($host_tun);
     
     my $diff = $whois_enc->diff($host_enc);
-    return $diff;
+    return ($diff, $whois_enc, $host_enc);
 }
 
 sub bgp_config {
@@ -196,10 +196,10 @@ sub tun_config {
 }
 
 sub fwall_config {
-    my ($self, $tun_set) = @_;
+    my ($self, $tun_set, $enc_set) = @_;
 
     my $whois = Funknet::Config::Whois->new();
-    my $whois_fwall = $whois->firewall( $tun_set );
+    my $whois_fwall = $whois->firewall($tun_set, $enc_set);
 
     my $config = $whois_fwall->config();
     return ($config, $whois_fwall);
@@ -209,7 +209,7 @@ sub enc_config {
     my ($self, $tun_set) = @_;
 
     my $whois = Funknet::Config::Whois->new();
-    my $whois_enc = $whois->encryption( $tun_set );
+    my $whois_enc = $whois->encryption($tun_set);
 
     my $config = $whois_enc->config();
     return ($config, $whois_enc);

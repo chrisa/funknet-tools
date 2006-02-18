@@ -115,10 +115,6 @@ if ($opt{c}) {
     ($bgp, $whois_bgp) = $config->bgp_config or die "bgp_config failed: ".$config->error;
     debug("Generating tunnel config");
     ($tun, $whois_tun) = $config->tun_config or die "tun_config failed: ".$config->error;
-    if ($opt{r}) {
-	debug("Generating firewall config");
-	($fwall, $whois_fwall) = $config->fwall_config($whois_tun) or die "fwall_config failed: ".$config->error;
-    }
     if ($opt{e}) {
 	debug("Generating encryption config");
 	($enc, $whois_enc) = $config->enc_config($whois_tun) or die "enc_config files: ".$config->error;
@@ -126,23 +122,27 @@ if ($opt{c}) {
 	# one that includes the possible encryption config
 	$tun = $whois_tun->config;
     }
+    if ($opt{r}) {
+	debug("Generating firewall config");
+	($fwall, $whois_fwall) = $config->fwall_config($whois_tun, $whois_enc) or die "fwall_config failed: ".$config->error;
+    }
 
 } else {
     debug("Generating BGP diff");
     $bgp = $config->bgp_diff or die "bgp_diff failed: ".$config->error;
     debug("Generating tunnel diff");
-    my ($whois_tun, $host_tun, $whois_fwall, $host_fwall);
+    my ($whois_tun, $host_tun, $whois_fwall, $host_fwall, $whois_enc, $host_enc);
     ($tun, $whois_tun, $host_tun) = $config->tun_diff or die "tun_diff failed: ".$config->error;
-    if ($opt{r}) {
-	debug("Generating firewall diff");
-	($fwall, $whois_fwall, $host_fwall) = $config->fwall_diff($whois_tun) or die "fwall_diff failed: ".$config->error;
-    }
     if ($opt{e}) {
 	debug("Generating encryption diff");
-	$enc = $config->enc_diff($whois_tun, $host_tun) or die "enc_diff files: ".$config->error;
+	($enc, $whois_enc, $host_enc) = $config->enc_diff($whois_tun, $host_tun) or die "enc_diff files: ".$config->error;
 	# replace the $tun diff from above with a regenned 
 	# one that includes the possible encryption config
 	$tun = $whois_tun->diff($host_tun);
+    }
+    if ($opt{r}) {
+	debug("Generating firewall diff");
+	($fwall, $whois_fwall, $host_fwall) = $config->fwall_diff($whois_tun, $whois_enc) or die "fwall_diff failed: ".$config->error;
     }
 }
 
