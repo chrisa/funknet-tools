@@ -142,10 +142,12 @@ sub type {
 
 sub create {
      # virtual
+     return;
 }
 
 sub delete {
      # virtual 
+     return;
 }
 
 1;
