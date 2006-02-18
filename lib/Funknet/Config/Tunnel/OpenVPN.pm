@@ -264,6 +264,21 @@ sub nat_firewall_rules {
     my ($self) = @_;
     my @rules_out;
 
+    # we need nat rules for openvpn: 
+    #
+    # because we don't put the port number for openvpn in the object,
+    # there's no way to guarantee that each end gets the same number.
+    # really, we'd like the port number assignments to be private to
+    # each node, not shared between endpoints.
+    # 
+    # so, we tell every client that its server is on port 1194, and on
+    # the server DNAT incoming port 1194 based on source IP address to
+    # whatever that client's locally assigned port is.
+    #
+    # This keeps knowledge of the assigned ports on the server only,
+    # and the traffic actually visible on the network is all port
+    # 1194.
+    
     if ($self->{_ovpn_server}) {
          push (@rules_out,
                Funknet::Config::FirewallRule->new(
