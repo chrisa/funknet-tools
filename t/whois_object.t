@@ -216,10 +216,29 @@ source:       FUNKNET
 
 TEXT
 
+my $parsed_text = <<'PARSED';
+aut-num: AS65001
+as-name: MUNKY-NODNOL-ORG
+descr: munky.nodnol.org
+import: from AS65000 action pref=100;  accept AS-FUNKTRANSIT and not AS65001
+import: from AS65023 action pref=100;  accept AS-FUNKTRANSIT and not AS65001
+export: to AS65000 announce AS65001
+export: to AS65023 announce AS65001
+tun: SPLURBY-MUNKY
+tun: BLANK-MUNKY
+admin-c: CA1-FUNKNET
+tech-c: CA1-FUNKNET
+mnt-by: CHRIS
+notify: chris@nodnol.org
+changed: chris@nodnol.org 20040321
+timestamp: 2005-10-01T14:49:00
+source: FUNKNET
+PARSED
+
 $obj = Funknet::Whois::Object->new($text, TimeStamp => 1);
 
 ok( defined $obj,                                'parse ok' );
-is( _nw(scalar $obj->text), _nw($text),          'text correct');
+is( _nw(scalar $obj->text), _nw($parsed_text),   'parsed text correct');
 is( ref $obj,          'Funknet::Whois::Object', 'correct class' );
 is( $obj->object_type, 'aut-num',                'correct type' );
 is( $obj->object_name, 'AS65001',                'correct name' );
