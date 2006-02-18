@@ -1,8 +1,7 @@
 #!/usr/bin/perl
 use strict;
 use Data::Dumper;
-#use Test::More tests => 0;
-use Test::More qw/ no_plan /;
+use Test::More tests => 68;
 
 my ($text, $obj);
 
@@ -516,6 +515,110 @@ $obj = Funknet::Whois::Object->new($text);
 ok( defined $obj, 'parse ok');
 is( _nw(scalar $obj->text), _nw($text), 'text correct');
 
+
+my $rawcert = <<'RAWCERT';
+Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number: 5 (0x5)
+        Signature Algorithm: md5WithRSAEncryption
+        Issuer: C=GB, ST=FunkSTate, L=FunkLocality, O=FUNKNET, OU=FunkOU, CN=FUNKNET/emailAddress=ca@funknet.org
+        Validity
+            Not Before: Jan 29 02:39:32 2006 GMT
+            Not After : Jan 29 02:39:32 2007 GMT
+        Subject: C=GB, ST=FunkSTate, L=FunkLocality, O=FUNKNET, OU=FunkOU, CN=BLANKserver/emailAddress=blankserver@funknet.org
+        Subject Public Key Info:
+            Public Key Algorithm: rsaEncryption
+            RSA Public Key: (2048 bit)
+                Modulus (2048 bit):
+                    00:d2:9f:ed:62:5f:07:60:71:bd:32:8b:28:d7:2c:
+                    bd:b5:46:c9:1d:8b:91:91:81:43:fd:21:11:03:a2:
+                    93:28:08:13:e2:d5:4c:15:2a:a5:20:9d:53:ef:c2:
+                    4e:19:f8:90:3c:00:48:7e:ba:10:4c:9f:bd:2d:9c:
+                    d7:04:a3:dd:fd:d7:3e:61:7f:9c:b3:d6:37:63:91:
+                    41:e9:5e:41:e3:1e:fc:15:48:2e:60:5d:ea:d9:99:
+                    d2:6c:1b:82:19:93:90:1e:d6:b8:80:98:b4:bd:69:
+                    99:4f:28:45:0b:33:89:ca:40:50:37:1e:fa:20:92:
+                    7c:ff:ca:99:2f:9c:fc:5b:9f:d9:a4:c3:eb:e5:21:
+                    d0:06:68:02:84:b4:60:25:57:64:bc:5c:42:75:9b:
+                    17:07:5c:93:cd:65:10:70:af:77:56:72:42:79:04:
+                    26:30:ef:4c:f6:6c:c8:a9:4d:2a:88:10:ac:82:d4:
+                    a3:c0:87:78:4f:51:ae:f7:eb:4c:5c:b9:8c:c0:be:
+                    1e:8e:b3:f2:40:04:d4:e6:d4:94:7a:28:55:a1:f3:
+                    11:21:8d:21:cc:00:eb:f5:94:bb:ac:09:1f:48:f9:
+                    02:c5:51:5d:f7:ea:11:ce:c8:71:c6:fe:a7:81:22:
+                    59:b0:72:ab:8d:60:be:10:28:5a:1c:5c:dc:aa:aa:
+                    2a:57
+                Exponent: 65537 (0x10001)
+        X509v3 extensions:
+            X509v3 Basic Constraints: 
+                CA:FALSE
+            Netscape Cert Type: 
+                SSL Server
+            Netscape Comment: 
+                TinyCA Generated Certificate
+            X509v3 Subject Key Identifier: 
+                02:2F:7D:16:FC:68:75:EA:A8:D4:EA:C1:E2:AC:7C:D6:F4:BF:AB:21
+            X509v3 Authority Key Identifier: 
+                keyid:4E:50:43:B6:06:FD:DA:75:17:A0:F3:22:D2:25:71:65:C9:59:0E:05
+                DirName:/C=GB/ST=FunkSTate/L=FunkLocality/O=FUNKNET/OU=FunkOU/CN=FUNKNET/emailAddress=ca@funknet.org
+                serial:87:C5:A9:41:03:56:AB:E0
+
+            X509v3 Issuer Alternative Name: 
+                email:ca@funknet.org
+            X509v3 Subject Alternative Name: 
+                email:blankserver@funknet.org
+    Signature Algorithm: md5WithRSAEncryption
+        00:47:0f:3c:88:8e:22:6c:e4:9c:c7:29:44:5f:b3:43:d1:31:
+        c2:1b:4f:3b:43:59:76:01:47:95:4a:43:6a:b3:66:bc:9c:77:
+        74:71:7b:2a:5a:3d:6e:42:a0:38:ab:7c:41:f3:fb:74:93:bd:
+        97:e4:9b:db:bd:e3:98:68:f5:4e:2f:50:8a:9d:44:06:cf:c2:
+        53:62:36:e1:70:a0:01:a8:fe:98:9f:31:9f:09:ab:8e:78:7f:
+        ad:62:6f:be:6c:d9:0e:88:39:5f:15:e7:29:1d:78:4c:5d:62:
+        3f:61:5f:e3:cb:01:da:32:64:1a:55:66:09:5b:27:d9:c8:35:
+        4f:01:b6:ff:60:2b:79:87:7b:76:8b:d6:ac:96:8e:71:f3:02:
+        84:a8:1a:57:49:3b:e4:29:7e:5f:fb:9b:aa:66:b1:8b:ff:e8:
+        8b:c5:1f:c3:0e:2b:94:7c:a6:17:f6:70:dd:5a:56:7a:7c:02:
+        bf:f7:b1:e7:db:0d:53:c4:0c:c0:2b:7e:6d:73:10:7f:46:c1:
+        57:fc:22:74:94:c2:bd:c0:d6:e9:be:4b:47:40:a4:18:3c:c2:
+        c1:9c:ba:f5:ad:fe:88:61:f9:49:d7:c0:3a:72:0c:ad:8a:84:
+        8e:63:35:f2:5e:fc:37:86:47:2c:23:e9:2a:a6:4d:e2:8c:be:
+        48:61:ba:f8
+-----BEGIN CERTIFICATE-----
+MIIFFTCCA/2gAwIBAgIBBTANBgkqhkiG9w0BAQQFADCBjDELMAkGA1UEBhMCR0Ix
+EjAQBgNVBAgTCUZ1bmtTVGF0ZTEVMBMGA1UEBxMMRnVua0xvY2FsaXR5MRAwDgYD
+VQQKEwdGVU5LTkVUMQ8wDQYDVQQLEwZGdW5rT1UxEDAOBgNVBAMTB0ZVTktORVQx
+HTAbBgkqhkiG9w0BCQEWDmNhQGZ1bmtuZXQub3JnMB4XDTA2MDEyOTAyMzkzMloX
+DTA3MDEyOTAyMzkzMlowgZkxCzAJBgNVBAYTAkdCMRIwEAYDVQQIEwlGdW5rU1Rh
+dGUxFTATBgNVBAcTDEZ1bmtMb2NhbGl0eTEQMA4GA1UEChMHRlVOS05FVDEPMA0G
+A1UECxMGRnVua09VMRQwEgYDVQQDEwtCTEFOS3NlcnZlcjEmMCQGCSqGSIb3DQEJ
+ARYXYmxhbmtzZXJ2ZXJAZnVua25ldC5vcmcwggEiMA0GCSqGSIb3DQEBAQUAA4IB
+DwAwggEKAoIBAQDSn+1iXwdgcb0yiyjXLL21Rskdi5GRgUP9IREDopMoCBPi1UwV
+KqUgnVPvwk4Z+JA8AEh+uhBMn70tnNcEo9391z5hf5yz1jdjkUHpXkHjHvwVSC5g
+XerZmdJsG4IZk5Ae1riAmLS9aZlPKEULM4nKQFA3Hvogknz/ypkvnPxbn9mkw+vl
+IdAGaAKEtGAlV2S8XEJ1mxcHXJPNZRBwr3dWckJ5BCYw70z2bMipTSqIEKyC1KPA
+h3hPUa7360xcuYzAvh6Os/JABNTm1JR6KFWh8xEhjSHMAOv1lLusCR9I+QLFUV33
+6hHOyHHG/qeBIlmwcquNYL4QKFocXNyqqipXAgMBAAGjggFxMIIBbTAJBgNVHRME
+AjAAMBEGCWCGSAGG+EIBAQQEAwIGQDArBglghkgBhvhCAQ0EHhYcVGlueUNBIEdl
+bmVyYXRlZCBDZXJ0aWZpY2F0ZTAdBgNVHQ4EFgQUAi99Fvxodeqo1OrB4qx81vS/
+qyEwgcEGA1UdIwSBuTCBtoAUTlBDtgb92nUXoPMi0iVxZclZDgWhgZKkgY8wgYwx
+CzAJBgNVBAYTAkdCMRIwEAYDVQQIEwlGdW5rU1RhdGUxFTATBgNVBAcTDEZ1bmtM
+b2NhbGl0eTEQMA4GA1UEChMHRlVOS05FVDEPMA0GA1UECxMGRnVua09VMRAwDgYD
+VQQDEwdGVU5LTkVUMR0wGwYJKoZIhvcNAQkBFg5jYUBmdW5rbmV0Lm9yZ4IJAIfF
+qUEDVqvgMBkGA1UdEgQSMBCBDmNhQGZ1bmtuZXQub3JnMCIGA1UdEQQbMBmBF2Js
+YW5rc2VydmVyQGZ1bmtuZXQub3JnMA0GCSqGSIb3DQEBBAUAA4IBAQAARw88iI4i
+bOScxylEX7ND0THCG087Q1l2AUeVSkNqs2a8nHd0cXsqWj1uQqA4q3xB8/t0k72X
+5JvbveOYaPVOL1CKnUQGz8JTYjbhcKABqP6YnzGfCauOeH+tYm++bNkOiDlfFecp
+HXhMXWI/YV/jywHaMmQaVWYJWyfZyDVPAbb/YCt5h3t2i9aslo5x8wKEqBpXSTvk
+KX5f+5uqZrGL/+iLxR/DDiuUfKYX9nDdWlZ6fAK/97Hn2w1TxAzAK35tcxB/RsFX
+/CJ0lMK9wNbpvktHQKQYPMLBnLr1rf6IYflJ18A6cgytioSOYzXyXvw3hkcsI+kq
+pk3ijL5IYbr4
+-----END CERTIFICATE-----
+RAWCERT
+
+$obj = Funknet::Whois::Object->new($rawcert);
+
+ok( !defined $obj, 'parse failed on raw cert');
 
 # "normalise whitespace" -- so we can compare the text
 # of the parsed object with the original text.

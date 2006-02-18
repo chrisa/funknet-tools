@@ -1,3 +1,4 @@
+
 # Copyright (c) 2003
 #	The funknet.org Group.
 #
@@ -36,6 +37,8 @@ use Funknet::Whois::ObjectSyntax;
 
 use vars qw/ $AUTOLOAD /;
 
+use Data::Dumper;
+
 =head1 NAME
 
 Funknet::Whois::Object
@@ -57,19 +60,23 @@ sub new {
 
   LINE:
     for my $line (split /\r?\n/, $text) {
+        next unless $line;
 
         # is this a continuation line?
         # first, have we seen any keys?
-        if (defined $self->{_order}) {
-            if ($line =~ s/^(\+\s?|\s)//) {
+         if (defined $self->{_order} && defined $key) {
+            if ($line =~ s/^(\+\s?|\s)// && defined $self->{_methods}->{$key}) {
                 ${ $self->{_methods}->{$key} }[-1] .= " $line";
                 ${ $self->{_content} }[-1] .= " $line";
                 next LINE;
             }
         }
 
+        # if the line has any content, it *must* match the regexp
+        # or this isn't a valid object. 
         ($key, my $val) = $line =~ /(.+?):\s*(.+)?/;
-	next unless ($key);
+        return unless ($key);
+
 	if (!defined $val) { $val = "" };
 	push @{ $self->{_methods}->{$key} }, $val;
 	push @{ $self->{_content} }, $val;
