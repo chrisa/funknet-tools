@@ -83,7 +83,7 @@ sub config {
 
 #	push @cmds, $chain->flush();
 
-        for my $fwallrule ($chain->firewall) {
+        for my $fwallrule ($chain->rules) {
 	    if (defined $fwallrule) {
 	        push @cmds, $fwallrule->create();
 	    }
