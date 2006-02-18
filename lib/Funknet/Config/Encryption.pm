@@ -155,7 +155,6 @@ sub apply {
 sub get_keycert {
     my ($self, $param) = @_;
 
-    my $e = Funknet::ConfigFile::Tools->encryption;
     my $k = Funknet::ConfigFile::Tools->keystash;
     my $ks = Funknet::KeyStash::Client->new(%$k);
     unless (defined $ks) {
@@ -164,7 +163,7 @@ sub get_keycert {
     }
 
     # get values from whois and wherever, call $self->new( ... );
-    # this is IPSec, $param is a serial number of a cert in the whois. 
+    # $param is the CN of cert in the whois.
 
     # get the cert. 
     my $cert = $ks->get_cert($param);
@@ -172,45 +171,23 @@ sub get_keycert {
 	$self->warn("certificate not found: $param");
 	return undef;
     }
-
-    my $text = $cert->rawtext;
-    if (!defined $text) {
-	$self->warn("using raw cert file contents");
-	$text = join '', @{ $cert->{_content} };
-    }
-    my $filename = $param;
-    $filename =~ s!/!,!;
-
-    my $certfile = Funknet::Config::SystemFile->new(
-						    text => $text,
-						    path => "$e->{certpath}/$filename",
-						   );
+    my $cert_text = $cert->rawtext;
 
     # get the private key that corresponds to this cert
-    ## use KeyStash
-
     # the CN of the cert is in the owner field
     my $cn = $cert->owner;
     if (!defined $cn) {
 	$self->warn("using cert filename for key filename: $param");
 	$cn = $param;
     }
-    my $key = $ks->get_key($cn);
+    my $key_text = $ks->get_key($cn);
 
-    if (!defined $key) {
+    if (!defined $key_text) {
 	$self->warn("key not found: $cn");
 	return undef;
     }
-    $filename = $cn;
-    $filename =~ s!/!,!;
 
-    my $keyfile = Funknet::Config::SystemFile->new(
-						   text => $key,
-						   path => "$e->{keypath}/$filename",
-						  );
-
-
-    return ($keyfile, $certfile);
+    return ($key_text, $cert_text);
 }
 
 # stub, this only applies to OpenVPN

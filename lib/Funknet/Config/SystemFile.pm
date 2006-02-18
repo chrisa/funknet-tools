@@ -35,6 +35,7 @@ use strict;
 use base qw/ Funknet::Config /;
 use Funknet::Config::Root;
 use Funknet::Config::Validate qw/ is_valid_filepath /;
+use Funknet::Debug;
 use Text::Diff ();
 
 =head1 NAME
@@ -71,11 +72,19 @@ sub new {
 	$self->warn("no path specified in SystemFile");
 	return undef;
     } else {
-	$self->{_path} = $args{path};
+         $self->{_path} = $args{path};
     }
-    
     if (defined $args{text}) {
 	$self->{_text} = $args{text};
+    }
+    if (defined $args{mode}) {
+	$self->{_mode} = $args{mode};
+    }
+    if (defined $args{user}) {
+	$self->{_user} = $args{user};
+    }
+    if (defined $args{group}) {
+	$self->{_group} = $args{group};
     }
     
     # see if the file currently exists. if it does, grab 
@@ -118,6 +127,8 @@ sub old_text {
 sub write {
     my ($self) = @_;
 
+    debug("writing file $self->{_path}");
+    
     if (defined $self->{_delete}) {
 	if (! unlink $self->{_path}) {
 	    $self->warn("failed to unlink $self->{_path}: $!");
@@ -136,8 +147,18 @@ sub write {
 	}
 	print OUT $self->{_text};
 	close OUT;
+    
+        my (undef, undef, $uid, $pgid) = getpwnam($self->{_user});
+        my $gid = getgrnam($self->{_group}) || $pgid;
+        if (defined $uid && $gid) {
+             chown $uid, $gid, $self->{_path};
+        }
+        if (defined $self->{_mode}) {
+             chmod oct($self->{_mode}), $self->{_path};
+        }
 	return 1;
     }
+
 }
 
 sub diff {
@@ -160,6 +181,27 @@ sub delete {
     return Funknet::Config::CommandSet->new( cmds => [ "rm $self->{_path}" ],
 					     target => 'host',
 					   );
+}
+
+sub as_text {
+     my ($self) = @_;
+
+     my $text = ">>> ";
+     $text .= $self->{_path};
+     $text .= ' ';
+     if (defined $self->{_user}) {
+          $text .= $self->{_user};
+     }
+     if (defined $self->{_group}) {
+          $text .= ':';
+          $text .= $self->{_group};
+     }
+     if (defined $self->{_mode}) {
+          $text .= ' ('.($self->{_mode}).')';
+     }
+     $text .= "\n";
+     $text .= $self->{_text};
+     $text .= "<<<\n\n";
 }
     
 1;

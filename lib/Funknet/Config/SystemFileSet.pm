@@ -98,11 +98,7 @@ sub as_text {
                 $self->warn("undef in SystemFileSet");
                 next;
             }
-	    $text .= ">>> ";
-	    $text .= $file->path;
-	    $text .= ":\n";
-	    $text .= $file->new_text;
-	    $text .= "<<<\n\n";
+            $text .= $file->as_text();
 	}
 	return $text;
     } else {

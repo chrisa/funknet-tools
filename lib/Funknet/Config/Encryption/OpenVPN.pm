@@ -84,12 +84,12 @@ calling the generic Encryption class constructor.
 
 sub whois_init {
     my ($self, $tun, $param) = @_;
+
+    # rebless into specialised Encryption class.
+    bless $self, "Funknet::Config::Encryption::OpenVPN";
     
     # get key and cert SystemFile objects out of whois/keystash
     my ($keyfile, $certfile) = $self->get_keycert($param);
-    
-    # rebless into specialised Encryption class.
-    bless $self, "Funknet::Config::Encryption::OpenVPN";
     
     # fire object back through init for checking 
     return $self->init(
@@ -126,9 +126,17 @@ sub host_init {
     my $conf_data = _parse_openvpn_conf($ovpn_conf);
     my ($keyfile_path, $certfile_path) = ($conf_data->{key}, $conf_data->{cert});
 
-    my $keyfile = Funknet::Config::SystemFile->new( path => $keyfile_path );
-    my $certfile = Funknet::Config::SystemFile->new( path => $certfile_path );
-
+    my $keyfile = Funknet::Config::SystemFile->new( path  => $keyfile_path,
+                                                    user  => 'openvpn',
+                                                    group => 'openvpn',
+                                                    mode  => '0600',
+                                                  );
+    my $certfile = Funknet::Config::SystemFile->new( path => $certfile_path,
+                                                     user  => 'openvpn',
+                                                     group => 'openvpn',
+                                                     mode  => '0600',
+                                                   );
+    
     # rebless into specialised Encryption class.
     bless $self, "Funknet::Config::Encryption::OpenVPN";
     
@@ -207,5 +215,31 @@ sub peer {
     my ($self) = @_;
     return $self->{_tun}->{_remote_endpoint};
 }
+
+sub get_keycert {
+     my ($self, $param) = @_;
+
+     my ($key_text, $cert_text) = $self->SUPER::get_keycert($param);
+     my $e = Funknet::ConfigFile::Tools->encryption;
+
+     $param =~ s!/!,!g;
+     my $keyfile = Funknet::Config::SystemFile->new(
+                                                    text  => $key_text,
+                                                    user  => 'openvpn',
+                                                    group => 'openvpn',
+                                                    mode  => '0600',
+                                                    path  => "$e->{keypath}/$param",
+                                                   );
+     
+     my $certfile = Funknet::Config::SystemFile->new(
+                                                     text  => $cert_text,
+                                                     user  => 'openvpn',
+                                                     group => 'openvpn',
+                                                     mode  => '0600',
+                                                     path  => "$e->{certpath}/$param",
+                                                    );
+     return ($keyfile, $certfile);
+}
+
 
 1;

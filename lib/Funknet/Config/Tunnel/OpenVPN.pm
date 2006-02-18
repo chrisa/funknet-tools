@@ -174,8 +174,11 @@ sub delete {
     $self->{_ovpn_file} = OPENVPN_CONF_DIR . '/' . $self->{_name} . '.conf';
 
     # create a SystemFile object on that path
-    my $ovpn_file = Funknet::Config::SystemFile->new( text => undef,
-						      path => $self->{_ovpn_file} );
+    my $ovpn_file = Funknet::Config::SystemFile->new( text  => undef,
+                                                      user  => 'openvpn',
+                                                      group => 'openvpn',
+                                                      mode  => '0600',
+						      path  => $self->{_ovpn_file} );
     
     return $ovpn_file->delete;
 }
@@ -208,8 +211,11 @@ sub create {
     # get our config text
     my $ovpn_conf = _gen_openvpn_conf($self);
  
-    my $ovpn_file = Funknet::Config::SystemFile->new( text => $ovpn_conf,
-						      path => $self->{_ovpn_file} );
+    my $ovpn_file = Funknet::Config::SystemFile->new( text  => $ovpn_conf,
+                                                      user  => 'openvpn',
+                                                      group => 'openvpn',
+                                                      mode  => '0600',
+						      path  => $self->{_ovpn_file} );
 					      
     return $ovpn_file;
 }

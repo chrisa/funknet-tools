@@ -276,4 +276,28 @@ sub peer {
     return $self->{_peer};
 }
 
+sub get_keycert {
+     my ($self, $param) = @_;
+
+     my ($key_text, $cert_text) = $self->SUPER::get_keycert($param);
+     my $e = Funknet::ConfigFile::Tools->encryption;
+
+     my $keyfile = Funknet::Config::SystemFile->new(
+                                                    text  => $key_text,
+                                                    user  => 'root',
+                                                    group => 'root',
+                                                    mode  => '0600',
+                                                    path  => "$e->{keypath}/$param",
+                                                   );
+     
+     my $certfile = Funknet::Config::SystemFile->new(
+                                                     text  => $cert_text,
+                                                     user  => 'root',
+                                                     group => 'root',
+                                                     mode  => '0600',
+                                                     path  => "$e->{certpath}/$param",
+                                                    );
+     return ($keyfile, $certfile);
+}
+
 1;

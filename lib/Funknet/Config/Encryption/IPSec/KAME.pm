@@ -133,12 +133,22 @@ sub host_init {
 	    
 	    # we need to convert external key/cert filenames to F::C::SystemFile objects.
 	    if (defined $racoon_ret->{certpath}) {
-		$racoon_ret->{certpath} = Funknet::Config::SystemFile->new( path => $racoon_ret->{certpath} );
+		$racoon_ret->{certpath} = Funknet::Config::SystemFile->new(
+                                                                           user  => 'root',
+                                                                           group => 'root',
+                                                                           mode  => '0600',
+                                                                           path => $racoon_ret->{certpath} 
+                                                                          );
 	    } else {
 		$self->warn("didn't get a certpath for a configured rsasig peer");
 	    }
 	    if (defined $racoon_ret->{keypath}) {
-		$racoon_ret->{keypath} = Funknet::Config::SystemFile->new( path => $racoon_ret->{keypath} );
+		$racoon_ret->{keypath} = Funknet::Config::SystemFile->new(
+                                                                          user  => 'root',
+                                                                          group => 'root',
+                                                                          mode  => '0600',
+                                                                          path => $racoon_ret->{keypath} 
+                                                                         );
 	    } else {
 		$self->warn("didn't get a keypath for a configured rsasig peer");
 	    }
@@ -356,13 +366,23 @@ SETKEY
     } 
 
     # create a racoon.conf fragment
-    my $racoon_conf = Funknet::Config::SystemFile->new( text => "# $self->{_peer} racoon.conf fragment\n".$racoon,
-							path => $e->{ikepath}.'/'.$self->{_peer}.".conf" );
+    my $racoon_conf = Funknet::Config::SystemFile->new( 
+                                                       user  => 'root',
+                                                       group => 'root',
+                                                       mode  => '0600',
+                                                       text => "# $self->{_peer} racoon.conf fragment\n".$racoon,
+                                                       path => $e->{ikepath}.'/'.$self->{_peer}.".conf" 
+                                                      );
     
 
     # create a setkey.conf fragment
-    my $setkey_conf = Funknet::Config::SystemFile->new( text => "# $self->{_peer} setkey.conf fragment\n".$setkey,
-							path => $e->{setkeypath}.'/'.$self->{_peer}.".conf" );
+    my $setkey_conf = Funknet::Config::SystemFile->new(
+                                                       user  => 'root',
+                                                       group => 'root',
+                                                       mode  => '0600',
+                                                       text => "# $self->{_peer} setkey.conf fragment\n".$setkey,
+                                                       path => $e->{setkeypath}.'/'.$self->{_peer}.".conf" 
+                                                      );
 
     return (
 	    $racoon_conf, $setkey_conf,
