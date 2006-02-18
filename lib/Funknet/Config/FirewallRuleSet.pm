@@ -158,31 +158,33 @@ sub diff {
     my $host_nat_fwallchain = pop(@host_chains);
     my $host_filter_fwallchain = pop(@host_chains);
 
-    my @filter_rules;
-    my @nat_rules;
+    my @host_filter_rules;
+    my @whois_filter_rules;
+    my @host_nat_rules;
+    my @whois_nat_rules;
     
-    if (defined($whois_filter_fwallchain->rules)) {
+    if (scalar ($whois_filter_fwallchain->rules)) {
         my @rules = $whois_filter_fwallchain->rules;
-	push (@filter_rules, @rules);
+	push (@whois_filter_rules, @rules);
     }
-    if (defined($host_filter_fwallchain->rules)) {
+    if (scalar ($host_filter_fwallchain->rules)) {
         my @rules = $host_filter_fwallchain->rules;
-	push (@filter_rules, @rules);
+	push (@host_filter_rules, @rules);
     }
 
-    if (defined ($whois_nat_fwallchain->rules)) {
+    if (scalar ($whois_nat_fwallchain->rules)) {
         my @rules = $whois_nat_fwallchain->rules;
-	push (@nat_rules, @rules);
+	push (@whois_nat_rules, @rules);
     }
-    if (defined ($host_nat_fwallchain->rules)) {
+    if (scalar ($host_nat_fwallchain->rules)) {
         my @rules = $host_nat_fwallchain->rules;
-	push (@nat_rules, @rules);
+	push (@host_nat_rules, @rules);
     }
 
-    if ((scalar (@filter_rules)) && ($host_filter_fwallchain->needscreate eq 'yes')) {
+    if ((scalar (@whois_filter_rules)) && ($host_filter_fwallchain->needscreate eq 'yes')) {
         push (@cmds, $host_filter_fwallchain->create_chain);
     }
-    if ((scalar (@nat_rules)) && ($host_nat_fwallchain->needscreate eq 'yes')) {
+    if ((scalar (@whois_nat_rules)) && ($host_nat_fwallchain->needscreate eq 'yes')) {
         push (@cmds, $host_nat_fwallchain->create_chain);
     }
 
@@ -190,10 +192,10 @@ sub diff {
     # create hashes
     my ($whois_fwall, $host_fwall);
 
-    for my $fwall (@filter_rules) {
+    for my $fwall (@whois_filter_rules) {
 	$whois_fwall->{$fwall->as_hashkey}++;
     }
-   for my $fwall (@nat_rules) {
+   for my $fwall (@whois_nat_rules) {
 	$whois_fwall->{$fwall->as_hashkey}++;
     }
     
