@@ -12,9 +12,13 @@
 local_as = AS65764
 local_endpoint = 1.2.3.4
 local_host = 127.0.0.1
-local_os = bsd
 local_router = zebra
 local_bgpd_vty = /var/run/quagga/bgpd.vty
+
+# you can specify a list of "tunnel technologies", so you can declare
+# that you're on BSD so have gifs, and have installed openvpn, like
+# this:
+local_os = bsd, openvpn
 
 whois_host = whois.funknet.org
 whois_port = 4343
