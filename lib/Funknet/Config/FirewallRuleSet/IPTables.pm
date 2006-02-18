@@ -113,7 +113,7 @@ sub local_firewall_rules {
 
                my ($policy) = $rule =~ /(ACCEPT|DROP|REJECT|DNAT|SNAT)/;
 
-               my ($proto) = $rule =~ /(all|udp|tcp|icmp|\d+)\s+--/;
+               my ($proto) = $rule =~ /(all|udp|tcp|icmp|esp|\d+)\s+--/;
                if ($proto eq '4') {
                     $proto = 'ipencap';
                }
