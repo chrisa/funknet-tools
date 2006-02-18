@@ -252,8 +252,14 @@ sub firewall {
 					rules	=> \@local_filter_fwall,
 					create	=> 'yes',
 					);
-	push (@chains,$filter_chain);
+    } else {
+	$filter_chain = Funknet::Config::FirewallChain->new(
+    					type	=> 'filter',
+					rules	=> [],
+					create	=> 'yes',
+					);
     }
+    push (@chains,$filter_chain);
 
     if (scalar @local_nat_fwall) {
 	$nat_chain = Funknet::Config::FirewallChain->new(
@@ -261,8 +267,14 @@ sub firewall {
 					rules	=> \@local_nat_fwall,
 					create	=> 'yes',
 					);
-	push (@chains,$nat_chain);
+    } else {
+	$nat_chain = Funknet::Config::FirewallChain->new(
+    					type	=> 'nat',
+					rules	=> [],
+					create	=> 'yes',
+					);
     }
+    push (@chains,$nat_chain);
 
     return Funknet::Config::FirewallRuleSet->new( chains  => \@chains, 
 					    	  source  => 'whois' );

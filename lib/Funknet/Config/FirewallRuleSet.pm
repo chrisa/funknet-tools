@@ -123,6 +123,17 @@ sub as_text {
     }
 }
 
+sub firewall {
+    my ($self) = @_;
+
+    my @rules;
+
+    foreach my $chain (@{$self->{_chains}}) {
+        push (@rules, $chain->rules);
+    }
+    return(@rules);
+}
+
 sub diff {
     my ($whois, $host) = @_;
     debug("arrived in FirewallRuleSet.pm diff");
@@ -137,10 +148,57 @@ sub diff {
 	return undef;
     }    
     
+#    my @chains = [ 'host', 'whois' ];
+    my @whois_chains = $whois->chains;
+    my @host_chains = $host->chains;
+
+    my $whois_nat_fwallchain = pop(@whois_chains);
+    my $whois_filter_fwallchain = pop(@whois_chains);
+
+    my $host_nat_fwallchain = pop(@host_chains);
+    my $host_filter_fwallchain = pop(@host_chains);
+
+    my @filter_rules;
+    my @nat_rules;
+    
+    if (defined($whois_filter_fwallchain->rules)) {
+        my @rules = $whois_filter_fwallchain->rules;
+	push (@filter_rules, @rules);
+    }
+    if (defined($host_filter_fwallchain->rules)) {
+        my @rules = $host_filter_fwallchain->rules;
+	push (@filter_rules, @rules);
+    }
+
+    if (defined ($whois_nat_fwallchain->rules)) {
+        my @rules = $whois_nat_fwallchain->rules;
+	push (@nat_rules, @rules);
+    }
+    if (defined ($host_nat_fwallchain->rules)) {
+        my @rules = $host_nat_fwallchain->rules;
+	push (@nat_rules, @rules);
+    }
+
+    if ((scalar (@filter_rules)) && ($host_filter_fwallchain->needscreate eq 'yes')) {
+        push (@cmds, $host_filter_fwallchain->create_chain);
+    }
+    if ((scalar (@nat_rules)) && ($host_nat_fwallchain->needscreate eq 'yes')) {
+        push (@cmds, $host_nat_fwallchain->create_chain);
+    }
+
+    debug("creating hashes");
     # create hashes
     my ($whois_fwall, $host_fwall);
-    for my $fwall ($whois->firewall) {
+
+    for my $fwall (@filter_rules) {
 	$whois_fwall->{$fwall->as_hashkey}++;
+    }
+   for my $fwall (@nat_rules) {
+	$whois_fwall->{$fwall->as_hashkey}++;
+    }
+    
+    for my $fwall ($host->firewall) {
+	$host_fwall->{$fwall->as_hashkey}++;
     }
     for my $fwall ($host->firewall) {
 	$host_fwall->{$fwall->as_hashkey}++;

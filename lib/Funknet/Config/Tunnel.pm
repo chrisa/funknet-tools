@@ -41,7 +41,6 @@ use Funknet::Config::Tunnel::Linux;
 use Funknet::Config::Tunnel::Solaris;
 use Funknet::Config::Tunnel::OpenVPN;
 use Funknet::Debug;
-use Data::Dumper;
 
 use base qw/ Funknet::Config /;
 

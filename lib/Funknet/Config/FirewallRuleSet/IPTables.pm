@@ -76,13 +76,33 @@ sub local_firewall_rules {
     debug("arrived in IPTables.pm local_firewall_rules whois_src is $chain");
 
     my $whole_set = "";
-    $whole_set .= `iptables -v -n -L $chain -t filter`;
-    $whole_set .= `iptables -v -n -L $chain -t nat`;
+    my $filter_set = "";
+    my $nat_set = "";
+    my $filter_chain;
+    my $nat_chain;
+    my @chains;
+
+    my $nat_chain_create = 'yes';
+    my $filter_chain_create = 'yes';
+
+    if (`iptables -v -n -L $chain -t filter`) {
+	$filter_chain_create = 'no';
+    }
+
+    if (`iptables -v -n -L $chain -t nat`) {
+	$nat_chain_create = 'no';
+    }
+    
+    $filter_set = `iptables -v -n -L $chain -t filter`;
+    $nat_set = `iptables -v -n -L $chain -t nat`;
+    $whole_set = $filter_set . $nat_set;
 
     if($whole_set) {
 
 	my @rules = split ('\n', $whole_set);
 	my @rules_out;
+	my @nat_rules_out;
+	my @filter_rules_out;
 	
 	foreach my $rule (@rules) {
 	    
@@ -146,18 +166,67 @@ sub local_firewall_rules {
                                                  to_port             => $to_port,
 						);
 	    debug("new_rule_object");
-	    push (@rules_out, $new_rule_object);
+	    if ($new_rule_object->type eq 'nat') {
+	        push (@nat_rules_out, $new_rule_object);
+	    }
+
+	    if ($new_rule_object->type eq 'filter') {
+	        push (@filter_rules_out, $new_rule_object);
+	    }
+
 	}
-	return Funknet::Config::FirewallRuleSet::IPTables->new(
-							       firewall => \@rules_out,
-							       source => 'host'
-							      );
+
+	if (scalar @filter_rules_out) {
+	    $filter_chain = Funknet::Config::FirewallChain->new(
+	    					type    => 'filter',
+						rules   => \@filter_rules_out,
+						create  => $filter_chain_create,
+						);
+	} else {
+	    # explicitly empty RuleChain
+	    $filter_chain = Funknet::Config::FirewallChain->new(
+	    					type    => 'filter',
+						rules	=> [],
+						create	=> $filter_chain_create,
+						);
+	}
+	push (@chains,$filter_chain);
+
+	if (scalar @nat_rules_out) {
+	    $nat_chain = Funknet::Config::FirewallChain->new(
+	    					type    => 'nat',
+						rules   => \@nat_rules_out,
+						create  => $nat_chain_create,
+						);
+	} else {
+	    # explicitly empty RuleChain
+	    $nat_chain = Funknet::Config::FirewallChain->new(
+	    					type    => 'nat',
+						rules	=> [],
+						create	=> $nat_chain_create,
+						);
+	}
+	push (@chains,$nat_chain);
+
+	return Funknet::Config::FirewallRuleSet->new( chains  => \@chains,
+						      source  => 'host' );
     } else {
-	# explicitly empty RuleSet
-	return Funknet::Config::FirewallRuleSet::IPTables->new(
-							       firewall => [],
-							       source => 'host'
-							      );
+        debug("no current local firewall rules");
+	# 2 explicitly empty RuleChains
+	$filter_chain = Funknet::Config::FirewallChain->new(
+	    					type    => 'filter',
+						rules	=> [],
+						create	=> $filter_chain_create,
+						);
+	$nat_chain = Funknet::Config::FirewallChain->new(
+	    					type    => 'nat',
+						rules	=> [],
+						create	=> $nat_chain_create,
+						);
+	push (@chains,$filter_chain);
+	push (@chains,$nat_chain);
+	return Funknet::Config::FirewallRuleSet->new( chains  => \@chains,
+						      source  => 'host' );
     }
 }
 
@@ -176,7 +245,7 @@ sub config {
 	    push (@cmds, $chain->create_chain);
 	}
 
-        for my $fwallrule ($chain->firewall) {
+        for my $fwallrule ($chain->rules) {
 	    if (defined $fwallrule) {
 	        push @cmds, $fwallrule->create();
 	    }

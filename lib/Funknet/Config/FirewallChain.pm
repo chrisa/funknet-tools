@@ -90,7 +90,9 @@ sub new
     return($self);
 }
 
-sub firewall {
+
+
+sub rules {
     my ($self) = @_;
     return @{$self->{_rules}};
 }

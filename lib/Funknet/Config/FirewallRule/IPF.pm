@@ -168,7 +168,6 @@ sub _proto {
 sub _src {
     my ($self) = @_;
     debug("in IPF _src");
-    print Dumper $self;
     
     my $src_str = " ";
     if (defined $self->{_source_address} &&
@@ -186,9 +185,8 @@ sub _src {
 # bundle dst addr & port
 sub _dst {
     my ($self) = @_;
-    
     debug("in IPF _dst");
-    print Dumper $self;
+
     my $dst_str = " ";
     if (defined $self->{_destination_address} && 
     $self->{_destination_address} ne '0.0.0.0') {
