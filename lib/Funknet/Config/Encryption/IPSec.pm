@@ -325,6 +325,23 @@ sub filter_firewall_rules {
                                              destination_port    => 500,
                                              source              => $self->{_source},
                                             );
+
+     push @rules,
+          Funknet::Config::FirewallRule->new(
+                                             type                => 'filter',
+                                             proto               => 'esp',
+                                             destination_address => $self->{_peer},
+                                             source_address      => $self->{_local},
+                                             source              => $self->{_source},
+                                            );
+     push @rules,
+          Funknet::Config::FirewallRule->new(
+                                             type                => 'filter',
+                                             proto               => 'esp',
+                                             destination_address => $self->{_local},
+                                             source_address      => $self->{_peer},
+                                             source              => $self->{_source},
+                                            );
      return (@rules);
 }
 
