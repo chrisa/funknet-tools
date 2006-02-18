@@ -39,6 +39,8 @@ package Funknet::Config::Encryption::OpenVPN;
 use strict;
 use base qw/ Funknet::Config::Encryption /;
 
+use Funknet::Debug;
+
 =head2 init
 
 Just some param checking and bless down into E::OpenVPN
@@ -166,8 +168,20 @@ sub apply {
 }
 
 sub diff {
-     my ($self) = @_;
-     return $self->apply();
+     my ($whois, $host) = @_;
+     my @changes;
+
+     my $certdiff = $whois->{_certfile}->diff();
+     my $keydiff  = $whois->{_keyfile}->diff();
+
+     if ($certdiff) {
+          push @changes, $whois->{_certfile};
+     }
+     if ($keydiff) {
+          push @changes, $whois->{_keyfile};
+     }
+
+     return @changes;
 }
 
 sub _parse_openvpn_conf {
