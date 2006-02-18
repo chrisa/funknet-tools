@@ -42,6 +42,7 @@ use Funknet::Config::FirewallRule::IPF;
 
 use base qw/ Funknet::Config /;
 use Funknet::Debug;
+use Data::Dumper;
 
 =head1 NAME
 
@@ -83,8 +84,8 @@ sub new {
         }
 
 	$self->{_source}              = $args{source};
-	$self->{_source_address}      = $args{source_address}      || '0.0.0.0'; 
-	$self->{_destination_address} = $args{destination_address} || '0.0.0.0';
+	$self->{_source_address}      = $args{source_address}      || '0.0.0.0/0'; 
+	$self->{_destination_address} = $args{destination_address} || '0.0.0.0/0';
 	$self->{_source_port}         = $args{source_port};
 	$self->{_destination_port}    = $args{destination_port};
 	$self->{_proto}               = $args{proto}               || 'all';

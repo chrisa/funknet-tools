@@ -276,7 +276,10 @@ sub firewall {
     }
     push (@chains,$nat_chain);
 
-    return Funknet::Config::FirewallRuleSet->new( chains  => \@chains, 
+    return Funknet::Config::FirewallRuleSet->new( chains  => { 
+                                                              filter => $filter_chain,
+                                                              nat    => $nat_chain,
+                                                             },
 					    	  source  => 'whois' );
 }
 	

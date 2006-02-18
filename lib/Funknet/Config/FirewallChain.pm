@@ -90,6 +90,39 @@ sub new
     return($self);
 }
 
+sub diff {
+     my ($whois, $host) = @_;
+     my ($whois_rules, $host_rules);
+     my @cmds;
+
+     if ((scalar $whois->rules) && ($host->needscreate eq 'yes')) {
+          push (@cmds, $host->create_chain);
+     }
+
+     for my $rule ($whois->rules) {
+          $whois_rules->{$rule->as_hashkey}++;
+     }
+     for my $rule ($host->rules) {
+          $host_rules->{$rule->as_hashkey}++;
+     }
+    
+     for my $rule ($host->rules) {
+          unless ($whois_rules->{$rule->as_hashkey}) {
+               push @cmds, $rule->delete;
+          }
+     }
+     for my $rule ($whois->rules) {
+          unless ($host_rules->{$rule->as_hashkey}) {
+               push @cmds, $rule->create;
+          }
+     }
+
+     unless (scalar $whois->rules) {
+          push (@cmds, $host->delete_chain);
+     }
+
+     return @cmds;
+}
 
 
 sub rules {

@@ -45,12 +45,6 @@ Provides a collection object for FirewallRule::IPF objects.
 
 =head1 METHODS
 
-=head2 config
-
-Returns the configuration of the FirewallRule objects as text. This
-should be in roughly the format used by the host. TODO: make this be
-so. Currently we just dump the information in an arbitrary format.
-
 =head2 local_firewall_rules
 
 Returns a FirewallRuleSet::PF object representing the current
@@ -67,34 +61,6 @@ sub new {
     $self->{_firewall} = $args{firewall};
 
     return($self);
-}
-
-sub config {
-    my ($self) = @_;
-
-    my $l = Funknet::ConfigFile::Tools->local;
-
-    my @cmds;
-    my $whois_source = Funknet::ConfigFile::Tools->whois_source;
-
-    my @chains = $self->chains;
-
-    while (my $chain = pop(@chains)) {
-
-#	push @cmds, $chain->flush();
-
-        for my $fwallrule ($chain->rules) {
-	    if (defined $fwallrule) {
-	        push @cmds, $fwallrule->create();
-	    }
-        }
-    }
-
-    my $cmdset = Funknet::Config::CommandSet->new( cmds => \@cmds,
-						   target => 'host',
-						 );
-    
-    return Funknet::Config::ConfigSet->new( cmds => [ $cmdset ] );
 }
 
 sub local_firewall_rules {

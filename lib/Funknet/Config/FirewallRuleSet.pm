@@ -70,8 +70,13 @@ sub new
     my $self = bless {}, $class;
     my $l = Funknet::ConfigFile::Tools->local;
 
+    if (defined $args{chains} && ref $args{chains} ne 'HASH') {
+         debug("if defined, chains should be a hashref in FRS->new");
+         return;
+    }
+
     $self->{_chains} = $args{chains};
-    $self->{_source}   = $args{source};
+    $self->{_source} = $args{source};
 
     if (($self->{_source} eq 'whois') or ($self->{_source} eq 'host')) {
 	my $subtype;
@@ -104,7 +109,22 @@ sub new
 
 sub chains {
     my ($self) = @_;
-    return @{$self->{_chains}};
+    return $self->{_chains};
+}
+
+sub filter_chain {
+    my ($self) = @_;
+    return $self->{_chains}->{filter};
+}
+
+sub nat_chain {
+    my ($self) = @_;
+    return $self->{_chains}->{nat};
+}
+
+sub chain {
+     my ($self, $chain) = @_;
+     return $self->{_chains}->{$chain};
 }
 
 sub source {
@@ -137,7 +157,7 @@ sub firewall {
 sub diff {
     my ($whois, $host) = @_;
     debug("arrived in FirewallRuleSet.pm diff");
-    my (@cmds);
+    my @cmds;
 
     my $l = Funknet::ConfigFile::Tools->local;
     my $whois_source = Funknet::ConfigFile::Tools->whois_source;
@@ -147,79 +167,9 @@ sub diff {
 	$whois->warn("diff passed objects backwards");
 	return undef;
     }    
-    
-#    my @chains = [ 'host', 'whois' ];
-    my @whois_chains = $whois->chains;
-    my @host_chains = $host->chains;
 
-    my $whois_nat_fwallchain = pop(@whois_chains);
-    my $whois_filter_fwallchain = pop(@whois_chains);
-
-    my $host_nat_fwallchain = pop(@host_chains);
-    my $host_filter_fwallchain = pop(@host_chains);
-
-    my @host_filter_rules;
-    my @whois_filter_rules;
-    my @host_nat_rules;
-    my @whois_nat_rules;
-    
-    if (scalar ($whois_filter_fwallchain->rules)) {
-        my @rules = $whois_filter_fwallchain->rules;
-	push (@whois_filter_rules, @rules);
-    }
-    if (scalar ($host_filter_fwallchain->rules)) {
-        my @rules = $host_filter_fwallchain->rules;
-	push (@host_filter_rules, @rules);
-    }
-
-    if (scalar ($whois_nat_fwallchain->rules)) {
-        my @rules = $whois_nat_fwallchain->rules;
-	push (@whois_nat_rules, @rules);
-    }
-    if (scalar ($host_nat_fwallchain->rules)) {
-        my @rules = $host_nat_fwallchain->rules;
-	push (@host_nat_rules, @rules);
-    }
-
-    if ((scalar (@whois_filter_rules)) && ($host_filter_fwallchain->needscreate eq 'yes')) {
-        push (@cmds, $host_filter_fwallchain->create_chain);
-    }
-    if ((scalar (@whois_nat_rules)) && ($host_nat_fwallchain->needscreate eq 'yes')) {
-        push (@cmds, $host_nat_fwallchain->create_chain);
-    }
-
-    debug("creating hashes");
-    # create hashes
-    my ($whois_fwall, $host_fwall);
-
-    for my $fwall (@whois_filter_rules) {
-	$whois_fwall->{$fwall->as_hashkey}++;
-    }
-   for my $fwall (@whois_nat_rules) {
-	$whois_fwall->{$fwall->as_hashkey}++;
-    }
-    
-    for my $fwall ($host->firewall) {
-	$host_fwall->{$fwall->as_hashkey}++;
-    }
-    
-    for my $h ($host->firewall) {
-	unless ($whois_fwall->{$h->as_hashkey}) {
-	    push @cmds, $h->delete;
-	}
-    }
-    
-    for my $w ($whois->firewall) {
-	unless ($host_fwall->{$w->as_hashkey}) {
-	    push @cmds, $w->create;
-	}
-    }
-
-    if ((!scalar (@whois_filter_rules)) && ($host_filter_fwallchain->needscreate eq 'no')) {
-        push (@cmds, $host_filter_fwallchain->delete_chain);
-    }
-    if ((!scalar (@whois_nat_rules)) && ($host_nat_fwallchain->needscreate eq 'no')) {
-        push (@cmds, $host_nat_fwallchain->delete_chain);
+    for my $chain (qw/ filter nat /) {
+         push @cmds, $whois->chain($chain)->diff($host->chain($chain));
     }
 
     # this is right for IPTables and IPFW; when (if) we do Cisco
@@ -231,5 +181,34 @@ sub diff {
     
     return Funknet::Config::ConfigSet->new( cmds => [ $cmdset ] );
 }
+
+sub config {
+    my ($self) = @_;
+
+    my $l = Funknet::ConfigFile::Tools->local;
+
+    my @cmds;
+    my $whois_source = Funknet::ConfigFile::Tools->whois_source;
+
+    for my $chain_name (qw/ filter nat /) {
+         my $chain = $self->chain($chain_name);
+         if ($chain->needscreate eq 'yes') {
+              push (@cmds, $chain->create_chain);
+         }
+         
+         for my $fwallrule ($chain->rules) {
+              if (defined $fwallrule) {
+                   push @cmds, $fwallrule->create();
+              }
+         }
+    }
+    
+    my $cmdset = Funknet::Config::CommandSet->new( cmds => \@cmds,
+						   target => 'host',
+						 );
+    
+    return Funknet::Config::ConfigSet->new( cmds => [ $cmdset ] );
+}
+
 
 1;

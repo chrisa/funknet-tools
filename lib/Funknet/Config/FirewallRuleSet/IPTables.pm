@@ -34,6 +34,7 @@ package Funknet::Config::FirewallRuleSet::IPTables;
 use strict;
 use base qw/ Funknet::Config::FirewallRuleSet /;
 use Funknet::Debug;
+use Data::Dumper;
 
 =head1 NAME
 
@@ -71,192 +72,154 @@ sub new {
 
 sub local_firewall_rules {
 
-    my $l = Funknet::ConfigFile::Tools->local;
-    my $chain = Funknet::ConfigFile::Tools->whois_source || 'FUNKNET';
-    debug("arrived in IPTables.pm local_firewall_rules whois_src is $chain");
+     my $l = Funknet::ConfigFile::Tools->local;
+     my $chain = Funknet::ConfigFile::Tools->whois_source || 'FUNKNET';
+     debug("arrived in IPTables.pm local_firewall_rules whois_src is $chain");
 
-    my $whole_set = "";
-    my $filter_set = "";
-    my $nat_set = "";
-    my $filter_chain;
-    my $nat_chain;
-    my @chains;
+     my $whole_set = "";
+     my $filter_set = "";
+     my $nat_set = "";
+     my $filter_chain;
+     my $nat_chain;
 
-    my $nat_chain_create = 'yes';
-    my $filter_chain_create = 'yes';
+     my $nat_chain_create = 'yes';
+     my $filter_chain_create = 'yes';
 
-    if (`iptables -v -n -L $chain -t filter`) {
-	$filter_chain_create = 'no';
-    }
+     if (`iptables -v -n -L $chain -t filter`) {
+          $filter_chain_create = 'no';
+     }
 
-    if (`iptables -v -n -L $chain -t nat`) {
-	$nat_chain_create = 'no';
-    }
+     if (`iptables -v -n -L $chain -t nat`) {
+          $nat_chain_create = 'no';
+     }
     
-    $filter_set = `iptables -v -n -L $chain -t filter`;
-    $nat_set = `iptables -v -n -L $chain -t nat`;
-    $whole_set = $filter_set . $nat_set;
+     $filter_set = `iptables -v -n -L $chain -t filter`;
+     $nat_set = `iptables -v -n -L $chain -t nat`;
+     $whole_set = $filter_set . $nat_set;
 
-    if($whole_set) {
+     if ($whole_set) {
 
-	my @rules = split ('\n', $whole_set);
-	my @rules_out;
-	my @nat_rules_out;
-	my @filter_rules_out;
+          my @rules = split ('\n', $whole_set);
+
+          my @nat_rules_out;
+          my @filter_rules_out;
 	
-	foreach my $rule (@rules) {
+          foreach my $rule (@rules) {
 	    
-	    my ($src, $dest, $proto, $policy, $src_port, $dst_port, $in_if, $out_if);
-	    my ($first_half, $second_half, $to_addr, $to_port, $type);
+               chomp($rule);
+               debug("rule: $rule");
+               next if $rule =~ /^Chain/;
+               next if $rule =~ /target/;
 
-	    chomp($rule);
-	    debug("rule: $rule");
-	    next if $rule =~ /^Chain/;
-	    next if $rule =~ /target/;
+               my ($policy) = $rule =~ /(ACCEPT|DROP|REJECT|DNAT|SNAT)/;
 
-	    ($first_half, $second_half) = split ('--', $rule);
+               my ($proto) = $rule =~ /(all|udp|tcp|icmp|\d+)\s+--/;
+               if ($proto eq '4') {
+                    $proto = 'ipencap';
+               }
 
-	    $first_half =~ s/^\s+[0-9KMG]+\s+[0-9KMG]+\s+(\w+)\s+(\w+).*/$1,$2/;
-	    $second_half =~ s/^\s+([a-z0-9]+|\*)\s+([a-z0-9]+|\*)\s+(\d+\.\d+\.\d+\.\d+)(?:\/\d+)?\s+(\d+\.\d+\.\d+\.\d+)(?:\/\d+)?.*/$1,$2,$3,$4/;
+               my ($in_if, $out_if) = $rule =~ /--\s+([a-z0-9]+|\*)\s+([a-z0-9]+|\*)/;
+               my ($src, $src_len, $dst, $dst_len) = $rule =~ /\s+(\d+\.\d+\.\d+\.\d+)(\/\d+)?\s+(\d+\.\d+\.\d+\.\d+)(\/\d+)?/;
 
-	    ($policy, $proto) = split(',',$first_half);
-	    ($in_if, $out_if, $src, $dest) = split(',',$second_half);
+               if (defined $src_len) {
+                    $src .= $src_len;
+               }
+               if (defined $dst_len) {
+                    $dst .= $dst_len;
+               }
 
-            debug("policy: $policy proto: $proto in_if: $in_if out_if: $out_if src: $src dest: $dest");
-
-	    if($proto == 4) { $proto = 'ipencap'; }
+               # bit hacky this, we should track what table we're in. 
+               my $type;
+               if ($policy eq 'ACCEPT') {
+                    $type = 'filter';
+               }
+               if ($policy eq 'DNAT') {
+                    $type = 'nat';
+               }
             
-            # bit hacky this, we should track what table we're in. 
-            if($policy eq 'ACCEPT') { $type = 'filter'; }
-            if($policy eq 'DNAT') { $type = 'nat'; }
-            
-	    if($rule =~ /spt:(\d+)/) {
-                 $src_port = $1;
-	    }
-            
-	    if($rule =~ /dpt:(\d+)/) { 
-                 $dst_port = $1;
-	    }
+               my ($src_port, $dst_port, $to_addr, $to_port);
+               if ($rule =~ /spt:(\d+)/) {
+                    $src_port = $1;
+               }
+               if ($rule =~ /dpt:(\d+)/) { 
+                    $dst_port = $1;
+               }
+               if ($rule =~ /to:(\d+\.\d+\.\d+\.\d+):(\d+)/) {
+                    ($to_addr, $to_port) = ($1, $2);
+               }
 
-            if ($rule =~ /to:(\d+\.\d+\.\d+\.\d+):(\d+)/) {
-                 ($to_addr, $to_port) = ($1, $2);
-            }
+               # interfaces - iptables says "*" when it means
+               # "no interface". set to undef if it does. 
+               if ($in_if eq "*") {
+                    $in_if  = undef;
+               }
+               if ($out_if eq "*") {
+                    $out_if = undef;
+               }
 
-            debug("src_port: $src_port dst_port: $dst_port");
-	    debug("in_if: $in_if out_if: $out_if to_addr: $to_addr to_port: $to_port");
+               my $new_rule_object = 
+                    Funknet::Config::FirewallRule->new(
+                                                       source              => 'host',
+                                                       type                => $type,
+                                                       source_address      => $src,
+                                                       source_port         => $src_port,
+                                                       destination_address => $dst,
+                                                       destination_port    => $dst_port,
+                                                       proto               => $proto,
+                                                       in_interface        => $in_if,
+                                                       out_interface       => $out_if,
+                                                       to_addr             => $to_addr,
+                                                       to_port             => $to_port,
+                                                      );
 
-	    # interfaces - iptables says "*" when it means
-	    # "no interface". set to undef if it does. 
-	    if ($in_if eq "*")  { $in_if  = undef };
-	    if ($out_if eq "*") { $out_if = undef };
+               if ($new_rule_object->type eq 'nat') {
+                    push (@nat_rules_out, $new_rule_object);
+               }
 
-	    debug("proto is $proto");
-	    my $new_rule_object = 
-	      Funknet::Config::FirewallRule->new(
-						 source              => 'host',
-                                                 type                => $type,
-						 source_address      => $src,
-						 source_port         => $src_port,
-						 destination_address => $dest,
-						 destination_port    => $dst_port,
-						 proto               => $proto,
-						 in_interface        => $in_if,
-						 out_interface       => $out_if,
-                                                 to_addr             => $to_addr,
-                                                 to_port             => $to_port,
-						);
-	    debug("new_rule_object");
-	    if ($new_rule_object->type eq 'nat') {
-	        push (@nat_rules_out, $new_rule_object);
-	    }
+               if ($new_rule_object->type eq 'filter') {
+                    push (@filter_rules_out, $new_rule_object);
+               }
 
-	    if ($new_rule_object->type eq 'filter') {
-	        push (@filter_rules_out, $new_rule_object);
-	    }
+          }
+        
+          $filter_chain = Funknet::Config::FirewallChain->new(
+                                                              type    => 'filter',
+                                                              rules   => \@filter_rules_out,
+                                                              create  => $filter_chain_create,
+                                                             );
+        
+          $nat_chain = Funknet::Config::FirewallChain->new(
+                                                           type    => 'nat',
+                                                           rules   => \@nat_rules_out,
+                                                           create  => $nat_chain_create,
+                                                          );
+        
+          return Funknet::Config::FirewallRuleSet->new( chains  => {
+                                                                    filter => $filter_chain,
+                                                                    nat    => $nat_chain,
+                                                                   },
+                                                        source  => 'host' );
+     }
+     else {
+          my $empty_filter = Funknet::Config::FirewallChain->new(
+                                                                 type    => 'filter',
+                                                                 rules   => [],
+                                                                 create  => 'no',
+                                                                );
 
-	}
+          my $empty_nat = Funknet::Config::FirewallChain->new(
+                                                              type    => 'nat',
+                                                              rules   => [],
+                                                              create  => 'no',
+                                                             );
 
-	if (scalar @filter_rules_out) {
-	    $filter_chain = Funknet::Config::FirewallChain->new(
-	    					type    => 'filter',
-						rules   => \@filter_rules_out,
-						create  => $filter_chain_create,
-						);
-	} else {
-	    # explicitly empty RuleChain
-	    $filter_chain = Funknet::Config::FirewallChain->new(
-	    					type    => 'filter',
-						rules	=> [],
-						create	=> $filter_chain_create,
-						);
-	}
-	push (@chains,$filter_chain);
-
-	if (scalar @nat_rules_out) {
-	    $nat_chain = Funknet::Config::FirewallChain->new(
-	    					type    => 'nat',
-						rules   => \@nat_rules_out,
-						create  => $nat_chain_create,
-						);
-	} else {
-	    # explicitly empty RuleChain
-	    $nat_chain = Funknet::Config::FirewallChain->new(
-	    					type    => 'nat',
-						rules	=> [],
-						create	=> $nat_chain_create,
-						);
-	}
-	push (@chains,$nat_chain);
-
-	return Funknet::Config::FirewallRuleSet->new( chains  => \@chains,
-						      source  => 'host' );
-    } else {
-        debug("no current local firewall rules");
-	# 2 explicitly empty RuleChains
-	$filter_chain = Funknet::Config::FirewallChain->new(
-	    					type    => 'filter',
-						rules	=> [],
-						create	=> $filter_chain_create,
-						);
-	$nat_chain = Funknet::Config::FirewallChain->new(
-	    					type    => 'nat',
-						rules	=> [],
-						create	=> $nat_chain_create,
-						);
-	push (@chains,$filter_chain);
-	push (@chains,$nat_chain);
-	return Funknet::Config::FirewallRuleSet->new( chains  => \@chains,
-						      source  => 'host' );
-    }
+          return Funknet::Config::FirewallRuleSet->new( chains  => {
+                                                                    filter => $empty_filter,
+                                                                    nat    => $empty_nat,
+                                                                   },
+                                                        source  => 'host' );
+     }
 }
-
-sub config {
-    my ($self) = @_;
-
-    my $l = Funknet::ConfigFile::Tools->local;
-
-    my @cmds;
-    my $whois_source = Funknet::ConfigFile::Tools->whois_source;
-
-    my @chains = $self->chains;
-
-    while (my $chain = pop(@chains)) {
-	if ($chain->needscreate eq 'yes') {
-	    push (@cmds, $chain->create_chain);
-	}
-
-        for my $fwallrule ($chain->rules) {
-	    if (defined $fwallrule) {
-	        push @cmds, $fwallrule->create();
-	    }
-        }
-    }
-
-    my $cmdset = Funknet::Config::CommandSet->new( cmds => \@cmds,
-						   target => 'host',
-						 );
     
-    return Funknet::Config::ConfigSet->new( cmds => [ $cmdset ] );
-}
 
 1;
