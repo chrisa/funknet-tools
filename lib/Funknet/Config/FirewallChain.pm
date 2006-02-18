@@ -96,7 +96,7 @@ sub diff {
      my @cmds;
 
      if ((scalar $whois->rules) && ($host->needscreate eq 'yes')) {
-          push (@cmds, $host->create_chain);
+          push (@cmds, $host->create);
      }
 
      for my $rule ($whois->rules) {
@@ -118,7 +118,7 @@ sub diff {
      }
 
      unless (scalar $whois->rules) {
-          push (@cmds, $host->delete_chain);
+          push (@cmds, $host->delete);
      }
 
      return @cmds;
@@ -138,6 +138,14 @@ sub needscreate {
 sub type {
     my ($self) = @_;
     return ($self->{_type});
+}
+
+sub create {
+     # virtual
+}
+
+sub delete {
+     # virtual 
 }
 
 1;

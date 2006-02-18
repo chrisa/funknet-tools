@@ -193,7 +193,7 @@ sub config {
     for my $chain_name (qw/ filter nat /) {
          my $chain = $self->chain($chain_name);
          if ($chain->needscreate eq 'yes') {
-              push (@cmds, $chain->create_chain);
+              push (@cmds, $chain->create);
          }
          
          for my $fwallrule ($chain->rules) {

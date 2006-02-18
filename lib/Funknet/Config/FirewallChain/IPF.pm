@@ -52,7 +52,7 @@ Provides a collection object for FirewallRule::IPF objects.
 
 =cut
 
-sub flush {
+sub delete {
     my ($self) = @_;
     my $anchor = Funknet::ConfigFile::Tools->whois_source || 'FUNKNET';
 

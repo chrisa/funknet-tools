@@ -46,13 +46,17 @@ Provides a collection object for FirewallRule::IPTables objects.
 
 =head1 METHODS
 
-=head2 config
+=head2 create
 
 Returns the iptables command required to create the chain
 
+=head2 create
+
+Returns the iptables command required to delete the chain
+
 =cut
 
-sub create_chain {
+sub create {
     my ($self) = @_;
 
     my $whois_source = Funknet::ConfigFile::Tools->whois_source;
@@ -61,7 +65,7 @@ sub create_chain {
     return("iptables -N $whois_source -t $type");
 }
 
-sub delete_chain {
+sub delete {
     my ($self) = @_;
 
     my $whois_source = Funknet::ConfigFile::Tools->whois_source;

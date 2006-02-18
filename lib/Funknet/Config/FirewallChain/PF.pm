@@ -46,13 +46,9 @@ Provides a collection object for FirewallRule::PF objects.
 
 =head1 METHODS
 
-=head2 config
-
-
-
 =cut
 
-sub flush {
+sub delete {
     my ($self) = @_;
     my $anchor = Funknet::ConfigFile::Tools->whois_source || 'FUNKNET';
 
