@@ -84,112 +84,72 @@ sub delete {
 sub _pf_cmd {
     my ($self) = @_;
 
-    my $anchor       = _anchor($self);
-    my $command      = _command($self);
-    my $proto_str    = _proto($self);
-    my $src_str      = _src($self);
-    my $dst_str      = _dst($self);
-
-    return "$command $proto_str $src_str $dst_str";
+    return $self->_command();
 }
 
-sub _anchor {
-    my ($self) = @_;
-    if (!defined $self) { die 'bad args to _anchor'; }
-
-    my $base = Funknet::ConfigFile::Tools->whois_source || 'FUNKNET';
-    my $suffix;
-    if (defined $self->{_type}) {
-	if ($self->{_type} eq 'nat') {
-	    $suffix="-nat";
-	}
-	elsif ($self->{_type} eq 'rdr') {
-	    $suffix="-rdr";
-	}
-    }
-    return $base.$suffix;
-}
-
-# build the command and the interface spec in one, so we can check for nat
-# XXX currently unsure how nat/rdr is to be used, so we just die
 sub _command {
     my ($self) = @_;
-    if (!defined $self) { die 'bad args to _command'; }
+    if (!defined $self) { warn 'bad args to _command'; }
 
     my $cmd = " ";
     if (defined $self->{_type}) {
 	if ($self->{_type} eq 'nat') {
-	    if (!defined $self->{_out_interface}) {
-		die "nat rule without outside interface";
-	    }
-	    $cmd = "nat on $self->{_out_interface} ";
-	    die "nat rule not ready yet!";
+	    # pf.conf(5) reckons we don't need interface spec, and we don't
+	    # know the real if name anyway
+	    $cmd = "rdr ".$self->_proto()." ".$self->_src()." ".$self->_dst().
+		   " -> ".
+		       (defined $self->{_destination_address} ? "$self->{_destination_address} " : '').
+		       (defined $self->{_to_port} ? "port $self->{_to_port} " : '');
 	}
 	elsif ($self->{_type} eq 'rdr') {
-	    if (!defined $self->{_out_interface}) {
-		die "rdr rule without outside interface";
-	    }
-	    $cmd = "rdr on $self->{_out_interface} ";
-	    die "rdr rule not ready yet!";
+	    die "use a NAT rule to achieve PF rdr rules";
 	}
 	else {
 	    # filter rule
 	    if (defined $self->{_out_interface}) {
-		$cmd = "pass out on $self->{_out_interface} ";
+		$cmd = "pass out on $self->{_out_interface} ".
+		       $self->_proto()." ".$self->_src()." ".$self->_dst();
 	    }
 	    elsif (defined $self->{_in_interface}) {
-		$cmd = "pass in on $self->{_in_interface} ";
+		$cmd = "pass in on $self->{_in_interface} ".
+		       $self->_proto()." ".$self->_src()." ".$self->_dst();
 	    }
 	    else {
 		warn "filter rule without either inside or oustide interface";
-		$cmd = "pass ";
+		$cmd = "pass ".
+		       $self->_proto()." ".$self->_src()." ".$self->_dst();
 	    }
 	} # nat/rdr/filter
     }
     else {
 	die "unknown rule type $self->{_type}";
     }
+    return $cmd;
 }
 
 # bundle src addr & port
 sub _src {
     my ($self) = @_;
-    
-    my $src_str = " ";
-    if (defined $self->{_source_address} &&
-	$self->{_source_address} ne '0.0.0.0') {
-	$src_str .= "from $self->{_source_address} ";
-    }
-    if (defined $self->{_source_port}) {
-	$src_str .= "port $self->{_source_port} ";
-    }
-    return $src_str;
+    return "from ".
+       (defined $self->{_source_address} ?
+	"$self->{_source_address}" : "any").
+       (defined $self->{_source_port} ?
+        " port $self->{_source_port}" : '');
 }
 
 # bundle dst addr & port
 sub _dst {
     my ($self) = @_;
-    
-    my $dst_str = " ";
-    if (defined $self->{_destination_address} && 
-	$self->{_destination_address} ne '0.0.0.0') {
-	$dst_str .= "to $self->{_destination_address} ";
-    }
-    if (defined $self->{_destination_port}) {
-	$dst_str .= "port $self->{_source_port} ";
-    }
-    return $dst_str;
+    return "to ".
+       (defined $self->{_destination_address} ?
+	"$self->{_destination_address}" : "any").
+       (defined $self->{_destination_port} ?
+        " port $self->{_destination_port}" : '');
 }
 
 sub _proto {
     my ($self) = @_;
-    
-    my $proto_str = " ";
-    if (defined $self->{_proto} &&
-       $self->{_proto} ne 'all') {
-	$proto_str .= "proto $self->{_proto} ";
-    }
-    return $proto_str;
+    return(defined $self->{_proto} ? "proto $self->{_proto}" : '');
 }
 
 1;

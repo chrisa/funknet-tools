@@ -50,10 +50,26 @@ Provides a collection object for FirewallRule::PF objects.
 
 sub delete {
     my ($self) = @_;
-    my $anchor = Funknet::ConfigFile::Tools->whois_source || 'FUNKNET';
+    my $anchor = $self->anchor();
 
     # flush anchor of all rules, regardless if they're filter/rdr/nat
     return("pfctl -a $anchor -F all");
 }
 
+sub anchor {
+    my ($self) = @_;
+    if (!defined $self) { warn 'bad args to _anchor'; }
+
+    my $base = Funknet::ConfigFile::Tools->whois_source || 'FUNKNET';
+    my $suffix;
+    if (defined $self->{_type}) {
+	if ($self->{_type} eq 'nat') {
+	    $suffix="-nat";
+	}
+	elsif ($self->{_type} eq 'rdr') {
+	    $suffix="-rdr";
+	}
+    }
+    return $base.$suffix;
+}
 1;
