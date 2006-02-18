@@ -165,6 +165,11 @@ sub apply {
     return ($cert, $key);
 }
 
+sub diff {
+     my ($self) = @_;
+     return $self->apply();
+}
+
 sub _parse_openvpn_conf {
     my ($text) = @_;
 

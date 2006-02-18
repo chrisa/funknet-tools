@@ -262,6 +262,10 @@ sub ifname {
     return $self->{_ifname};
 }
 
+sub tunparams {
+     # virtual 
+}
+
 sub source {
     my ($self) = @_;
     return $self->{_source};

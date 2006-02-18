@@ -227,6 +227,14 @@ sub initialise {
      }
 }
 
+sub tunparams {
+    my ($self, $tunparams) = @_;
+    if (defined $tunparams) {
+	$self->{_ovpn_port} = $tunparams->{port};
+    }
+    return { port => $self->{_ovpn_port} };
+}
+
 sub enc_data {
     my ($self, $enc_data) = @_;
     $self->{_ovpn_cert} = $enc_data->{certfile_path};

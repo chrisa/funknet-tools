@@ -188,13 +188,14 @@ sub diff {
 	    $if_num++;
 
 	} else {
-	    
-	    # this is just to stash the current interface name in the 
-	    # source-whois object, so the firewall code can refer to it.
+
+             # let the host-tunnel copy any class-specific data to the
+             # whois-tunnel (e.g. openvpn port), and copy the ifname.
 	    
 	    for my $h ($host->tunnels) {
 		if ($h->as_hashkey eq $w->as_hashkey) {
 		    $w->ifname($h->ifname);
+                    $w->tunparams($h->tunparams);
 		}
 	    }
 	}
