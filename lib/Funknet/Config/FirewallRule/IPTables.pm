@@ -84,12 +84,6 @@ sub _iptables_cmd {
     return ("iptables $action $whois_source".$table_str.$inter_str.$proto_str.$src_str.$dst_str.$port_str.$j_str);
 }
 
-sub create_chain {
-    my ($class, $chain) = @_;
-
-    return("iptables -N $chain");
-}
-
 sub _ports {
     my ($self) = @_;
     

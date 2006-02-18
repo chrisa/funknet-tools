@@ -215,6 +215,13 @@ sub diff {
 	}
     }
 
+    if ((!scalar (@whois_filter_rules)) && ($host_filter_fwallchain->needscreate eq 'no')) {
+        push (@cmds, $host_filter_fwallchain->delete_chain);
+    }
+    if ((!scalar (@whois_nat_rules)) && ($host_nat_fwallchain->needscreate eq 'no')) {
+        push (@cmds, $host_nat_fwallchain->delete_chain);
+    }
+
     # this is right for IPTables and IPFW; when (if) we do Cisco
     # firewalling or equivalent, we'll need to move this method 
     # so we can set 'target' correctly. leave for now. 

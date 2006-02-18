@@ -61,4 +61,13 @@ sub create_chain {
     return("iptables -N $whois_source -t $type");
 }
 
+sub delete_chain {
+    my ($self) = @_;
+
+    my $whois_source = Funknet::ConfigFile::Tools->whois_source;
+    my $type = $self->type;
+
+    return("iptables -X $whois_source -t $type");
+}
+
 1;
