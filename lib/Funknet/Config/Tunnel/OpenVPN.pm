@@ -340,7 +340,7 @@ sub filter_firewall_rules {
 						  direction	      => 'in',
                                                   source_address      => $self->{_remote_endpoint},
                                                   destination_address => $self->{_local_endpoint},
-                                                  destination_port    => 1194,
+                                                  source_port	      => 1194,
                                                   source              => $self->{_source},));
     }
 
