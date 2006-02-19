@@ -305,8 +305,8 @@ sub apply {
 
     # KAME calls sha1 and md5 hmac_*, 
     # and needs commas...
-    $self->{_espencr} =~ s/ /, /;
-    $self->{_espauth} =~ s/ /, /;
+    $self->{_espencr} =~ s/ /, /g;
+    $self->{_espauth} =~ s/ /, /g;
 
     my $espauth = $self->{_espauth};
     $espauth =~ s/md5/hmac_md5/;
