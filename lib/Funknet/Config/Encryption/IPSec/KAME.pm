@@ -288,10 +288,15 @@ sub apply {
     my $cert_path = $cert->path;
     my $key_path  = $key->path;
 
-    # KAME calls sha and md5 hmac_*
+    # KAME calls sha1 and md5 hmac_*, 
+    # and needs commas...
+    $self->{_espencr} =~ s/ /, /;
+    $self->{_espauth} =~ s/ /, /;
+
     my $espauth = $self->{_espauth};
     $espauth =~ s/md5/hmac_md5/;
-    $espauth =~ s/sha/hmac_sha1/;
+    $espauth =~ s/sha1/hmac_sha1/;
+
 
     my $racoon = <<"RACOON"; 
 remote $self->{_peer}
@@ -301,6 +306,7 @@ remote $self->{_peer}
         situation identity_only;
 
         certificate_type x509 "$cert_path" "$key_path";
+        ca_type x509 "/etc/openvpn/ca.pem";
 
         nonce_size 16;
         lifetime time 60 min;    # sec,min,hour
@@ -313,12 +319,13 @@ remote $self->{_peer}
         }
 }
 
-sainfo address $self->{_local} [any] ipip address $self->{_peer} [any] ipip
+sainfo address $self->{_local} 4 address $self->{_peer} 4
 {
         pfs_group $self->{_dhgroup};
         lifetime time 60 sec;
         encryption_algorithm $self->{_espencr};
         authentication_algorithm $espauth;
+        compression_algorithm deflate;
 }
 
 RACOON

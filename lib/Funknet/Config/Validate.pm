@@ -230,7 +230,7 @@ sub is_valid_ipsec_hash {
     my @hashs = split / /, $hash_string;
     for my $hash (@hashs) {
 	unless ($hash eq 'md5'       || 
-		$hash eq 'sha'       ||
+		$hash eq 'sha1'      ||
 		$hash eq 'hmac_sha1' ||
 		$hash eq 'hmac_md5' ) {
 	    return 0;
