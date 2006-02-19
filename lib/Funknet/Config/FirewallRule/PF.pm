@@ -77,8 +77,8 @@ sub create {
 
 sub delete {
     my ($self) = @_;
-    warn "pf doesn't support rule removal";
-    return;
+    $self->warn("pf doesn't support rule removal");
+    return "# ZAP: ".$self->_pf_cmd();
 }
 
 sub _pf_cmd {
@@ -115,7 +115,6 @@ sub _command {
 		       $self->_proto()." ".$self->_src()." ".$self->_dst();
 	    }
 	    else {
-		warn "filter rule without either inside or oustide interface";
 		$cmd = "pass ".
 		       $self->_proto()." ".$self->_src()." ".$self->_dst();
 	    }

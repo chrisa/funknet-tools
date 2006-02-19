@@ -64,7 +64,93 @@ sub new {
 }
 
 sub local_firewall_rules {
-    die "PF local_firewall_rules not implemented yet";
+    my $self = shift;
+
+    my $l = Funknet::ConfigFile::Tools->local;
+    my $chain = Funknet::ConfigFile::Tools->whois_source || 'FUNKNET';
+    debug("arrived in PF.pm local_firewall_rules whois_src is $chain");
+
+    # XXX read rdr anchor and build nat rules
+
+    my @filters;
+    open F, "pfctl -a $chain -s rules 2>/dev/null |"
+	or die "couldn't open pipe from pfctl for $chain rules";
+    while (<F>) {
+	chomp;
+	my $line = $_;
+	debug($line);
+	# since we write the rules in these chains ourselves, we don't need to
+	# support the full gamut of possible rules. just as well.
+	#
+	if ($line =~ m|^pass| || $line =~ m|^block|) {
+	    # this interface can do anything rules:
+	    if ($line =~ m/^pass (in|out) on (\w+) inet all$/)  {
+		my ($iif, $oif);
+		if ($1 eq 'in') {
+		    ($iif, $oif) = ($2, undef);
+		}
+		elsif ($1 eq 'out') {
+		    ($iif, $oif) = (undef, $2);
+		}
+		else {
+		    die "couldn't infer rule direction";
+		}
+
+		my $rule = Funknet::Config::FirewallRule->new(
+		    source		=> 'host',
+		    type		=> 'filter',
+		    in_interface	=> $iif,
+		    out_interface	=> $oif,
+		);
+		push @filters, $rule;
+	    } 
+	    # general 
+	    elsif ($line =~ m|pass inet proto (\w+) from (.*?) to (.*?)$|) {
+		my ($src_a, $src_p) = _parse_addressport($2);
+		my ($dst_a, $dst_p) = _parse_addressport($3);
+		my $rule = Funknet::Config::FirewallRule->new(
+		    source		=> 'host',
+		    type		=> 'filter',
+		    source_address	=> $src_a,
+		    source_port		=> $src_p,
+		    destination_address	=> $dst_a,
+		    destination_port	=> $dst_p,
+		    proto		=> $1,
+		);
+		push @filters, $rule;
+	    }
+	    else {
+		$self->warn("unprocessed host fw rule $line");
+	    }	
+	}
+    }
+    close F;
+    my $filter_chain = Funknet::Config::FirewallChain->new(
+	type => 'filter',
+	rules => \@filters,
+	create => 'no',
+    );
+    my $nat_chain = Funknet::Config::FirewallChain->new(
+	type => 'filter',
+	rules => [],
+	create => 'no',
+    );
+    return Funknet::Config::FirewallRuleSet->new(
+	chains  => {
+	    filter => $filter_chain,
+	    nat    => $nat_chain,
+	},
+	source => 'host',
+    );
+}
+
+sub _parse_addressport {
+    my ($txt) = @_;
+    if (!defined $txt || $txt eq '') { die "bad args to _parseaddressport"; }
+    my ($a, $p);
+    if ($txt =~ m|^([\d.]+)|) { $a = $1; }
+    if ($txt =~ m|port = (\d+)|) {$p = $1; }
+    return ($a, $p);
 }
 
 1;
