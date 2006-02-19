@@ -308,6 +308,8 @@ remote $self->{_peer}
         certificate_type x509 "$cert_path" "$key_path";
         ca_type x509 "/etc/openvpn/ca.pem";
 
+        my_identifier asn1dn;
+
         nonce_size 16;
         lifetime time 60 min;    # sec,min,hour
 
@@ -338,9 +340,9 @@ RACOON
 	
 	    $setkey = <<"SETKEY";
 
-spdadd $self->{_local} $self->{_peer} ipip -P out ipsec
+spdadd $self->{_local} $self->{_peer} 4 -P out ipsec
 esp/transport/$self->{_local}-$self->{_peer}/require;
-spdadd $self->{_peer} $self->{_local} ipip -P in ipsec
+spdadd $self->{_peer} $self->{_local} 4 -P in ipsec
 esp/transport/$self->{_peer}-$self->{_local}/require;
 
 SETKEY
@@ -348,9 +350,9 @@ SETKEY
 	    
 	    $setkey = <<"SETKEY";
 
-spdadd $self->{_local} $self->{_peer} ipip -P out ipsec
+spdadd $self->{_local} $self->{_peer} 4 -P out ipsec
 ah/transport/$self->{_local}-$self->{_peer}/require;
-spdadd $self->{_peer} $self->{_local} ipip -P in ipsec
+spdadd $self->{_peer} $self->{_local} 4 -P in ipsec
 ah/transport/$self->{_peer}-$self->{_local}/require;
 
 SETKEY
@@ -359,9 +361,9 @@ SETKEY
 	    
 	    $setkey = <<"SETKEY";
 
-spdadd $self->{_local} $self->{_peer} ipip -P out ipsec
+spdadd $self->{_local} $self->{_peer} 4 -P out ipsec
 esp/transport/$self->{_local}-$self->{_peer}/require ah/transport/$self->{_local}-$self->{_peer}/require;
-spdadd $self->{_peer} $self->{_local} ipip -P in ipsec
+spdadd $self->{_peer} $self->{_local} 4 -P in ipsec
 esp/transport/$self->{_peer}-$self->{_local}/require ah/transport/$self->{_peer}-$self->{_local}/require;
 
 SETKEY
