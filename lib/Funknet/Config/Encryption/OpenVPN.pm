@@ -175,23 +175,6 @@ sub apply {
     return ($cert, $key);
 }
 
-sub diff {
-     my ($whois, $host) = @_;
-     my @changes;
-
-     my $certdiff = $whois->{_certfile}->diff();
-     my $keydiff  = $whois->{_keyfile}->diff();
-
-     if ($certdiff) {
-          push @changes, $whois->{_certfile};
-     }
-     if ($keydiff) {
-          push @changes, $whois->{_keyfile};
-     }
-
-     return @changes;
-}
-
 sub _parse_openvpn_conf {
     my ($text) = @_;
 

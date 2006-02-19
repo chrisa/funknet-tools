@@ -95,7 +95,7 @@ sub whois_init {
 		p2encr         => $e->{cipher2},
 		p2auth         => $e->{hash2},
 		certfile       => $certfile,
-		privatekeyfile => $keyfile,
+		keyfile        => $keyfile,
 	       );
 
     return $self;
@@ -143,7 +143,7 @@ sub init {
     # p1 dh group:     1 / 2 / 5 / nopfs  'dhgroup'
     # ike auth:        secret / cert      'ikemethod'
     # cert file:       path               'certfile'
-    # privatekey file: path               'privatekeyfile'
+    # privatekey file: path               'keyfile'
     # secret file:     path               'secretfile'
 
     # esp cipher auth: a cipher           'espauth'
@@ -221,11 +221,11 @@ sub init {
 		$self->{_certfile} = $args{certfile};
 	    }
 
-	    unless (defined $args{privatekeyfile} && is_valid_filepath($args{privatekeyfile})) {
-		$self->warn("encryption-ipsec: $self->{_peer}: missing or invalid privatekeyfile");
+	    unless (defined $args{keyfile} && is_valid_filepath($args{keyfile})) {
+		$self->warn("encryption-ipsec: $self->{_peer}: missing or invalid keyfile");
 		return undef;
 	    } else {
-		$self->{_privatekeyfile} = $args{privatekeyfile};
+		$self->{_keyfile} = $args{keyfile};
 	    }
 	}
 	

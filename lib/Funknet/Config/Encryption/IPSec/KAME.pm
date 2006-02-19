@@ -40,9 +40,28 @@ use strict;
 use Parse::RecDescent;
 use base qw/ Funknet::Config::Encryption::IPSec /;
 
-use Data::Dumper;
-
 =head1 METHODS
+
+=cut
+
+sub diff {
+     my ($whois, $host) = @_;
+
+     my @changes = $whois->SUPER::diff($host);
+     ($whois->{_racoonfile}, $whois->{_setkeyfile}) = $whois->apply();
+
+     $whois->{_racoonfile}->new_text( $host->{_racoonfile}->old_text() );
+     $whois->{_setkeyfile}->new_text( $host->{_setkeyfile}->old_text() );
+
+     if ($whois->{_racoonfile}->diff()) {
+          push @changes, $whois->{_racoonfile};
+     }
+     if ($whois->{_setkeyfile}->diff()) {
+          push @changes, $whois->{_setkeyfile};
+     }
+
+     return @changes;
+}
 
 =head2 host_init
 
@@ -73,25 +92,21 @@ sub host_init {
 	return undef;
     }
 
-    unless (open CONF, $r_frag) {
-        $self->warn("couldn't open $r_frag: $!");
-	return undef;
-    }
-    my $racoon_conf;
-    {
-	local $/ = undef;
-	$racoon_conf = <CONF>;
-    }
+    # load the files with FCSystemFile
+    $self->{_racoonfile} = Funknet::Config::SystemFile->new( path => $r_frag );
+    $self->{_setkeyfile} = Funknet::Config::SystemFile->new( path => $s_frag );
 
-    unless (open POL, $s_frag) {
-        $self->warn("couldn't open $s_frag: $!");
+    unless (defined $self->{_racoonfile}) {
+        $self->warn("couldn't open $r_frag");
 	return undef;
     }
-    my $setkey_conf;
-    {
-	local $/ = undef;
-	$setkey_conf = <POL>;
+    my $racoon_conf = $self->{_racoonfile}->old_text();
+
+    unless (defined $self->{_setkeyfile}) {
+        $self->warn("couldn't open $s_frag");
+	return undef;
     }
+    my $setkey_conf = $self->{_setkeyfile}->old_text();
 
     # parse racoon.conf
     my $racoon_ret = _parse_racoon_conf($racoon_conf);
@@ -169,7 +184,7 @@ sub host_init {
 					    p2auth => $racoon_ret->{sa_auth},
 					    ikemethod => 'cert',
 					    certfile => $racoon_ret->{certpath},
-					    privatekeyfile => $racoon_ret->{keypath},
+					    keyfile => $racoon_ret->{keypath},
 					  );
 	    }
 	    
@@ -188,7 +203,7 @@ sub host_init {
 					    p2auth => $racoon_ret->{sa_auth},
 					    ikemethod => 'cert',
 					    certfile => $racoon_ret->{certpath},
-					    privatekeyfile => $racoon_ret->{keypath},
+					    keyfile => $racoon_ret->{keypath},
 					  );
 	    }
 	    
@@ -208,7 +223,7 @@ sub host_init {
 					    p2auth => $racoon_ret->{sa_auth},
 					    ikemethod => 'cert',
 					    certfile => $racoon_ret->{certpath},
-					    privatekeyfile => $racoon_ret->{keypath},
+					    keyfile => $racoon_ret->{keypath},
 					  );
 	    }
 
@@ -283,7 +298,7 @@ sub apply {
 
     # get cert/key
     my $cert = $self->{_certfile};
-    my $key  = $self->{_privatekeyfile};
+    my $key  = $self->{_keyfile};
 
     my $cert_path = $cert->path;
     my $key_path  = $key->path;
@@ -296,7 +311,6 @@ sub apply {
     my $espauth = $self->{_espauth};
     $espauth =~ s/md5/hmac_md5/;
     $espauth =~ s/sha1/hmac_sha1/;
-
 
     my $racoon = <<"RACOON"; 
 remote $self->{_peer}
@@ -438,6 +452,7 @@ remote_key: 'exchange_mode' exchange_mode
           | 'my_identifier' identifier[ 'my' ]
           | 'peers_identifier' identifier[ 'peers' ]
           | 'certificate_type' certificate_type
+          | 'ca_type' ca_type
 
 proposal_section: 'proposal {' proposal_keyval(s) '}'
 proposal_keyval: proposal_key ';'
@@ -469,17 +484,19 @@ timeunit:          'sec' | 'min' | 'hour'
 
 certificate_type:  'x509' path[ 'cert' ] path[ 'key' ]
  { $RES::cert_type = $item[1]; }
+ca_type: 'x509' path[ 'cacert' ]
 
 authentication_method: 'pre_shared_key' | 'rsasig'
 dh_group: '1' | '2' | '5' | 'modp768' | 'modp1024' | 'modp1536'
 encr_alg: 'aes' | '3des' | 'des'
-hash_alg: 'sha' | 'md5' | 'hmac_sha1' | 'hmac_md5'
+hash_alg: 'sha1' | 'md5' | 'hmac_sha1' | 'hmac_md5'
 comp_alg: 'deflate'
 
 path: /"?(\/[^\/"]+)+"?/
  { 
-   if ($arg[0] eq 'cert') { $RES::certpath = $item[1]; }
-   if ($arg[0] eq 'key')  { $RES::keypath  = $item[1]; }
+   if ($arg[0] eq 'cert')   { $RES::certpath   = $item[1]; }
+   if ($arg[0] eq 'key')    { $RES::keypath    = $item[1]; }
+   if ($arg[0] eq 'cacert') { $RES::cacertpath = $item[1]; }
  }
 
 identifier: address | fqdn | user_fqdn | keyid | asn1dn
@@ -494,7 +511,7 @@ fqdn:      'fqdn'      /"?[a-z.]+"?/
    if ($arg[0] eq 'my')    { $RES::my_id =    "$item[1] $item[2]"; }
    if ($arg[0] eq 'peers') { $RES::peers_id = "$item[1] $item[2]"; }
  }
-user_fqdn: 'user_fqdn' /[^;]+/ 
+user_fqdn: 'user_fqdn'
  {
    if ($arg[0] eq 'my')    { $RES::my_id =    "$item[1] $item[2]"; }
    if ($arg[0] eq 'peers') { $RES::peers_id = "$item[1] $item[2]"; }
@@ -504,10 +521,10 @@ keyid:     'keyid'     /\d+/
    if ($arg[0] eq 'my')    { $RES::my_id =    "$item[1] $item[2]"; }
    if ($arg[0] eq 'peers') { $RES::peers_id = "$item[1] $item[2]"; }
  }
-asn1dn:    'asn1dn'    /[^;]+/
+asn1dn:    'asn1dn'
  {
-   if ($arg[0] eq 'my')    { $RES::my_id    = "$item[1] $item[2]"; }
-   if ($arg[0] eq 'peers') { $RES::peers_id = "$item[1] $item[2]"; }
+   if ($arg[0] eq 'my')    { $RES::my_id    = "$item[1]"; }
+   if ($arg[0] eq 'peers') { $RES::peers_id = "$item[1]"; }
  }
 
 sainfo_section: 'sainfo' sainfo_id '{' sainfo_keyval(s) '}'
@@ -524,13 +541,13 @@ sainfo_keyval:  sainfo_key ';'
 sainfo_key: 'lifetime time' lifetime timeunit
                  { $RES::sa_lifetime = "$item[2] $item[3]"; }
 
-          | 'encryption_algorithm' encr_alg(s)
+          | 'encryption_algorithm' encr_alg(s /,/)
                  { $RES::sa_encr = $item[2]; }
 
-          | 'authentication_algorithm' hash_alg(s)
+          | 'authentication_algorithm' hash_alg(s /,/)
                  { $RES::sa_auth = $item[2]; }
 
-          | 'compression_algorithm' comp_alg(s)
+          | 'compression_algorithm' comp_alg(s /,/)
                  { $RES::sa_comp = $item[2]; }
 
           | 'pfs_group' dh_group
@@ -548,7 +565,8 @@ sainfo_key: 'lifetime time' lifetime timeunit
 	$text .= "$line\n";
     }
     
-    defined $parser->start($text) or print "Bad text!\n";
+    my $result = $parser->start($text);
+    defined $result or warn "bad text";
 
     my $data = {
 		sa_local    => $RES::sa_local,
@@ -585,7 +603,7 @@ sainfo_key: 'lifetime time' lifetime timeunit
     # algorithm lists need to be converted from arrayrefs to space-separated strings.
     # but - if there was only one alg, it won't just be in a one-element list. so:
     
-    for my $attr (qw/ sa_encr sa_auth hash_algs encr_algs /) {
+    for my $attr (qw/ sa_encr sa_auth sa_comp hash_algs encr_algs /) {
 	if (ref $data->{$attr}) {
 	    $data->{$attr} = join ' ', @{ $data->{$attr} };
 	}
@@ -593,7 +611,7 @@ sainfo_key: 'lifetime time' lifetime timeunit
 
     # KAME is odd - change these back.
     $data->{sa_auth} =~ s/hmac_md5/md5/;
-    $data->{sa_auth} =~ s/hmac_sha1/sha/;
+    $data->{sa_auth} =~ s/hmac_sha1/sha1/;
 
     return $data;
 }
