@@ -324,7 +324,7 @@ remote $self->{_peer}
 sainfo address $self->{_local} 4 address $self->{_peer} 4
 {
         pfs_group $self->{_dhgroup};
-        lifetime time 60 sec;
+        lifetime time 60 min;
         encryption_algorithm $self->{_espencr};
         authentication_algorithm $espauth;
         compression_algorithm deflate;
