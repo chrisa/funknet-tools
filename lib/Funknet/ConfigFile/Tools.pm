@@ -70,18 +70,20 @@ sub encryption {
 	$config = $self->get_config();
     }
     
-    return { ipsec    => $config->{encr_ipsec},
-	     cipher1  => $config->{encr_cipher1},
-	     hash1    => $config->{encr_hash1},
-	     cipher2  => $config->{encr_cipher2},
-	     hash2    => $config->{encr_hash2},
-	     proto    => $config->{encr_proto},
-	     dhgroup  => $config->{encr_dhgroup},
-	     keypath  => $config->{encr_keypath},
-	     certpath => $config->{encr_certpath},
-	     ikepath  => $config->{encr_ikepath},
-	     setkeypath => $config->{encr_setkeypath},
-	     pskpath  => $config->{encr_pskpath},
+    return { ipsec			=> $config->{encr_ipsec},
+	     cipher1			=> $config->{encr_cipher1},
+	     hash1			=> $config->{encr_hash1},
+	     cipher2			=> $config->{encr_cipher2},
+	     hash2			=> $config->{encr_hash2},
+	     proto			=> $config->{encr_proto},
+	     dhgroup			=> $config->{encr_dhgroup},
+	     openvpn_encr_dir		=> $config->{encr_dir_openvpn},
+	     openvpn_encr_cacert	=> $config->{encr_cacert_openvpn},
+	     ipsec_encr_dir		=> $config->{encr_dir_ipsec},
+	     ipsec_encr_cacert		=> $config->{encr_cacert_ipsec},
+	     ikepath			=> $config->{encr_ikepath},
+	     setkeypath			=> $config->{encr_setkeypath},
+	     pskpath			=> $config->{encr_pskpath},
 	   };
 }
 

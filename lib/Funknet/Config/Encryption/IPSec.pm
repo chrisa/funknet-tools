@@ -289,7 +289,7 @@ sub get_keycert {
                                                     user  => 'root',
                                                     group => 'root',
                                                     mode  => '0600',
-                                                    path  => "$e->{keypath}/$param",
+                                                    path  => "$e->{ipsec_encr_dir}/key/$param",
                                                    );
      
      my $certfile = Funknet::Config::SystemFile->new(
@@ -297,7 +297,7 @@ sub get_keycert {
                                                      user  => 'root',
                                                      group => 'root',
                                                      mode  => '0600',
-                                                     path  => "$e->{certpath}/$param",
+                                                     path  => "$e->{ipsec_encr_dir}/cert/$param",
                                                     );
      return ($keyfile, $certfile);
 }

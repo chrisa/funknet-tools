@@ -88,10 +88,15 @@ encr_setkeypath = /tmp/ipsec/setkey
 encr_pskpath = /tmp/ipsec/psk.txt
 
 # where live copies of keys/certs go. this applies to both ipsec and
-# openvpn. NB these paths *must* be different, as the key and cert have
-# the same filename...
-encr_keypath = /tmp/ipsec/key
-encr_certpath = /tmp/ipsec/cert
+# openvpn seperately, as they require different ownerships
+encr_dir_ipsec = /tmp/ipsec
+encr_dir_openvpn = /home/funknet
+
+# optionally set the CA cert file, if not specified, defaults to
+# $encr_dir_{ipsec,openvpn}/$whois_source-CAcert.pem
+#encr_cacert_ipsec = /tmp/ipsec/ca.pem
+#encr_cacert_openvpn = /home/funknet/ca.pem
+
 
 # remote keystash
 

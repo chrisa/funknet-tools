@@ -296,6 +296,16 @@ sub apply {
     my ($self) = @_;
     my $e = Funknet::ConfigFile::Tools->encryption();
 
+    my $whois_source = Funknet::ConfigFile::Tools->whois_source;
+    my $cert_dir = $e->{ipsec_encr_dir};
+    my $cacert_file;
+
+    if (defined ($e->{ipsec_encr_cacert})) {
+        $cacert_file = $e->{ipsec_encr_cacert};
+    } else {
+        $cacert_file = "$cert_dir/$whois_source-CAcert.pem";
+    }
+
     # get cert/key
     my $cert = $self->{_certfile};
     my $key  = $self->{_keyfile};
@@ -313,6 +323,7 @@ sub apply {
     $espauth =~ s/sha1/hmac_sha1/;
 
     my $racoon = <<"RACOON"; 
+path certifate $cert_dir;
 remote $self->{_peer}
 {
         exchange_mode main;
@@ -320,7 +331,7 @@ remote $self->{_peer}
         situation identity_only;
 
         certificate_type x509 "$cert_path" "$key_path";
-        ca_type x509 "/etc/openvpn/ca.pem";
+        ca_type x509 "$cacert_file";
 
         my_identifier asn1dn;
 

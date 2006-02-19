@@ -153,13 +153,24 @@ sub host_init {
 
 sub tun_data {
     my ($self) = @_;
+
+    my $e = Funknet::ConfigFile::Tools->encryption();
+    my $whois_source = Funknet::ConfigFile::Tools->whois_source || 'FUNKNET';
+
     if (defined $self->{_keyfile} &&
 	defined $self->{_certfile}) {
 	
+	my $cacert_file;
+	if (defined ($e->{openvpn_encr_cacert})) {
+	    $cacert_file = $e->{openvpn_encr_cacert};
+	} else {
+	    my $encr_dir = $e->{openvpn_encr_dir};
+	    $cacert_file = "$encr_dir/$whois_source-CAcert.pem";
+	}
 	return {
 		keyfile_path  => $self->{_keyfile}->path(),
 		certfile_path => $self->{_certfile}->path(),
-		cafile_path   => '/etc/openvpn/ca.pem', # XXX fix this
+		cafile_path   => $cacert_file,
 	       };
     }
     return undef;
@@ -211,7 +222,7 @@ sub get_keycert {
                                                     user  => 'openvpn',
                                                     group => 'openvpn',
                                                     mode  => '0600',
-                                                    path  => "$e->{keypath}/$param",
+                                                    path  => "$e->{openvpn_encr_dir}/key/$param",
                                                    );
      
      my $certfile = Funknet::Config::SystemFile->new(
@@ -219,7 +230,7 @@ sub get_keycert {
                                                      user  => 'openvpn',
                                                      group => 'openvpn',
                                                      mode  => '0600',
-                                                     path  => "$e->{certpath}/$param",
+                                                     path  => "$e->{openvpn_encr_dir}/cert/$param",
                                                     );
      return ($keyfile, $certfile);
 }
