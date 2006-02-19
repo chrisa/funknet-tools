@@ -36,6 +36,7 @@ use base qw/ Funknet::Config /;
 use Funknet::Config::FirewallChain::IPTables;
 use Funknet::Config::FirewallChain::PF;
 use Funknet::Config::FirewallChain::IPF;
+use Funknet::Config::FirewallChain::IPFW;
 use Funknet::Debug;
 
 =head1 NAME
