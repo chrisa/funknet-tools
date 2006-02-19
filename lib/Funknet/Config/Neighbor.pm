@@ -118,8 +118,15 @@ sub diff {
 	    push @cmds, "neighbor ".$whois->remote_addr." description ".$whois->description;
 	}
 
-	unless ($host->soft_reconfig) {
-	    push @cmds, "neighbor ".$whois->remote_addr." soft-reconfiguration inbound";
+	if ($host->soft_reconfig) {
+             unless (defined $whois->{_acl_in} || defined $whois->{_acl_out}) {
+                  push @cmds, "no neighbor ".$whois->remote_addr." soft-reconfiguration inbound";
+             }
+        } 
+        else {
+             if (defined $whois->{_acl_in} || defined $whois->{_acl_out}) {
+                  push @cmds, "neighbor ".$whois->remote_addr." soft-reconfiguration inbound";
+             }
 	}
     
 	if (defined $whois->{_acl_in}) {
