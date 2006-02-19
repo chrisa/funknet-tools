@@ -89,7 +89,7 @@ sub _pf_cmd {
 
 sub _command {
     my ($self) = @_;
-    if (!defined $self) { warn 'bad args to _command'; }
+    if (!defined $self) { die 'bad args to _command'; }
 
     my $cmd = " ";
     if (defined $self->{_type}) {
@@ -149,7 +149,8 @@ sub _dst {
 
 sub _proto {
     my ($self) = @_;
-    return(defined $self->{_proto} ? "proto $self->{_proto}" : '');
+    return(defined $self->{_proto} &&
+           $self->{_proto} ne 'all' ? "proto $self->{_proto}" : '');
 }
 
 1;
