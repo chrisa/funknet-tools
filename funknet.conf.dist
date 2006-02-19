@@ -104,7 +104,7 @@ ks_www_cert = /C=GB/O=Lemon Test/CN=blank.netdotnet.net
 ks_www_ca   = /C=GB/O=Lemon Test/CN=blank.netdotnet.net
 
 ks_whois_host = whois.funknet.org
-ks_whois_port = 43
+ks_whois_port = 4343
 ks_whois_source = FUNKNET
 
 # the local keystash cache directory
