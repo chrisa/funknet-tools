@@ -41,8 +41,7 @@ local_ipsec = kame
 # specify the source explicitly here, otherwise the local_endpoint
 # is used as the tunnel source. this address should probably
 # always be RFC1918-space.
-
-local_source = 10.10.10.10
+#local_source = 10.10.10.10
 
 # if u are dynamic u need these
 from_email     = 
