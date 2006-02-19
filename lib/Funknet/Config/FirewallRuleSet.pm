@@ -94,10 +94,10 @@ sub new
 	if ($firewall_type eq 'ipf') { 
 	    $subtype = 'IPF';
 	} 
-	
+
 	my $full_object_name = "Funknet::Config::FirewallRuleSet::$subtype";
 	debug("my FirewallRuleSet type is $full_object_name");
-
+	
 	bless $self, $full_object_name;
 	return($self);
     }
@@ -148,9 +148,12 @@ sub firewall {
 
     my @rules;
 
-    foreach my $chain (@{$self->{_chains}}) {
-        push (@rules, $chain->rules);
-    }
+    my $filter_chain = $self->filter_chain();
+    my $nat_chain = $self->nat_chain();
+
+    push (@rules, $filter_chain->rules);
+    push (@rules, $nat_chain->rules);
+
     return(@rules);
 }
 

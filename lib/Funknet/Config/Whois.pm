@@ -230,13 +230,19 @@ sub firewall {
     
     my (@nat, @filter);
 
-    foreach my $tun ($tun_set->tunnels) {
-	push @nat,    $tun->nat_firewall_rules;
-	push @filter, $tun->filter_firewall_rules;
+    if (defined ($tun_set)) {
+	debug("getting tunnel rules");
+	foreach my $tun ($tun_set->tunnels) {
+	    push @nat,    $tun->nat_firewall_rules;
+	    push @filter, $tun->filter_firewall_rules;
+	}
     }
-    foreach my $enc ($enc_set->encryptions) {
-	push @nat,    $enc->nat_firewall_rules;
-	push @filter, $enc->filter_firewall_rules;
+    if (defined ($enc_set)) {
+	debug("getting encryption rules");
+	foreach my $enc ($enc_set->encryptions) {
+	    push @nat,    $enc->nat_firewall_rules;
+	    push @filter, $enc->filter_firewall_rules;
+	}
     }
 
     my $filter_chain = Funknet::Config::FirewallChain->new(
