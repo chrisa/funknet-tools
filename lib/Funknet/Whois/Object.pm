@@ -50,7 +50,7 @@ sub new {
 
     my $f;
     if ($args{TimeStamp}) {
-         $f = Funknet::Whois::Date->new('WC3DTF');
+         $f = Funknet::Whois::Date->new('W3CDTF');
     }
     
     $self->{_content} = [];
@@ -80,22 +80,20 @@ sub new {
 	push @{ $self->{_content} }, $val;
         push @{ $self->{_order} }, $key;
 
+
         if ($args{TimeStamp} && $key eq 'timestamp') {
-            if ($val eq '') {
-                return;
-            }
-            my $dt;
-            eval {
-                $dt = $f->parse_datetime($val);
-            };
-            if ($@) {
-                return;
-            } else {
-                $val = $f->format_datetime($dt);
-                $self->{_epoch_time} = $dt;
-            }
+             if ($val eq '') {
+                  return;
+             }
+             my $dt = $f->parse_datetime($val);
+             if ($dt) {
+                  $val = $f->format_datetime($dt);
+                  $self->{_epoch_time} = $dt;
+             } else {
+                  return;
+             }
         }
-    }
+   }
 
     if (scalar @{ $self->{_content} } > 0) {
         unless ($args{NoValidate}) {

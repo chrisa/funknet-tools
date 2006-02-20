@@ -14,3 +14,4 @@ V	061001161405Z		0D	unknown	/C=AU/ST=Some-State/O=Internet Widgits Pty Ltd/OU=Te
 V	061001161515Z		0E	unknown	/C=AU/ST=Some-State/O=Internet Widgits Pty Ltd/OU=TestOU5295/CN=TestCN5295
 V	061001161539Z		0F	unknown	/C=AU/ST=Some-State/O=Internet Widgits Pty Ltd/OU=TestOU5344/CN=TestCN5344
 V	061001162422Z		10	unknown	/C=AU/ST=Some-State/O=Internet Widgits Pty Ltd/OU=TestOU5479/CN=TestCN5479
+V	070220231500Z		11	unknown	/C=AU/ST=Some-State/O=Internet Widgits Pty Ltd/OU=TestOU3060/CN=TestCN3060

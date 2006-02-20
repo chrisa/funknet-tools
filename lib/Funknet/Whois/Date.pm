@@ -70,7 +70,7 @@ sub new {
 
 sub parse_datetime {
      my ($self, $string) = @_;
-     my $time = str2time($string);
+     my $time = str2time($string, 0);
      return $time;
 }
 
