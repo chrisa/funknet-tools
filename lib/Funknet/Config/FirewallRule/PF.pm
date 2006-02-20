@@ -92,7 +92,7 @@ sub _command {
 	if ($self->{_type} eq 'nat') {
 	    # pf.conf(5) reckons we don't need interface spec, and we don't
 	    # know the real if name anyway
-	    $cmd = "rdr pass ".$self->_proto()." ".$self->_src()." ".$self->_dst().
+	    $cmd = "rdr ".$self->_proto()." ".$self->_src()." ".$self->_dst().
 		   " -> ".
 		       (defined $self->{_destination_address} ? "$self->{_destination_address} " : '').
 		       (defined $self->{_to_port} ? "port $self->{_to_port} " : '');
