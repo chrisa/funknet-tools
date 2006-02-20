@@ -323,7 +323,7 @@ sub apply {
     $espauth =~ s/sha1/hmac_sha1/;
 
     my $racoon = <<"RACOON"; 
-path certifate $cert_dir;
+path certificate $cert_dir;
 remote $self->{_peer}
 {
         exchange_mode main;
