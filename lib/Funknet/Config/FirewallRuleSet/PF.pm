@@ -131,7 +131,7 @@ sub local_firewall_rules {
 	create => 'no',
     );
     my $nat_chain = Funknet::Config::FirewallChain->new(
-	type => 'filter',
+	type => 'nat',
 	rules => [],
 	create => 'no',
     );
