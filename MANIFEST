@@ -57,6 +57,7 @@ lib/Funknet/Config/FirewallChain.pm
 lib/Funknet/Config/FirewallChain/IPTables.pm
 lib/Funknet/Config/FirewallChain/PF.pm
 lib/Funknet/Config/FirewallChain/IPF.pm
+lib/Funknet/Config/FirewallChain/IPFW.pm
 lib/Funknet/Config/FirewallRule.pm
 lib/Funknet/Config/FirewallRuleSet.pm
 lib/Funknet/Config/Host.pm
