@@ -62,8 +62,7 @@ use IO::Scalar;
 use Funknet::Whois qw/ get_object /;
 use Funknet::Whois::Client;
 use Funknet::Whois::Object;
-
-use Data::Dumper;
+use Funknet::Debug;
 
 sub new {
     my ($class, %args) = @_;
@@ -110,12 +109,15 @@ sub get_key {
     my ($self, $cn) = @_;
     $cn =~ s!/!,!;
 
+    debug("in Keystash::Client get_key");
+    debug("we are looking for $cn");
     # check local keystash
     if (my $data = $self->_check_file('key', $cn)) {
 	return $data;
     }
     
     # give up and retrieve the key from the server.
+    debug("trying to get key from server");
     my $uri_cn = uri_escape($cn);
     my $uri = "https://$self->{_www_host}/keystash/$uri_cn";
     my $req = HTTP::Request->new('GET', $uri);
@@ -160,13 +162,16 @@ sub get_cert {
     my ($self, $name) = @_;
     $name =~ s!/!,!;
 
+    debug("in Keystash::Client get_cert");
+    debug("we are looking for $name");
     # check local keystash
     if (my $data = $self->_check_file('cert', $name)) {
 	my $object = Funknet::Whois::Object->new($data);
 	return $object;
     }
     
-    # give up and retrieve the key from the server.
+    # give up and retrieve the cert from the server.
+    debug("trying to get cert from server");
     my $fwc = Funknet::Whois::Client->new($self->{_whois_host}, 
 					  Port    => $self->{_whois_port},
 					  Timeout => 10);
