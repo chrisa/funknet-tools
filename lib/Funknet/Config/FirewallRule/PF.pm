@@ -50,11 +50,7 @@ can be adjusted at runtime. The static pf config must reference these by
 name, eg:
 
  C<nat-anchor FUNKNET-nat>
- C<rdr-anchor FUNKNET-rdr>
  C<anchor FUNKNET>
-
-I'm unsure at the moment if all three anchors are required, or if nat/rdr
-rules can go in the filter anchor. For now they're separate.
 
 =head1 METHODS
 
@@ -96,7 +92,7 @@ sub _command {
 	if ($self->{_type} eq 'nat') {
 	    # pf.conf(5) reckons we don't need interface spec, and we don't
 	    # know the real if name anyway
-	    $cmd = "rdr ".$self->_proto()." ".$self->_src()." ".$self->_dst().
+	    $cmd = "rdr pass ".$self->_proto()." ".$self->_src()." ".$self->_dst().
 		   " -> ".
 		       (defined $self->{_destination_address} ? "$self->{_destination_address} " : '').
 		       (defined $self->{_to_port} ? "port $self->{_to_port} " : '');
