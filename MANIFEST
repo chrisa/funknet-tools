@@ -129,6 +129,7 @@ lib/Funknet/Whois/Policy.pm
 lib/Funknet/Whois/Server.pm
 lib/Funknet/Whois/Templates.pm
 lib/Funknet/Whois/Update.pm
+lib/Funknet/Whois/Date.pm
 src/vtysh-helper.c
 t/updater-tests/test-update-failure.txt.asc
 t/updater-tests/test-update-partfail.txt.asc
