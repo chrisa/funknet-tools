@@ -78,11 +78,7 @@ sub new {
 	if (!defined $val) { $val = "" };
 	push @{ $self->{_methods}->{$key} }, $val;
 	push @{ $self->{_content} }, $val;
-	
-	my $test = ${ $self->{_order} }[-1] || 0;
-	if ($test ne $key) {
-	    push @{ $self->{_order} }, $key;
-	}
+        push @{ $self->{_order} }, $key;
 
         if ($args{TimeStamp} && $key eq 'timestamp') {
             if ($val eq '') {
@@ -167,24 +163,22 @@ sub DESTROY {}
 sub text {
     my ($self) = @_;
 
+    my @content = @{ $self->{_content} };
+    
+    my @kvs;
     my @lines;
     my $maxkey = 0;
 
-    my @content;
     for my $method (@{ $self->{_order} }) {
-	next unless $self->{_methods}->{$method}->[0]; 
-	push @content, map { $method.':    '.$_ } @{ $self->{_methods}->{$method} };
-    }
-
-    for my $line (@content) {
-	my ($key, $val) = $line =~ /([a-zA-Z-]+?):\s*(.+)/;
-	push @lines, { key => $key, val => $val };
-	if (length $key > $maxkey) {
-	    $maxkey = length $key;
-	}
+         my ($key, $val) = ($method, shift @content);
+         push @lines, "$key: $val";
+         push @kvs, { key => $key, val => $val };
+         if (length $key > $maxkey) {
+              $maxkey = length $key;
+         }
     }
     my $text = '';
-    for my $line (@lines) {
+    for my $line (@kvs) {
 	$text .= $line->{key} . ':    ' . (' ' x ($maxkey - length $line->{key})) . $line->{val} . "\n";
     }
     
@@ -193,7 +187,7 @@ sub text {
     $text =~ s/ +$//g;
 
     return wantarray 
-	? @content 
+	? @lines 
 	: $text;
 }
 
@@ -329,7 +323,11 @@ sub validate {
     }
 
     if (scalar @invalid > 1) {
-        $self->error("Invalid values ".( join ', ', (map { "'".$_->{val}."' for attribute '".$_->{attr}."'" } sort @invalid)  ));
+         my @sorted = map { $_->[0] } 
+                     sort { $a->[1] cmp $b->[1] } 
+                      map { [ $_, $_->{attr} ] } @invalid;
+
+        $self->error("Invalid values ".( join ', ', (map { "'".$_->{val}."' for attribute '".$_->{attr}."'" } @sorted)  ));
     }
     if (scalar @invalid == 1) {
         $self->error("Invalid value '".$invalid[0]->{val}."' for attribute '".$invalid[0]->{attr}."'");

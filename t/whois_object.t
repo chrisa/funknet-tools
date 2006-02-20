@@ -440,8 +440,8 @@ $obj = Funknet::Whois::Object->new($text);
 ok( defined $obj, 'parse ok');
 is( _nw(scalar $obj->text), _nw($text), 'text correct');
 is( $obj->error(), 
-    "Invalid values '192.168.101.0/24/16' for attribute 'route', " .  
-                   "'AS650014242424' for attribute 'origin'",
+    "Invalid values 'AS650014242424' for attribute 'origin', " .
+                   "'192.168.101.0/24/16' for attribute 'route'",
     'multiple bad values detected');
 
 $text = <<'TEXT';
