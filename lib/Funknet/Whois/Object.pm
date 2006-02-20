@@ -34,6 +34,7 @@ package Funknet::Whois::Object;
 use strict;
 use Funknet::Whois::ObjectDefs;
 use Funknet::Whois::ObjectSyntax;
+use Funknet::Whois::Date;
 
 use vars qw/ $AUTOLOAD /;
 
@@ -49,8 +50,7 @@ sub new {
 
     my $f;
     if ($args{TimeStamp}) {
-        require DateTime::Format::W3CDTF;
-        $f = DateTime::Format::W3CDTF->new;
+         $f = Funknet::Whois::Date->new('WC3DTF');
     }
     
     $self->{_content} = [];
@@ -92,7 +92,7 @@ sub new {
                 return;
             } else {
                 $val = $f->format_datetime($dt);
-                $self->{_epoch_time} = $dt->epoch;
+                $self->{_epoch_time} = $dt;
             }
         }
     }
