@@ -34,7 +34,6 @@ use strict;
 
 use base qw/ Funknet::Config::CLI::Zebra /;
 
-use Net::Telnet;
 use Funknet::ConfigFile::Tools;
 use Funknet::Debug;
 
@@ -101,8 +100,9 @@ sub login {
     my ($self) = @_;
     my $l = Funknet::ConfigFile::Tools->local;
 
+    require Net::Telnet;
     unless (defined $self->{t}) {
-	$self->{t} = new Net::Telnet ( Timeout => 10,
+	$self->{t} = Net::Telnet->new( Timeout => 10,
 				       Prompt  => '/[ \>\#]$/',
 				       Port    => 2605,
                                        Errmode => 'return',

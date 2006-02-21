@@ -34,10 +34,7 @@ package Funknet::Config::CLI::IOS;
 use strict;
 
 use base qw/ Funknet::Config::CLI /;
-
-use Net::Telnet;
 use Net::IPv4Addr qw/ ipv4_network /;
-
 use Funknet::ConfigFile::Tools;
 
 =head1 NAME
@@ -401,11 +398,12 @@ sub login {
     my ($self) = @_;
     my $l = Funknet::ConfigFile::Tools->local;
     
+    require Net::Telnet;
     unless (defined $self->{t}) {
-	$self->{t} = new Net::Telnet ( Timeout => 10,
-				       Prompt  => '/[\>\#]$/',
-				       Port    => 23,
-				     );
+        $self->{t} = Net::Telnet->new( Timeout => 10,
+                                       Prompt  => '/[\>\#]$/',
+                                       Port    => 23,
+                                     );
 	
 	$self->{t}->open($l->{host});
 	$self->{t}->print($self->{_username});
