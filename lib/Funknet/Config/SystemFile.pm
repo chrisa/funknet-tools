@@ -36,7 +36,6 @@ use base qw/ Funknet::Config /;
 use Funknet::Config::Root;
 use Funknet::Config::Validate qw/ is_valid_filepath /;
 use Funknet::Debug;
-use Text::Diff ();
 
 =head1 NAME
 
@@ -163,7 +162,7 @@ sub write {
 
 sub diff {
     my ($self) = @_;
-    my $diff;
+    my $diff = '';
 
     unless (defined $self->{_old}) {
 	$self->warn("diff requested but old file contents missing");
@@ -172,7 +171,9 @@ sub diff {
 	$self->warn("diff requested but new file contents missing");
 	return '';
     }
-    $diff = Text::Diff::diff \$self->{_old}, \$self->{_text}, { STYLE => "Unified" };
+    if ($self->{_old} ne $self->{_new}) {
+         $diff = "files differ\n";
+    }
     return $diff;
 }
 
