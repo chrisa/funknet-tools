@@ -137,7 +137,7 @@ sub write {
     }
 
     unless (defined $self->{_text}) {
-	$self->warn("write called, no text");
+	$self->warn("write called, no text ($self->{_path})");
 	return undef;
     } else {
 	unless (open OUT, ">$self->{_path}") {
@@ -165,10 +165,10 @@ sub diff {
     my $diff = '';
 
     unless (defined $self->{_old}) {
-	$self->warn("diff requested but old file contents missing");
+	$self->warn("diff requested but old file contents missing ($self->{_path})");
     }
     unless (defined $self->{_text}) {
-	$self->warn("diff requested but new file contents missing");
+	$self->warn("diff requested but new file contents missing ($self->{_path})");
 	return '';
     }
     if ($self->{_old} ne $self->{_new}) {
