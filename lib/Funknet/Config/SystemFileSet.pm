@@ -88,35 +88,39 @@ sub files {
 }
 
 sub as_text {
-    my ($self) = @_;
-    defined $self->{_files} or return undef;
-    my $l = Funknet::ConfigFile::Tools->local;
-    my $text = '';
-    if (scalar @{ $self->{_files} }) {
-	for my $file (@{ $self->{_files} }) {
-            if (!defined $file) {
-                $self->warn("undef in SystemFileSet");
-                next;
-            }
-            $text .= $file->as_text();
-	}
-	return $text;
-    } else {
-	return '';
-    }
+     my ($self) = @_;
+     defined $self->{_files} or return undef;
+     my $l = Funknet::ConfigFile::Tools->local;
+     my $text = '';
+     if (scalar grep { defined $_ } @{ $self->{_files} }) {
+          my @deletes = grep { $_->is_delete() }  @{ $self->{_files} };
+          my @writes  = grep { !$_->is_delete() } @{ $self->{_files} };
+
+          for my $file (@deletes, @writes) {
+               $text .= $file->as_text();
+          }
+          return $text;
+     }
+     else {
+          return '';
+     }
 }
 
 sub apply {
-    my ($self) = @_;
-    defined $self->{_files} or return undef;
-    if (scalar @{ $self->{_files} }) {
-	for my $file (@{ $self->{_files} }) {
-	    $file->write;
-	}
-    } else {
-	$self->warn("no files to apply in SystemFileSet->apply");
-	return undef;
-    }
+     my ($self) = @_;
+     defined $self->{_files} or return undef;
+    
+     if (scalar @{ $self->{_files} }) {
+          my @deletes = grep { $_->is_delete() }  @{ $self->{_files} };
+          my @writes  = grep { !$_->is_delete() } @{ $self->{_files} };
+
+          for my $file (@deletes, @writes) {
+               $file->write;
+          }
+     } else {
+          $self->warn("no files to apply in SystemFileSet->apply");
+          return undef;
+     }
 }
 
 sub diff {

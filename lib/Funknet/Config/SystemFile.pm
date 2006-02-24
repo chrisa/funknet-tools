@@ -171,21 +171,30 @@ sub diff {
 	$self->warn("diff requested but new file contents missing ($self->{_path})");
 	return '';
     }
-    if ($self->{_old} ne $self->{_new}) {
+
+    if ($self->{_old} ne $self->{_text}) {
          $diff = "files differ\n";
     }
     return $diff;
 }
 
 sub delete {
-    my ($self) = @_;
-    return Funknet::Config::CommandSet->new( cmds => [ "rm $self->{_path}" ],
-					     target => 'host',
-					   );
+     my ($self) = @_;
+     $self->{_delete} = 1;
+     return $self;
 }
 
+sub is_delete {
+     my ($self) = @_;
+     return (defined $self->{_delete}) ? 1 : 0;
+}
+ 
 sub as_text {
      my ($self) = @_;
+
+     if ($self->{_delete}) {
+          return "delete $self->{_path}\n\n";
+     }
 
      my $text = ">>> ";
      $text .= $self->{_path};
@@ -203,6 +212,8 @@ sub as_text {
      $text .= "\n";
      $text .= $self->{_text};
      $text .= "<<<\n\n";
+
+     return $text;
 }
     
 1;
