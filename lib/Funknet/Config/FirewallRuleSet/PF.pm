@@ -63,22 +63,49 @@ sub new {
     return($self);
 }
 
+# XXX needs root
 sub local_firewall_rules {
     my $self = shift;
 
     my $l = Funknet::ConfigFile::Tools->local;
-    my $chain = Funknet::ConfigFile::Tools->whois_source || 'FUNKNET';
+    my $chain = 'FUNKNET:combo';
     debug("arrived in PF.pm local_firewall_rules whois_src is $chain");
 
-    # XXX read rdr anchor and build nat rules
+    my @nat_rules;
+    open N, "pfctl -a $chain -s nat 2>/dev/null |"
+	or die "couldn't open pipe from pfctl for $chain rules";
+    while (<N>) {
+	chomp;
+	my $line = $_;
+	if ($line =~ m|^rdr inet proto (\w+) from (.*?) to (.*?) -> (.*?)$|) {
+	    my ($src_a, $src_p) = _parse_addressport($2);
+	    my ($dst_a, $dst_p) = _parse_addressport($3);
+	    my ($nat_a, $nat_p) = _parse_addressport($4);
+	    my $rule = Funknet::Config::FirewallRule->new(
+		source		=> 'host',
+		type		=> 'nat',
+		source_address	=> $src_a,
+		source_port	=> $src_p,
+		destination_address	=> $dst_a,
+		destination_port	=> $dst_p,
+		to_addr		=> $nat_a,
+		to_port		=> $nat_p,
+		proto		=> $1,
+	    );
+	    push @nat_rules, $rule;
+	}
+	else {
+	    $self->warn("unprocessed host fw nat rule $line");
+	}	
+    }
+    close N;
 
-    my @filters;
+    my @filter_rules;
     open F, "pfctl -a $chain -s rules 2>/dev/null |"
 	or die "couldn't open pipe from pfctl for $chain rules";
     while (<F>) {
 	chomp;
 	my $line = $_;
-	debug($line);
 	# since we write the rules in these chains ourselves, we don't need to
 	# support the full gamut of possible rules. just as well.
 	#
@@ -102,7 +129,7 @@ sub local_firewall_rules {
 		    in_interface	=> $iif,
 		    out_interface	=> $oif,
 		);
-		push @filters, $rule;
+		push @filter_rules, $rule;
 	    } 
 	    # general 
 	    elsif ($line =~ m|pass inet proto (\w+) from (.*?) to (.*?)$|) {
@@ -117,22 +144,23 @@ sub local_firewall_rules {
 		    destination_port	=> $dst_p,
 		    proto		=> $1,
 		);
-		push @filters, $rule;
+		push @filter_rules, $rule;
 	    }
 	    else {
-		$self->warn("unprocessed host fw rule $line");
+		$self->warn("unprocessed host fw filter rule $line");
 	    }	
 	}
     }
     close F;
+
     my $filter_chain = Funknet::Config::FirewallChain->new(
 	type => 'filter',
-	rules => \@filters,
+	rules => \@filter_rules,
 	create => 'no',
     );
     my $nat_chain = Funknet::Config::FirewallChain->new(
 	type => 'nat',
-	rules => [],
+	rules => \@nat_rules,
 	create => 'no',
     );
     return Funknet::Config::FirewallRuleSet->new(
@@ -150,7 +178,47 @@ sub _parse_addressport {
     my ($a, $p);
     if ($txt =~ m|^([\d.]+)|) { $a = $1; }
     if ($txt =~ m|port = (\d+)|) {$p = $1; }
+    if ($txt =~ m|port (\d+)|) {$p = $1; }
     return ($a, $p);
+}
+
+# overrides parent's diff
+# it might best to call SUPER::diff and then fiddle with the ConfigSet
+# that it returns, rather than maintaining this method
+sub diff {
+    my ($whois, $host) = @_;
+    debug("arrived in FirewallRuleSet::PF.pm diff");
+    my @diffs;
+    my @cmds;
+
+    my $l = Funknet::ConfigFile::Tools->local;
+    my $whois_source = Funknet::ConfigFile::Tools->whois_source;
+
+    # first check we have the objects the right way around.
+    unless ($whois->source eq 'whois' && $host->source eq 'host') {
+	$whois->warn("diff passed objects backwards");
+	return undef;
+    }    
+
+    for my $chain (qw/ filter nat /) {
+        push @diffs, $whois->chain($chain)->diff($host->chain($chain));
+    }
+    # arrange whole anchor ruleset with NAT first
+    if (scalar(@diffs)) {
+	for my $chain (qw/ nat filter /) {
+	    for my $rule ($whois->chain($chain)->rules()) {
+		push @cmds, $rule->create();
+	    }
+	}
+    }
+
+
+    # for pfctl, we want to pipe all the commands into pfctl(8)
+    my $cmdset = Funknet::Config::CommandSet->new( cmds => \@cmds,
+						   diffs => \@diffs,
+					   	   target => 'pfctl',
+						 );
+    return Funknet::Config::ConfigSet->new( cmds => [ $cmdset ] );
 }
 
 1;

@@ -80,6 +80,11 @@ sub new {
 	bless $self, 'Funknet::Config::CommandSet::Host';
  	return $self;
     }
+    if (defined $args{target} && $args{target} eq 'pfctl') {
+	bless $self, 'Funknet::Config::CommandSet::PFctl';
+	$self->{_diffs} = $args{diffs};
+ 	return $self;
+    }
     return undef;
 }
 
@@ -169,4 +174,56 @@ sub writeout {
     }
 }
 
+package Funknet::Config::CommandSet::PFctl;
+use base qw/ Funknet::Config::CommandSet /;
+
+# becaue we have to load the whole anchor
+# we have two seperate command lists:
+#   the complete one (cmds)
+#   the diffs (diffs)
+# this lets us show the diffs in on_text
+# yet still DTRT
+
+sub diffs {
+    my ($self) = @_;
+    return @{ $self->{_diffs} }
+}
+
+sub as_text {
+    my ($self) = @_;
+    my $text = '';
+    if (scalar @{ $self->{_diffs} }) {
+	$text .= "Differences:\n";
+	$text .= join "\n", @{ $self->{_diffs} };
+	$text .= "\n";
+    }
+    if (scalar @{ $self->{_cmds} }) {
+	$text .= "Anchor load:\n";
+	$text .= join "\n", @{ $self->{_cmds} };
+	$text .= "\n";
+    } 
+    return $text;
+}
+
+sub apply {
+    my ($self) = @_;
+    # Root.pm not ready yet
+
+    if (!scalar (@{$self->{_cmds}})) { return; }
+
+    if (!open PF, "|/sbin/pfctl -a FUNKNET:combo -f -") { 
+	$self->warn("couldn't open a pipe to pfctl");
+	return;
+    };
+    foreach my $c (@{$self->{_cmds}}) {
+	print PF $c."\n";
+    }
+    close PF;
+}
+
+sub writeout {
+    my ($self) = @_;
+    # XXX what do here - have a RCFile-a-like for pfctl?
+    $self->warn("PFctl writeout NYI");
+}
 1;
