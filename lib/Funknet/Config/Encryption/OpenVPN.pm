@@ -91,6 +91,15 @@ sub whois_init {
     # get key and cert SystemFile objects out of whois/keystash
     my ($keyfile, $certfile) = $self->get_keycert($param);
     
+    # amend key and cert filenames to include tunnel name.
+    my $tun  = $tun->name();
+
+    my $path = $keyfile->path();
+    $keyfile->path("$path-$tun");
+
+    my $path = $certfile->path();
+    $certfile->path("$path-$tun");
+
     # fire object back through init for checking 
     return $self->init(
 		       source   => 'whois',
@@ -178,12 +187,16 @@ sub tun_data {
 
 sub apply {
     my ($self) = @_;
-
-    # get cert/key
     my $cert = $self->{_certfile};
     my $key  = $self->{_keyfile};
-
     return ($cert, $key);
+}
+
+sub unapply {
+     my ($self) = @_;
+     my $cert = $self->{_certfile}->delete();
+     my $key  = $self->{_keyfile}->delete();
+     return ($cert, $key);
 }
 
 sub _parse_openvpn_conf {
