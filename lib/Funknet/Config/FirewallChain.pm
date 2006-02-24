@@ -88,6 +88,8 @@ sub new
 
     bless $self, $full_object_name;
 
+    $self->initialise;
+
     return($self);
 }
 
@@ -125,6 +127,9 @@ sub diff {
      return @cmds;
 }
 
+sub initialise {
+    # virtual
+}
 
 sub rules {
     my ($self) = @_;

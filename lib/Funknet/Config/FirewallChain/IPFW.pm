@@ -46,6 +46,79 @@ Provides a collection object for FirewallChain::IPFW objects.
 
 =head1 METHODS
 
+=head2 initialise
+
+Make sure to return an empty set of rules if type is nat
+
 =cut
+
+sub initialise
+{
+    my ($self) = @_;
+
+    if ($self->{_type} eq 'nat' ) {
+	warn("NAT is not supported with IPFW");
+	$self->{_rules} = [];
+    }
+}
+
+sub diff {
+    my ($whois, $host) = @_;
+    debug("arrived in FirewallChain::IPFW.pm diff");
+    my (@cmds);
+ 
+    debug("whois is");
+    print Dumper $whois;
+    debug("host is");
+    print Dumper $host;
+
+    my $whois_source = Funknet::ConfigFile::Tools->whois_source;
+
+    # first check we have the objects the right way around.
+    unless ($whois->source eq 'whois' && $host->source eq 'host') {
+        $whois->warn("diff passed objects backwards");
+        return undef;
+    }
+ 
+    # create hashes
+ 
+    my ($whois_fwall, $host_fwall, $tmp_fwall, $new_fwall);
+    my @rules;
+ 
+    for my $fwall ($whois->firewall) {
+        $whois_fwall->{$fwall->as_hashkey} = 1;
+    }
+    for my $fwall ($host->firewall) {
+        $host_fwall->{$fwall->as_hashkey} = 1;
+    }
+ 
+    $tmp_fwall = $host->copy;
+ 
+    debug("tmp_fwall is");
+    print Dumper $tmp_fwall;
+ 
+    for my $h ($host->firewall) {
+        unless ($whois_fwall->{$h->as_hashkey}) {
+            push @cmds, $h->delete;
+            $new_fwall = $tmp_fwall->remove($h);
+            $tmp_fwall = $new_fwall;
+        }
+    }
+ 
+    for my $w ($whois->firewall) {
+        unless ($host_fwall->{$w->as_hashkey}) {
+            my $new_rule_num;
+            ($new_fwall, $new_rule_num) = $tmp_fwall->add($w);
+            $tmp_fwall = $new_fwall;
+            push @cmds, $w->create($new_rule_num);
+        }
+    }
+ 
+    my $cmdset = Funknet::Config::CommandSet->new( cmds => \@cmds,
+                                                   target => 'host',
+                                                 );
+ 
+    return Funknet::Config::ConfigSet->new( cmds => [ $cmdset ] );
+}
 
 1;

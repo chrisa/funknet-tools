@@ -35,6 +35,8 @@ use strict;
 use base qw/ Funknet::Config::FirewallRuleSet /;
 use Funknet::Debug;
 
+use Data::Dumper;
+
 =head1 NAME
 
 Funknet::Config::FirewallRuleSet::IPFW
@@ -99,7 +101,7 @@ sub local_firewall_rules {
 
     my $whole_set = `ipfw list` ;
     my @rules = split ('\n', $whole_set);
-    my @rules_out;
+    my @filter_rules_out;
 
     foreach my $rule (@rules) {
 
@@ -159,61 +161,29 @@ sub local_firewall_rules {
 					in_interface         => $in_if,
 					out_interface        => $out_if,
 					rule_num             => $rule_num );
-	debug("new_rule_object");
-	push (@rules_out, $new_rule_object);
-    }
-    return (Funknet::Config::FirewallRuleSet::IPFW->new(
-						firewall => \@rules_out,
-						source => 'host'));
-}
-
-sub diff {
-    my ($whois, $host) = @_;
-    debug("arrived in FirewallRuleSet::IPFW.pm diff");
-    my (@cmds);
-
-    # first check we have the objects the right way around.
-    unless ($whois->source eq 'whois' && $host->source eq 'host') {
-        $whois->warn("diff passed objects backwards");
-        return undef;
-    }
-   
-    # create hashes
-
-    my ($whois_fwall, $host_fwall, $tmp_fwall, $new_fwall);
-    my @rules;
-
-    for my $fwall ($whois->firewall) {
-        $whois_fwall->{$fwall->as_hashkey} = 1;
-    }
-    for my $fwall ($host->firewall) {
-        $host_fwall->{$fwall->as_hashkey} = 1;
+	push (@filter_rules_out, $new_rule_object);
     }
 
-    $tmp_fwall = $host->copy;
+    my $filter_chain =  Funknet::Config::FirewallChain->new(
+							type	=> 'filter',
+							rules	=> \@filter_rules_out,
+							create	=> 'no',
+							);
 
-    for my $h ($host->firewall) {
-        unless ($whois_fwall->{$h->as_hashkey}) {
-            push @cmds, $h->delete;
-	    $new_fwall = $tmp_fwall->remove($h);
-            $tmp_fwall = $new_fwall;
-        }
-    }
+    warn ("creating empty nat chain as we are IPFW");
 
-    for my $w ($whois->firewall) {
-        unless ($host_fwall->{$w->as_hashkey}) {
-	    my $new_rule_num;
-	    ($new_fwall, $new_rule_num) = $tmp_fwall->add($w);
-            $tmp_fwall = $new_fwall;
-	    push @cmds, $w->create($new_rule_num);
-        }
-    }
+    my $empty_nat_chain =  Funknet::Config::FirewallChain->new(
+							type	=> 'nat',
+							rules	=> [],
+							create	=> 'no',
+							);
 
-    my $cmdset = Funknet::Config::CommandSet->new( cmds => \@cmds,
-						   target => 'host',
-						 );
-    
-    return Funknet::Config::ConfigSet->new( cmds => [ $cmdset ] );
+    return Funknet::Config::FirewallRuleSet->new( chains  => {
+								filter => $filter_chain,
+								nat    => $empty_nat_chain,
+							     },
+						  source  => 'host' );
+
 }
 
 sub add {
