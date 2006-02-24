@@ -35,6 +35,7 @@ use strict;
 use base qw/ Funknet::Config::Tunnel /;
 use Funknet::Config::Util qw/ dq_to_int /;
 use Funknet::Config::SystemFile;
+use Funknet::Debug;
 
 =head1 NAME
 
@@ -99,7 +100,7 @@ sub host_tunnels {
 	next unless $filename =~ /\.conf$/;
 	$filename = OPENVPN_CONF_DIR . '/' . $filename;
 
-	print STDERR "reading $filename\n";
+	debug("reading $filename");
 
 	my $tun = Funknet::Config::Tunnel::OpenVPN->new_from_ovpn_conf( $filename );
 	if (defined $tun) {
