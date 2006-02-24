@@ -49,20 +49,23 @@ PF uses anchors where IPTables uses chains - for named sets of rules that
 can be adjusted at runtime. The static pf config must reference these by
 name, eg:
 
- C<nat-anchor FUNKNET-nat>
- C<anchor FUNKNET>
+ C<nat-anchor FUNKNET:combo>
+ C<anchor FUNKNET:combo>
+
+We use one anchor for both NAT and filter rules, but these are considered
+distinct chains.
 
 =head1 METHODS
 
 =head2 create
 
-Returns a list of strings containing commands to configure a single
-PF anchor in a chain with the same as the whois_source name.
+Returns a string to create a PF rule.
 The required rule details are passed in as part of $self.
 
 =head2 delete
 
-NOP. FLushing entire anchor handled by F::C::FirewallChain::PF::flush
+Returns a string to indiciate what rule is being removed. The removal is
+implicit in the next anchor reload, where this rule will be absent.
 
 =cut
 
@@ -73,7 +76,6 @@ sub create {
 
 sub delete {
     my ($self) = @_;
-    $self->warn("pf doesn't support rule removal");
     return "# ZAP: ".$self->_pf_cmd();
 }
 
