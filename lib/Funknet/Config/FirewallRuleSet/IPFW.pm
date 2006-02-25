@@ -35,8 +35,6 @@ use strict;
 use base qw/ Funknet::Config::FirewallRuleSet /;
 use Funknet::Debug;
 
-use Data::Dumper;
-
 =head1 NAME
 
 Funknet::Config::FirewallRuleSet::IPFW
@@ -84,102 +82,56 @@ sub local_firewall_rules {
 
     foreach my $rule (@rules) {
 
-	my ($src, $dest, $proto, $policy, $src_port, $dst_port, $in_if, $out_if);
-	my ($first_half, $second_half);
-	my $rule_num;
+	my ($src, $dst, $proto, $policy, $src_port, $dst_port, $in_if, $out_if);
+	my ($src_str, $dst_str, $iface_str);
+	my ($rule_num, $rest);
+	my $src_dst;
 	chomp($rule);
 
-	$rule_num = $rule;
-	$rule_num =~ s/^(\d+).*/$1/;
+	$rule =~ s/^(\d+)\ (.*)/$1,$2/;
+	($rule_num, $rest) = split(',', $rule);
 
 	next unless(($rule_num <= $l->{max_ipfw_rule}) && ($rule_num >= $l->{min_ipfw_rule}));	
 	debug("rule number $rule_num in range");
-	debug("rule is $rule");
 
-	($first_half, $second_half) = split ('to', $rule);
-
-	if ($first_half =~ s/^\d+\s(\S+)\s(\S+)\sfrom\s(\d+\.\d+\.\d+\.\d+)(?:\/\d+)?\ (\d+).*/$1,$2,$3,$4/) {  
-	    ($policy, $proto, $src, $src_port) = split(',',$first_half);
-	} elsif ($first_half =~ s/^\d+\s(\S+)\s(\S+)\sfrom\s(any).*/$1,$2,$3/) {
-	    ($policy, $proto, $src) = split(',',$first_half);
+	if ($rest =~ /in|out/) {
+	    $rest =~ s/(.*)\ (in\ recv\ |out\ xmit\ [a-z]+[0-9]+)/$1,$2/;
+	    ($src_dst, $iface_str) = split(',',$rest);
 	} else {
-	    $first_half =~ s/^\d+\s(\S+)\s(\S+)\sfrom\s(\d+\.\d+\.\d+\.\d+)(?:\/\d+)?.*/$1,$2,$3/;
-	    ($policy, $proto, $src) = split(',',$first_half);
-	    $src_port = undef;
+	    $src_dst = $rest;
 	}
 
-	if ($second_half =~ /any/) {
-	    if ($second_half =~ /in/) {
-                if ($second_half =~ s/^\ (any)\ (\d+) in\ recv\ ([a-z]+[0-9]+)/$1,$2,$3/) {
-	            ($dest, $dst_port, $in_if) = split(',', $second_half);
-		} else {
-		    $second_half =~ s/^\ (any)\ in\ recv\ ([a-z]+[0-9]+)/$1,$2/;
-		    $dst_port = '';
-		    ($dest, $in_if) = split(',', $second_half);
-		    debug("dest: $dest, in_if: $in_if");
-		}
+	$src_dst =~ s/(\w+)\ (\w+|\d+)\ from\ (.*)\ to\ (.*)/$1,$2,$3,$4/;
+	($policy, $proto, $src_str, $dst_str) = split(',', $src_dst);
 
-	    } elsif ($second_half =~ /out/) {
-                if ($second_half =~ s/^\ (any)\ (\d+) out\ xmit\ ([a-z]+[0-9]+)/$1,$2,$3/) {
-	            ($dest, $dst_port, $out_if) = split(',', $second_half);
-		} else {
-		    $second_half =~ s/^\ (any)\ out\ xmit\ ([a-z]+[0-9]+)/$1,$2/;
-		    $dst_port = '';
-		    ($dest, $out_if) = split(',', $second_half);
-		    debug("dest: $dest, out_if: $out_if");
-		}
-
-	    } else {
-
-	        if ($second_half =~ s/^\ (any)\ (?:\d+\ )?.*/$1,$2/) {
-	            ($dest, $dst_port) = split(',', $second_half);
-	        } else {
-		    $dest = 'any';
-		}
-	    }
+	if ($src_str =~ s/(\d+\.\d+\.\d+\.\d+(?:\/\d+)?|any)\ (\d+)/$1,$2/) {
+	    ($src, $src_port) = split(',', $src_str);
 	} else {
-
-            if ($second_half =~ /in/) {
-                if ($second_half =~ s/^\ (\d+\.\d+\.\d+\.\d+)\ dst-port\ (\d+)\ in\ recv\ ([a-z]+[0-9]+)/$1,$2,$3/) {
-		    debug("port");
-                    ($dest, $dst_port, $in_if) = split(',', $second_half);
-		} else {
-                    $second_half =~ s/^\ (\d+\.\d+\.\d+\.\d+)\ in\ recv\ ([a-z]+[0-9]+)/$1,$2/;
-		    debug("no port");
-                    ($dest, $in_if) = split(',', $second_half);
-		}
-
-            } elsif ($second_half =~ /out/) {
-
-                $second_half =~ s/^\ (\d+\.\d+\.\d+\.\d+)(?:\/\d+)?\ (?:\d+\ )?out\ xmit\ ([a-z]+[0-9]+)/$1,$2,$3/;
-                ($dest, $out_if) = split(',', $second_half);
-
-            } else {
-
-                if ($second_half =~ s/^\ (\d+\.\d+\.\d+\.\d+)(?:\/\d+)?\ dst-port\ (\d+).*/$1,$2/) {
-		    ($dest, $dst_port) = split(',', $second_half);
-		} else {
-		    $second_half =~ s/^\ (\d+\.\d+\.\d+\.\d+)(?:\/\d+)?.*/$1/;
-                    $dest = $second_half;
-		}
-	    }
+	    $src_str =~ s/(\d+\.\d+\.\d+\.\d+(?:\/\d+)?|any)/$1/;
+	    $src = $src_str;
 	}
 
-	debug("src: $src, dest: $dest, proto: $proto, policy: $policy");
+	if ($dst_str =~ s/(\d+\.\d+\.\d+\.\d+(?:\/\d+)?|any)\ dst-port\ (\d+)/$1,$2/) {
+	    ($dst, $dst_port) = split(',', $dst_str);
+	} else {
+	    $dst_str =~ s/(\d+\.\d+\.\d+\.\d+(?:\/\d+)?|any)/$1/;
+	    $dst = $dst_str;
+	}
+
+	if ($iface_str =~ s/in\ recv\ ([a-z]+[0-9]+)/$1/) {
+	    $in_if = $iface_str;
+	} elsif ($iface_str =~ s/out\ xmit\ ([a-z]+[0-9]+)/$1/) {
+	    $out_if = $iface_str;
+	}
+
+	debug("src: $src, dst: $dst, proto: $proto, policy: $policy");
 	debug("src_port: $src_port, dst_port: $dst_port, in_if: $in_if, out_if: $out_if");
-
-	unless ($src_port =~ /\d+/) {
-	    $src_port = undef;
-	}
-	unless ($dst_port =~ /\d+/) {
-	    $dst_port = undef;
-	}
 
 	if ($proto eq 'ip') { $proto = 'all';}
 	debug("proto is $proto");
 
 	if ($src eq 'any') { $src = '0.0.0.0/0';}
-	if ($dest eq 'any') { $dest = '0.0.0.0/0';}
+	if ($dst eq 'any') { $dst = '0.0.0.0/0';}
 
 	my $new_rule_object =
 	  Funknet::Config::FirewallRule->new(
@@ -187,7 +139,7 @@ sub local_firewall_rules {
 					source_address       => $src,
 					source_port          => $src_port,
 
-					destination_address  => $dest,
+					destination_address  => $dst,
 					destination_port     => $dst_port,
 
 					proto                => $proto,
