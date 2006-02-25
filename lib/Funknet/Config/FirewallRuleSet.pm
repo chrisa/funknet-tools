@@ -172,7 +172,7 @@ sub diff {
     }    
 
     for my $chain (qw/ filter nat /) {
-         push @cmds, $whois->chain($chain)->diff($host->chain($chain));
+        push @cmds, $whois->chain($chain)->diff($host->chain($chain));
     }
 
     # this is right for IPTables and IPFW; when (if) we do Cisco

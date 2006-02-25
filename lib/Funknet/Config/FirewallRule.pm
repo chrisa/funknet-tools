@@ -115,8 +115,8 @@ sub new {
    
     # rebless to the actual firewall type
 
-    debug("firewall_type in FirewallRule");
-    debug("$l->{firewall_type}");
+    debug("firewall_type in FirewallRule is $l->{firewall_type}");
+
     $l->{firewall_type} eq 'iptables' and
 	bless $self, 'Funknet::Config::FirewallRule::IPTables';
     $l->{firewall_type} eq 'ipfw' and

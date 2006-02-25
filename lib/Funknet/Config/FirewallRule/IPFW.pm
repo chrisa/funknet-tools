@@ -65,7 +65,7 @@ sub delete {
 
     my $whois_source = Funknet::ConfigFile::Tools->whois_source || 'FUNKNET';
 
-    return ("ipfw del $self->{_rule_num}");
+    return ("ipfw delete $self->{_rule_num}");
 }
 
 sub create {
@@ -73,18 +73,27 @@ sub create {
     my ($self, $rule_num) = @_;
     my $rule;
 
-    if (defined $self->{_source_port} && defined $self->{_destination_port}) {
-	$rule = "ipfw add $rule_num allow $self->{_proto} from $self->{_source_address} $self->{_source_port} " .
-		"to $self->{_destination_address} $self->{_destination_port}";
-    } else {
-	$rule = "ipfw add $rule_num allow $self->{_proto} from $self->{_source_address} to $self->{_destination_address}";
+    my $src_str;
+    my $dst_str;
+
+    $src_str = "ipfw add $rule_num allow $self->{_proto} from $self->{_source_address} ";
+    if (defined $self->{_source_port}) {
+	$src_str .= "$self->{_source_port} ";
     }
 
+    $dst_str = "to $self->{_destination_address} ";
+    if (defined $self->{_destination_port}) {
+	$dst_str .= "$self->{_destination_port}";
+    }
+
+    $rule = $src_str . $dst_str;
+
     if (defined $self->{_in_interface}) {
-	$rule = $rule . "\ in recv $self->{_in_interface}";
+	$rule .= "\ in recv $self->{_in_interface}";
     } elsif (defined $self->{_out_interface}) {
-	$rule = $rule . "\ out xmit $self->{_out_interface}";
+	$rule .= "\ out xmit $self->{_out_interface}";
     }
     return($rule);
 }
+
 1;

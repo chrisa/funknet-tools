@@ -36,6 +36,8 @@ use base qw/ Funknet::Config::FirewallChain /;
 use Funknet::Config;
 use Funknet::Debug;
 
+use Data::Dumper;
+
 =head1 NAME
 
 Funknet::Config::FirewallChain::IPFW
@@ -67,37 +69,22 @@ sub diff {
     debug("arrived in FirewallChain::IPFW.pm diff");
     my (@cmds);
  
-    debug("whois is");
-    print Dumper $whois;
-    debug("host is");
-    print Dumper $host;
-
-    my $whois_source = Funknet::ConfigFile::Tools->whois_source;
-
-    # first check we have the objects the right way around.
-    unless ($whois->source eq 'whois' && $host->source eq 'host') {
-        $whois->warn("diff passed objects backwards");
-        return undef;
-    }
- 
     # create hashes
  
     my ($whois_fwall, $host_fwall, $tmp_fwall, $new_fwall);
     my @rules;
  
-    for my $fwall ($whois->firewall) {
+    for my $fwall ($whois->rules) {
+
         $whois_fwall->{$fwall->as_hashkey} = 1;
     }
-    for my $fwall ($host->firewall) {
+    for my $fwall ($host->rules) {
         $host_fwall->{$fwall->as_hashkey} = 1;
     }
  
     $tmp_fwall = $host->copy;
  
-    debug("tmp_fwall is");
-    print Dumper $tmp_fwall;
- 
-    for my $h ($host->firewall) {
+    for my $h ($host->rules) {
         unless ($whois_fwall->{$h->as_hashkey}) {
             push @cmds, $h->delete;
             $new_fwall = $tmp_fwall->remove($h);
@@ -105,7 +92,7 @@ sub diff {
         }
     }
  
-    for my $w ($whois->firewall) {
+    for my $w ($whois->rules) {
         unless ($host_fwall->{$w->as_hashkey}) {
             my $new_rule_num;
             ($new_fwall, $new_rule_num) = $tmp_fwall->add($w);
@@ -114,11 +101,63 @@ sub diff {
         }
     }
  
-    my $cmdset = Funknet::Config::CommandSet->new( cmds => \@cmds,
-                                                   target => 'host',
-                                                 );
- 
-    return Funknet::Config::ConfigSet->new( cmds => [ $cmdset ] );
+    return @cmds;
+}
+
+sub copy {
+    my ($self) = @_;
+    debug("arrived in FirewallChain::IPFW.pm copy");
+    my $class = ref $self;
+    my $copy = bless {}, $class;
+    %$copy = %$self;
+
+    return($copy);
+}
+
+sub remove {
+    my ($self, $rule) = @_;
+
+    my @rules;
+
+    foreach my $local_rule ($self->rules) {
+        unless($rule->as_hashkey eq $local_rule->as_hashkey) {
+            push (@rules, $local_rule);
+        }
+    }
+
+    my $new_fwall = Funknet::Config::FirewallChain->new(rules	=> \@rules,
+                                                        source	=> 'host');
+    return($new_fwall);
+}
+
+sub add {
+    my ($self, $rule) = @_;
+
+    my $l = Funknet::ConfigFile::Tools->new;
+    my @rules = $self->rules;
+    my $free;
+    my $next_rule_num;
+
+    for(my $c=$l->min_ipfw_rule ; $c<=$l->max_ipfw_rule ; $c++) {
+        $free = 'yes';
+
+        foreach my $local_rule (@rules) {
+            my $lerc = $local_rule->rule_num;
+            if($local_rule->rule_num == $c) { $free = 'no' ; last };
+        }
+        if($free eq 'yes') {$next_rule_num = $c ; last}
+    }
+    if($free eq 'no') {
+        die("ran out of free firewall rules");
+    } else {
+	debug("adding rule as number $next_rule_num");
+        $rule->rule_num($next_rule_num);
+        push (@rules, $rule);
+    }
+        
+    my $new_chain = Funknet::Config::FirewallChain->new(rules => \@rules,
+						source => 'host');
+    return($new_chain, $next_rule_num);
 }
 
 1;

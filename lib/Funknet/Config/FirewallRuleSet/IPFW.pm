@@ -73,27 +73,6 @@ firewall config to that in the whois
 
 =cut
 
-sub new {
-    my ($class, %args) = @_;
-    debug("arrived in IPFW.pm new");
-    my $self = bless {}, $class;
-
-    $self->{_source} = $args{source};
-    $self->{_firewall} = $args{firewall};
-
-    return($self);
-}
-
-sub copy {
-    my ($self) = @_;
-    debug("arrived in IPFW.pm copy");
-    my $class = ref $self;
-    my $copy = bless {}, $class;
-    %$copy = %$self;
-
-    return($copy);
-}
-
 sub local_firewall_rules {
 
     my $l = Funknet::ConfigFile::Tools->local;
@@ -114,39 +93,93 @@ sub local_firewall_rules {
 	$rule_num =~ s/^(\d+).*/$1/;
 
 	next unless(($rule_num <= $l->{max_ipfw_rule}) && ($rule_num >= $l->{min_ipfw_rule}));	
+	debug("rule number $rule_num in range");
+	debug("rule is $rule");
 
 	($first_half, $second_half) = split ('to', $rule);
-	$dst_port = $second_half;
 
 	if ($first_half =~ s/^\d+\s(\S+)\s(\S+)\sfrom\s(\d+\.\d+\.\d+\.\d+)(?:\/\d+)?\ (\d+).*/$1,$2,$3,$4/) {  
 	    ($policy, $proto, $src, $src_port) = split(',',$first_half);
+	} elsif ($first_half =~ s/^\d+\s(\S+)\s(\S+)\sfrom\s(any).*/$1,$2,$3/) {
+	    ($policy, $proto, $src) = split(',',$first_half);
 	} else {
 	    $first_half =~ s/^\d+\s(\S+)\s(\S+)\sfrom\s(\d+\.\d+\.\d+\.\d+)(?:\/\d+)?.*/$1,$2,$3/;
 	    ($policy, $proto, $src) = split(',',$first_half);
 	    $src_port = undef;
 	}
 
-	unless ($dst_port =~ s/^\ \d+\.\d+\.\d+\.\d+(?:\/\d+)?\ (\d+).*/$1/) {
-	    $dst_port = undef;
-	}
+	if ($second_half =~ /any/) {
+	    if ($second_half =~ /in/) {
+                if ($second_half =~ s/^\ (any)\ (\d+) in\ recv\ ([a-z]+[0-9]+)/$1,$2,$3/) {
+	            ($dest, $dst_port, $in_if) = split(',', $second_half);
+		} else {
+		    $second_half =~ s/^\ (any)\ in\ recv\ ([a-z]+[0-9]+)/$1,$2/;
+		    $dst_port = '';
+		    ($dest, $in_if) = split(',', $second_half);
+		    debug("dest: $dest, in_if: $in_if");
+		}
 
-	if ($second_half =~ /in/) {
-            $second_half =~ s/^\ (\d+\.\d+\.\d+\.\d+)(?:\/\d+)?\ (?:\d+\ )?in\ recv\ ([a-z]+[0-9]+)/$1,$2,$3/;
-	    ($dest, $in_if) = split(',', $second_half);
+	    } elsif ($second_half =~ /out/) {
+                if ($second_half =~ s/^\ (any)\ (\d+) out\ xmit\ ([a-z]+[0-9]+)/$1,$2,$3/) {
+	            ($dest, $dst_port, $out_if) = split(',', $second_half);
+		} else {
+		    $second_half =~ s/^\ (any)\ out\ xmit\ ([a-z]+[0-9]+)/$1,$2/;
+		    $dst_port = '';
+		    ($dest, $out_if) = split(',', $second_half);
+		    debug("dest: $dest, out_if: $out_if");
+		}
 
-	} elsif ($second_half =~ /out/) {
+	    } else {
 
-            $second_half =~ s/^\ (\d+\.\d+\.\d+\.\d+)(?:\/\d+)?\ (?:\d+\ )?out\ xmit\ ([a-z]+[0-9]+)/$1,$2,$3/;
-            ($dest, $out_if) = split(',', $second_half);
-
+	        if ($second_half =~ s/^\ (any)\ (?:\d+\ )?.*/$1,$2/) {
+	            ($dest, $dst_port) = split(',', $second_half);
+	        } else {
+		    $dest = 'any';
+		}
+	    }
 	} else {
 
-	    $second_half =~ s/^\ (\d+\.\d+\.\d+\.\d+)(?:\/\d+)?.*/$1/;
-	    $dest = $second_half;
+            if ($second_half =~ /in/) {
+                if ($second_half =~ s/^\ (\d+\.\d+\.\d+\.\d+)\ dst-port\ (\d+)\ in\ recv\ ([a-z]+[0-9]+)/$1,$2,$3/) {
+		    debug("port");
+                    ($dest, $dst_port, $in_if) = split(',', $second_half);
+		} else {
+                    $second_half =~ s/^\ (\d+\.\d+\.\d+\.\d+)\ in\ recv\ ([a-z]+[0-9]+)/$1,$2/;
+		    debug("no port");
+                    ($dest, $in_if) = split(',', $second_half);
+		}
+
+            } elsif ($second_half =~ /out/) {
+
+                $second_half =~ s/^\ (\d+\.\d+\.\d+\.\d+)(?:\/\d+)?\ (?:\d+\ )?out\ xmit\ ([a-z]+[0-9]+)/$1,$2,$3/;
+                ($dest, $out_if) = split(',', $second_half);
+
+            } else {
+
+                if ($second_half =~ s/^\ (\d+\.\d+\.\d+\.\d+)(?:\/\d+)?\ dst-port\ (\d+).*/$1,$2/) {
+		    ($dest, $dst_port) = split(',', $second_half);
+		} else {
+		    $second_half =~ s/^\ (\d+\.\d+\.\d+\.\d+)(?:\/\d+)?.*/$1/;
+                    $dest = $second_half;
+		}
+	    }
+	}
+
+	debug("src: $src, dest: $dest, proto: $proto, policy: $policy");
+	debug("src_port: $src_port, dst_port: $dst_port, in_if: $in_if, out_if: $out_if");
+
+	unless ($src_port =~ /\d+/) {
+	    $src_port = undef;
+	}
+	unless ($dst_port =~ /\d+/) {
+	    $dst_port = undef;
 	}
 
 	if ($proto eq 'ip') { $proto = 'all';}
 	debug("proto is $proto");
+
+	if ($src eq 'any') { $src = '0.0.0.0/0';}
+	if ($dest eq 'any') { $dest = '0.0.0.0/0';}
 
 	my $new_rule_object =
 	  Funknet::Config::FirewallRule->new(
@@ -170,7 +203,7 @@ sub local_firewall_rules {
 							create	=> 'no',
 							);
 
-    warn ("creating empty nat chain as we are IPFW");
+    warn("creating empty nat chain as we are IPFW");
 
     my $empty_nat_chain =  Funknet::Config::FirewallChain->new(
 							type	=> 'nat',
@@ -213,23 +246,6 @@ sub add {
 
     return(Funknet::Config::FirewallRuleSet->new(firewall => \@rules,
 					source => 'host'), $next_rule_num);
-}
-
-sub remove {
-    my ($self, $rule) = @_;
-    debug("arrived in FirewallRuleSet::IPFW remove");
-
-    my @rules;
-
-    foreach my $local_rule ($self->firewall) {
-	unless($rule->as_hashkey eq $local_rule->as_hashkey) {
-	    push (@rules, $local_rule);
-	}
-    }
-
-    my $new_fwall = Funknet::Config::FirewallRuleSet->new(firewall => \@rules,
-							  source => 'host');
-    return($new_fwall);
 }
 
 sub config {

@@ -84,7 +84,6 @@ sub new
     }
 
     my $full_object_name = "Funknet::Config::FirewallChain::$subtype";
-    debug("my firewall type is $full_object_name");
 
     bless $self, $full_object_name;
 
