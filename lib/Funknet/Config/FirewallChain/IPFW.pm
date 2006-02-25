@@ -36,8 +36,6 @@ use base qw/ Funknet::Config::FirewallChain /;
 use Funknet::Config;
 use Funknet::Debug;
 
-use Data::Dumper;
-
 =head1 NAME
 
 Funknet::Config::FirewallChain::IPFW
