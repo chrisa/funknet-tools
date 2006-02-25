@@ -124,11 +124,10 @@ sub local_firewall_rules {
 	    $out_if = $iface_str;
 	}
 
+	if ($proto eq 'ip') { $proto = 'all';}
+
 	debug("src: $src, dst: $dst, proto: $proto, policy: $policy");
 	debug("src_port: $src_port, dst_port: $dst_port, in_if: $in_if, out_if: $out_if");
-
-	if ($proto eq 'ip') { $proto = 'all';}
-	debug("proto is $proto");
 
 	if ($src eq 'any') { $src = '0.0.0.0/0';}
 	if ($dst eq 'any') { $dst = '0.0.0.0/0';}
