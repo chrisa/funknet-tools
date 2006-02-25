@@ -75,6 +75,8 @@ sub encryption {
 	$config = $self->get_config();
     }
     
+    _validate_encryption_config($config);
+    
     return { ipsec			=> $config->{encr_ipsec},
 	     cipher1			=> $config->{encr_cipher1},
 	     hash1			=> $config->{encr_hash1},
@@ -117,25 +119,75 @@ sub keystash {
 sub _validate_local_config {
     my ($config) = @_;
 
-    is_valid_as($config->{local_as})		or die("Invalid local_as $config->{local_as}");
-    is_valid_os($config->{local_os})		or die("Invalid local_os $config->{local_os}");
-    is_ipv4($config->{local_host})		or die("Invalid local_host $config->{local_host}");
-    is_valid_router($config->{local_router})	or die("Invalid local_router $config->{local_router}");
-    is_ipv4($config->{local_endpoint})		or die("Invalid local_endpoint $config->{local_endpoint}");
+    is_valid_as($config->{local_as})
+    		or die("Invalid local_as $config->{local_as}");
+
+    if ((scalar @{$config->{local_os} }) > 1) {
+        foreach my $os (@{$config->{local_os}}) {
+		is_valid_os($os) or die "Invalid local_os $os";
+	}
+    } else {
+	is_valid_os($config->{local_os})
+   		or die("Invalid local_os $config->{local_os}");
+    }
+
+    is_ipv4($config->{local_host})
+    		or die("Invalid local_host $config->{local_host}");
+
+    is_valid_router($config->{local_router})
+    		or die("Invalid local_router $config->{local_router}");
+
+    is_ipv4($config->{local_endpoint})
+    		or die("Invalid local_endpoint $config->{local_endpoint}");
 
     if (defined ($config->{local_public_endpoint})) {
-	is_ipv4($config->{local_public_endpoint})	or die("Invalid local_public_endpoint $config->{local_public_endpoint}");
+	is_ipv4($config->{local_public_endpoint})
+		or die("Invalid local_public_endpoint 
+		$config->{local_public_endpoint}");
     }
 
     if (defined ($config->{firewall_type})) {
-	is_valid_firewall($config->{firewall_type}) or die("Invalid firewall_type $config->{firewall_type}");
+	is_valid_firewall($config->{firewall_type})
+		or die("Invalid firewall_type $config->{firewall_type}");
 
 	if ($config->{firewall_type} eq 'ipfw') {
-	    is_valid_ipfw_rule_num($config->{min_ipfw_rule})	or die("Invalid min_ipfw_rule");
-	    is_valid_ipfw_rule_num($config->{max_ipfw_rule})	or die("Invalid max_ipfw_rule");
+	    is_valid_ipfw_rule_num($config->{min_ipfw_rule})
+	    	or die("Invalid min_ipfw_rule");
+	    is_valid_ipfw_rule_num($config->{max_ipfw_rule})
+	    	or die("Invalid max_ipfw_rule");
 	    unless ($config->{max_ipfw_rule} > $config->{min_ipfw_rule}) {
 		die("min_ipfw_rule is greater than max_ipfw_rule");
 	    }
+	}
+    }
+}
+
+sub _validate_encryption_config {
+    my ($config) = @_;
+
+    unless (defined ($config->{ks_path})) {
+	die("encryption enabled, but ks_path not set");
+    }
+    
+    if (grep /openvpn/, @{$config->{local_os} }) {
+
+        unless (defined ($config->{encr_dir_openvpn})) {
+	    die("OpenVPN selected, but encr_dir_openvpn not set");
+	}
+
+	if ($config->{ks_path} eq $config->{encr_dir_openvpn}) {
+            die("encr_dir_openvpn and ks_path cannot be the same");
+	}
+    }
+
+    if (defined ($config->{local_ipsec})) {
+
+	unless (defined ($config->{encr_dir_ipsec})) {
+            die("local_ipsec is set, but encr_dir_ipsec is not");
+	}
+
+	if ($config->{ks_path} eq $config->{encr_dir_ipsec}) {
+            die("encr_dir_ipsec and ks_path cannot be the same");
 	}
     }
 }
