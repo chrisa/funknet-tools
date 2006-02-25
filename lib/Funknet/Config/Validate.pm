@@ -46,6 +46,7 @@ use vars qw/ @EXPORT_OK %EXPORT_TAGS /;
 		 is_valid_ipsec_keying is_valid_ipsec_cipher
 		 is_valid_ipsec_hash is_valid_ipsec_dhgroup
 		 is_valid_ipsec_ikemethod is_valid_ipsec_policy
+		 is_valid_ipfw_rule_num
 		 /;
 
 %EXPORT_TAGS = (
@@ -104,8 +105,20 @@ sub is_valid_ruletype {
 sub is_valid_firewall {
     my ($type) = @_;
 
-    if ($type eq 'iptables'  ||
+    if ($type eq 'iptables'	||
+	$type eq 'pf'		||
+	$type eq 'ipf'		||
 	$type eq 'ipfw') {
+	return 1;
+    } else {
+	return 0;
+    }
+}
+
+sub is_valid_ipfw_rule_num {
+    my ($num) = @_;
+
+    if ($num =~ /^\d+$/ and $num < 65535) {
 	return 1;
     } else {
 	return 0;

@@ -37,6 +37,9 @@ package Funknet::ConfigFile::Tools;
 use strict;
 
 use base qw/ Funknet::ConfigFile /;
+use Funknet::Config::Validate qw/ 	is_valid_as is_valid_os is_valid_router is_ipv4
+					is_valid_firewall is_valid_ipfw_rule_num
+				/;
 our $config;
 
 sub local {
@@ -47,6 +50,8 @@ sub local {
 	$config = $self->get_config();
     }
     
+    _validate_local_config($config);
+
     return { as              => $config->{local_as},
 	     os              => $config->{local_os},
 	     host            => $config->{local_host},
@@ -109,4 +114,30 @@ sub keystash {
 	   };
 }
     
+sub _validate_local_config {
+    my ($config) = @_;
+
+    is_valid_as($config->{local_as})		or die("Invalid local_as $config->{local_as}");
+    is_valid_os($config->{local_os})		or die("Invalid local_os $config->{local_os}");
+    is_ipv4($config->{local_host})		or die("Invalid local_host $config->{local_host}");
+    is_valid_router($config->{local_router})	or die("Invalid local_router $config->{local_router}");
+    is_ipv4($config->{local_endpoint})		or die("Invalid local_endpoint $config->{local_endpoint}");
+
+    if (defined ($config->{local_public_endpoint})) {
+	is_ipv4($config->{local_public_endpoint})	or die("Invalid local_public_endpoint $config->{local_public_endpoint}");
+    }
+
+    if (defined ($config->{firewall_type})) {
+	is_valid_firewall($config->{firewall_type}) or die("Invalid firewall_type $config->{firewall_type}");
+
+	if ($config->{firewall_type} eq 'ipfw') {
+	    is_valid_ipfw_rule_num($config->{min_ipfw_rule})	or die("Invalid min_ipfw_rule");
+	    is_valid_ipfw_rule_num($config->{max_ipfw_rule})	or die("Invalid max_ipfw_rule");
+	    unless ($config->{max_ipfw_rule} > $config->{min_ipfw_rule}) {
+		die("min_ipfw_rule is greater than max_ipfw_rule");
+	    }
+	}
+    }
+}
+
 1;
