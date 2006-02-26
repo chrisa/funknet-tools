@@ -79,7 +79,11 @@ encr_hash2   = sha1 md5
 encr_proto   = esp
 encr_dhgroup = 5
 
-# paths. these all need to exist already. 
+# paths. these will be created if possible (currently root:root 0755)
+# doesn't create parent dirs
+
+# where openvpn configs will be written. (often /etc/openvpn)
+openvpn_conf_dir = /etc/openvpn
 
 # paths to live dirs for ike daemon and 
 # ipsec policy tool e.g. (racoon+setkey)

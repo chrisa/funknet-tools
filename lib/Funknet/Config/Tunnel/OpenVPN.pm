@@ -77,8 +77,6 @@ the 'down' state.
 
 =cut
 
-use constant OPENVPN_CONF_DIR => '/etc/openvpn';
-
 sub config {
     my ($self) = @_;
 
@@ -93,12 +91,15 @@ sub host_tunnels {
     my ($class) = @_;
     my @local_tun;
     
-    opendir CONF, OPENVPN_CONF_DIR
-      or die "can't open ".(OPENVPN_CONF_DIR).": $!";
+    my $l = Funknet::ConfigFile::Tools->encryption;
+    my $openvpn_conf_dir = $l->{openvpn_conf_dir};
+
+    opendir CONF, $openvpn_conf_dir
+      or die "can't open ".($openvpn_conf_dir).": $!";
     for my $filename (readdir CONF) {
 
 	next unless $filename =~ /\.conf$/;
-	$filename = OPENVPN_CONF_DIR . '/' . $filename;
+	$filename = $openvpn_conf_dir . '/' . $filename;
 
 	debug("reading $filename");
 
@@ -171,8 +172,11 @@ sub new_from_ovpn_conf {
 sub delete {
     my ($self) = @_;
 
+    my $l = Funknet::ConfigFile::Tools->encryption;
+    my $openvpn_conf_dir = $l->{openvpn_conf_dir};
+
     # generate a filename for our config file 
-    $self->{_ovpn_file} = OPENVPN_CONF_DIR . '/' . $self->{_name} . '.conf';
+    $self->{_ovpn_file} = $openvpn_conf_dir . '/' . $self->{_name} . '.conf';
 
     # create a SystemFile object on that path
     my $ovpn_file = Funknet::Config::SystemFile->new( text  => undef,
@@ -186,6 +190,9 @@ sub delete {
 
 sub create {
     my ($self, $inter) = @_;
+
+    my $l = Funknet::ConfigFile::Tools->encryption;
+    my $openvpn_conf_dir = $l->{openvpn_conf_dir};
 
     # stash the if-index
     $self->{_ovpn_inter} = $inter;
@@ -207,7 +214,7 @@ sub create {
     $self->{_ovpn_pidfile} = '/var/run/openvpn.'.$self->{_name}.'.pid';
     
     # generate a filename for our config file (from the whois)
-    $self->{_ovpn_file} = '/etc/openvpn/' . $self->{_name} . '.conf';    
+    $self->{_ovpn_file} = $openvpn_conf_dir . '/' . $self->{_name} . '.conf';    
     
     # get our config text
     my $ovpn_conf = _gen_openvpn_conf($self);

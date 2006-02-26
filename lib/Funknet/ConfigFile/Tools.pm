@@ -37,9 +37,12 @@ package Funknet::ConfigFile::Tools;
 use strict;
 
 use base qw/ Funknet::ConfigFile /;
-use Funknet::Config::Validate qw/ 	is_valid_as is_valid_os is_valid_router is_ipv4
-					is_valid_firewall is_valid_ipfw_rule_num
+use Funknet::Debug;
+use Funknet::Config::Validate qw/ 	is_valid_as is_valid_os is_valid_router
+					is_ipv4 is_valid_firewall
+					is_valid_ipfw_rule_num
 				/;
+
 our $config;
 
 sub local {
@@ -86,6 +89,7 @@ sub encryption {
 	     dhgroup			=> $config->{encr_dhgroup},
 	     openvpn_encr_dir		=> $config->{encr_dir_openvpn},
 	     openvpn_encr_cacert	=> $config->{encr_cacert_openvpn},
+	     openvpn_conf_dir		=> $config->{openvpn_conf_dir},
 	     ipsec_encr_dir		=> $config->{encr_dir_ipsec},
 	     ipsec_encr_cacert		=> $config->{encr_cacert_ipsec},
 	     ikepath			=> $config->{encr_ikepath},
@@ -122,13 +126,8 @@ sub _validate_local_config {
     is_valid_as($config->{local_as})
     		or die("Invalid local_as $config->{local_as}");
 
-    if ((scalar @{$config->{local_os} }) > 1) {
-        foreach my $os (@{$config->{local_os}}) {
-		is_valid_os($os) or die "Invalid local_os $os";
-	}
-    } else {
-	is_valid_os($config->{local_os})
-   		or die("Invalid local_os $config->{local_os}");
+    foreach my $os (_local_os_types($config)) {
+	is_valid_os($os) or die "Invalid local_os $os";
     }
 
     is_ipv4($config->{local_host})
@@ -169,7 +168,11 @@ sub _validate_encryption_config {
 	die("encryption enabled, but ks_path not set");
     }
     
-    if (grep /openvpn/, @{$config->{local_os} }) {
+    if (grep /openvpn/, _local_os_types($config)) {
+
+        unless (defined ($config->{openvpn_conf_dir})) {
+	    die("OpenVPN selected, but openvpn_conf_dir not set");
+	}
 
         unless (defined ($config->{encr_dir_openvpn})) {
 	    die("OpenVPN selected, but encr_dir_openvpn not set");
@@ -190,6 +193,22 @@ sub _validate_encryption_config {
             die("encr_dir_ipsec and ks_path cannot be the same");
 	}
     }
+}
+
+sub _local_os_types {
+    my ($config) = @_;
+
+    my @types;
+
+    if ((ref($config->{local_os} )) eq 'ARRAY') {
+        foreach my $os (@{$config->{local_os}}) {
+		push (@types, $os);
+	}
+    } else {
+	push (@types, $config->{local_os});
+    }
+
+    return(@types);
 }
 
 1;
