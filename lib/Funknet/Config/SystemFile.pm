@@ -37,6 +37,7 @@ use Funknet::Config::Root;
 use Funknet::Config::Validate qw/ is_valid_filepath /;
 use Funknet::Debug;
 use File::Basename;
+use File::Path qw /mkpath/;
 
 =head1 NAME
 
@@ -130,17 +131,16 @@ sub write {
     debug("writing file $self->{_path}");
     
     my $parent_dir = dirname("$self->{_path}");
-    debug("parent dir is $parent_dir");
 
     if (opendir DIR, $parent_dir) {
         debug("Directory $parent_dir exists");
 	close(DIR);
     } else {
-        $self->warn("Attempting to create Directory $parent_dir");
-	if (mkdir ($parent_dir, oct('0755'))) {
-	    $self->warn("Succesfully created directory $parent_dir");
+        debug("Directory $parent_dir missing, attempting to create");
+	if (mkpath($parent_dir, 0, 0755)) {
+	    debug("Succesfully created directory $parent_dir");
 	} else {
-	    die("failed to create $parent_dir");
+	    die("Failed to create directory $parent_dir");
 	}
     }
 
