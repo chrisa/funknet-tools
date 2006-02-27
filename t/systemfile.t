@@ -59,9 +59,7 @@ is ($file->new_text, "bar\n", 'new contents OK');
 
 my $diff = $file->diff;
 
-is ($diff, "@@ -1 +1 @@
--foo
-+bar
+is ($diff, "files differ
 ", 'diff');
 
 $file->write;
@@ -101,16 +99,12 @@ is ($file2->new_text, "barney1\n", 'new contents OK');
 my $setdiff = $set->diff;
 is ($setdiff, "================================================================================
 etc/testsysfile1.txt:
-@@ -1 +1 @@
--fred
-+fred1
+files differ
 ================================================================================
 
 ================================================================================
 etc/testsysfile2.txt:
-@@ -1 +1 @@
--barney
-+barney1
+files differ
 ================================================================================
 
 ", 'set diff OK');
