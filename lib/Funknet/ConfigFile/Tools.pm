@@ -42,7 +42,6 @@ use Funknet::Config::Validate qw/ 	is_valid_as is_valid_os is_valid_router
 					is_ipv4 is_valid_firewall
 					is_valid_ipfw_rule_num
 				/;
-
 our $config;
 
 sub local {
@@ -126,39 +125,48 @@ sub validate_local_config {
 	$config = $self->get_config();
     }
 
-    is_valid_as($config->{local_as})
-    		or die("Invalid local_as $config->{local_as}");
-
-    foreach my $os (_local_os_types($config)) {
-	is_valid_os($os) or die "Invalid local_os $os";
+    unless (is_valid_as($config->{local_as})) {
+	$self->_exit_with_error("Invalid local_as $config->{local_as}");
     }
 
-    is_ipv4($config->{local_host})
-    		or die("Invalid local_host $config->{local_host}");
+    foreach my $os (_local_os_types($config)) {
+	unless (is_valid_os($os)) {
+	    $self->_exit_with_error("Invalid local_os $os");
+	}
+    }
 
-    is_valid_router($config->{local_router})
-    		or die("Invalid local_router $config->{local_router}");
+    unless (is_ipv4($config->{local_host})) {
+	$self->_exit_with_error("Invalid local_host $config->{local_host}");
+    }
 
-    is_ipv4($config->{local_endpoint})
-    		or die("Invalid local_endpoint $config->{local_endpoint}");
+    unless (is_valid_router($config->{local_router})) {
+	$self->_exit_with_error("Invalid local_router $config->{local_router}");
+    }
+
+    unless (is_ipv4($config->{local_endpoint})) {
+	$self->_exit_with_error("Invalid local_endpoint $config->{local_endpoint}");
+    }
 
     if (defined ($config->{local_public_endpoint})) {
-	is_ipv4($config->{local_public_endpoint})
-		or die("Invalid local_public_endpoint 
-		$config->{local_public_endpoint}");
+	unless (is_ipv4($config->{local_public_endpoint})) {
+	    $self->_exit_with_error("Invalid local_public_endpoint $config->{local_public_endpoint}");
+	}
     }
 
     if (defined ($config->{firewall_type})) {
-	is_valid_firewall($config->{firewall_type})
-		or die("Invalid firewall_type $config->{firewall_type}");
+	unless (is_valid_firewall($config->{firewall_type})) {
+	    $self->_exit_with_error("Invalid firewall_type $config->{firewall_type}");
+	}
 
 	if ($config->{firewall_type} eq 'ipfw') {
-	    is_valid_ipfw_rule_num($config->{min_ipfw_rule})
-	    	or die("Invalid min_ipfw_rule");
-	    is_valid_ipfw_rule_num($config->{max_ipfw_rule})
-	    	or die("Invalid max_ipfw_rule");
+	    unless (is_valid_ipfw_rule_num($config->{min_ipfw_rule})) {
+	    	$self->_exit_with_error("Invalid min_ipfw_rule");
+	    }
+	    unless (is_valid_ipfw_rule_num($config->{max_ipfw_rule})) {
+	    	$self->_exit_with_error("Invalid max_ipfw_rule");
+	    }
 	    unless ($config->{max_ipfw_rule} > $config->{min_ipfw_rule}) {
-		die("min_ipfw_rule is greater than max_ipfw_rule");
+		$self->_exit_with_error("min_ipfw_rule is greater than max_ipfw_rule");
 	    }
 	}
     }
@@ -212,6 +220,13 @@ sub _local_os_types {
     }
 
     return(@types);
+}
+
+sub _exit_with_error {
+    my ($self, $msg) = @_;
+
+    print STDERR "$msg in $self->{file}\n";
+    exit(1);
 }
 
 1;
