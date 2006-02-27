@@ -72,6 +72,7 @@ sub new {
 	    defined $args{www_pass} &&
 	    defined $args{www_host} &&
 	    defined $args{www_cert} &&
+	    defined $args{www_ca} &&
 	    defined $args{path} &&
 	    defined $args{whois_host} &&
 	    defined $args{whois_port} &&
@@ -84,6 +85,7 @@ sub new {
     $self->{_www_pass} = $args{www_pass};
     $self->{_www_host} = $args{www_host};
     $self->{_www_cert} = $args{www_cert};
+    $self->{_www_ca}   = $args{www_ca};
 
     $self->{_path} = $args{path};
 
@@ -125,6 +127,7 @@ sub get_key {
     my $res = $self->{_ua}->request($req);
 
     if ($res->code == 200) {
+	debug("succesfully grabbed key from server");
 	my $issuer  = $res->header("client-ssl-cert-issuer");
 	my $subject = $res->header("client-ssl-cert-subject");
 	
@@ -135,7 +138,7 @@ sub get_key {
 	      
 	      # write a local copy
 	      $self->_write_file('key',$cn,$key);
-	      
+
 	      return $key;
 	  } else {
 	      $self->warn("https subject/issuer mismatch");
