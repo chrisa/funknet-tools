@@ -57,7 +57,7 @@ sub initialise
     my ($self) = @_;
 
     if ($self->{_type} eq 'nat' ) {
-	warn("NAT is not supported with IPFW");
+	$self->warn("NAT is not supported with IPFW");
 	$self->{_rules} = [];
     }
 }

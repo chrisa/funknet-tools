@@ -154,13 +154,14 @@ sub local_firewall_rules {
 							create	=> 'no',
 							);
 
-    warn("creating empty nat chain as we are IPFW");
 
     my $empty_nat_chain =  Funknet::Config::FirewallChain->new(
 							type	=> 'nat',
 							rules	=> [],
 							create	=> 'no',
 							);
+    # TODO I'm sure this isn't right, but at least it shows up as WARNING: now
+    $empty_nat_chain->warn("creating empty nat chain as we are IPFW");
 
     return Funknet::Config::FirewallRuleSet->new( chains  => {
 								filter => $filter_chain,
