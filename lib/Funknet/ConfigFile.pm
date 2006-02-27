@@ -176,6 +176,8 @@ sub new {
 	$Funknet::Config::DEBUG = 1;
     }
 
+    $self->validate_local_config();
+
     debug("Done parsing config file");
     return $self;
 }
@@ -251,6 +253,10 @@ sub DESTROY {};
 
 sub get_config {
     return $config;
+}
+
+sub validate_local_config {
+    # virtual
 }
 
 1;

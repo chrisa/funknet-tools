@@ -53,8 +53,6 @@ sub local {
 	$config = $self->get_config();
     }
     
-    _validate_local_config($config);
-
     return { as              => $config->{local_as},
 	     os              => $config->{local_os},
 	     host            => $config->{local_host},
@@ -120,8 +118,13 @@ sub keystash {
 	   };
 }
     
-sub _validate_local_config {
-    my ($config) = @_;
+sub validate_local_config {
+    my ($self) = @_;
+    if (ref $self) {
+	$config = $self->{config};
+    } else {
+	$config = $self->get_config();
+    }
 
     is_valid_as($config->{local_as})
     		or die("Invalid local_as $config->{local_as}");
