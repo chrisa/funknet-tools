@@ -218,35 +218,23 @@ sub _check_file {
     }
 }
 
-
 sub _write_file {
     my ($self, $type, $name, $data) = @_;
-    
-    unless ( -d $self->{_path} ) {
-	$self->warn("creating directory $self->{_path}");
-	system ("mkdir -p $self->{_path}");
-    }
 
     my $dir = $self->{_path} . '/' . $type . '/';
-    unless ( -d $dir ) {
-	$self->warn("creating directory $dir...");
-	mkdir $dir;
-    }
-
     my $path = $dir . $name;
+
     if ( -f $path ) {
 	return undef;
     }
-    
-    unless (open OUT, ">$path") {
-	warn "couldn't open $path for writing: $!";
-	return undef;
-    }
-    
-    print OUT $data;
-    close OUT;
-}
 
+    my $sys_file = Funknet::Config::SystemFile->new( path	=> $path,
+    						     mode	=> '0600',
+						     user	=> 'root',
+						     group	=> 'root',
+						     text	=> $data,);
+    $sys_file->write();
+}
 
 =head2 _check_file 
 
