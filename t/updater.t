@@ -31,7 +31,7 @@ for my $file (@testfiles) {
     close TESTFILE;
     
 
-    open UPDATER, "|/usr/bin/perl -Ilib bin/whois-update -t -f t/updater-tests/funknet_whois.conf"
+    open UPDATER, "|/usr/bin/perl -Ilib bin/whois-update -f t/updater-tests/funknet_whois.conf > /dev/null"
       or die "couldn't start whois-update: $!";
     
     print UPDATER $filetext;
