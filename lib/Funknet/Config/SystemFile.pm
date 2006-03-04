@@ -162,11 +162,13 @@ sub write {
 	}
 	print OUT $self->{_text};
 	close OUT;
-    
-        my (undef, undef, $uid, $pgid) = getpwnam($self->{_user});
-        my $gid = getgrnam($self->{_group}) || $pgid;
-        if (defined $uid && $gid) {
-             chown $uid, $gid, $self->{_path};
+
+        if (defined $self->{_user} && defined $self->{_group}) {
+             my (undef, undef, $uid, $pgid) = getpwnam($self->{_user});
+             my $gid = getgrnam($self->{_group}) || $pgid;
+             if (defined $uid && $gid) {
+                  chown $uid, $gid, $self->{_path};
+             }
         }
         if (defined $self->{_mode}) {
              chmod oct($self->{_mode}), $self->{_path};

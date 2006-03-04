@@ -92,13 +92,12 @@ sub whois_init {
     my ($keyfile, $certfile) = $self->get_keycert($param);
     
     # amend key and cert filenames to include tunnel name.
-    my $tun  = $tun->name();
-
-    my $path = $keyfile->path();
-    $keyfile->path("$path-$tun");
-
-    my $path = $certfile->path();
-    $certfile->path("$path-$tun");
+    my $tun_name  = $tun->name();
+    my $path;
+    $path = $keyfile->path();
+    $keyfile->path("$path-$tun_name");
+    $path = $certfile->path();
+    $certfile->path("$path-$tun_name");
 
     # fire object back through init for checking 
     return $self->init(
