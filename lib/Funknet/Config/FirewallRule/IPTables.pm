@@ -102,7 +102,8 @@ sub _src {
     
     my $src_str = " ";
     if (defined $self->{_source_address} &&
-	$self->{_source_address} ne '0.0.0.0') {
+	$self->{_source_address} ne '0.0.0.0' &&
+        $self->{_source_address} ne '0.0.0.0/0') {
 	$src_str .= "-s $self->{_source_address} ";
     }
     return $src_str;
@@ -113,7 +114,8 @@ sub _dst {
     
     my $dst_str = " ";
     if (defined $self->{_destination_address} && 
-	$self->{_destination_address} ne '0.0.0.0') {
+	$self->{_destination_address} ne '0.0.0.0' &&
+	$self->{_destination_address} ne '0.0.0.0/0') {
 	$dst_str .= "-d $self->{_destination_address} ";
     }
     return $dst_str;
