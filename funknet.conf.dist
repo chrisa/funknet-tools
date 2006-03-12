@@ -23,6 +23,7 @@ local_os = bsd, openvpn
 whois_host = whois.funknet.org
 whois_port = 4343
 whois_source = FUNKNET
+whois_cache = /etc/funknet/whois_cache
 
 # can be ipfw, iptables, ipf, pf
 firewall_type = iptables
