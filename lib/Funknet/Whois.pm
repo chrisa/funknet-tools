@@ -96,7 +96,10 @@ sub check_auth {
     my ($object, $keyid) = @_;
     my $auth_ok;
 
-    my $w = Funknet::Whois::Client->new( 'whois.funknet.org' );
+    my $w = Funknet::Whois::Client->new( 'whois.funknet.org', 
+                                         Source => 'FUNKNET',
+                                         Port   => 4343,
+                                       );
     $w->type('mntner');
 
   AUTH:

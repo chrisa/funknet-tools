@@ -112,23 +112,12 @@ local_os flag passed to the constructor.
 sub new {
     my ($class, %args) = @_;
     my $self = bless {}, $class;
-    debug("Creating a Funknet::Whois::Client object");
-    my $host = Funknet::ConfigFile::Tools->whois_host || 'whois.funknet.org';
-    my $port = Funknet::ConfigFile::Tools->whois_port || 43;
-    $self->{_fwc} = Funknet::Whois::Client->new($host, 
-						Timeout => 10, 
-						Port    => $port);
-    unless (defined $self->{_fwc}) {
-	die "couldn't get a Funknet::Whois::Client object";
-    }
-    $self->{_fwc}->source(Funknet::ConfigFile::Tools->whois_source || 'FUNKNET');
-    debug("Done creating a Funknet::Whois::Client object");
     return $self;
 }
 
 sub my_tunnels {
     my ($self) = @_;
-    my $w = $self->{_fwc};
+    my $w = Funknet::Config->whoisclient();
     my $l = Funknet::ConfigFile::Tools->local;
     $w->type('aut-num');
     my $as = $w->query($l->{as});
@@ -146,7 +135,7 @@ sub my_tunnels {
 
 sub tunnels {
     my ($self) = @_;
-    my $w = $self->{_fwc};
+    my $w = Funknet::Config->whoisclient();
     my $l = Funknet::ConfigFile::Tools->local;
     $w->type('aut-num');
     my $as = $w->query($l->{as});
@@ -157,7 +146,7 @@ sub tunnels {
 	$self->warn("aut-num not found for $l->{as}");
 	return undef;
     }
-    
+
     my @local_tun;
   TUNNEL: foreach my $tun_name ($as->tun) {
 	$w->type('tunnel');
@@ -223,7 +212,7 @@ sub firewall {
     my ($self, $tun_set, $enc_set) = @_;
     debug("Creating Firewall config from Whois data");
 
-    my $w = $self->{_fwc};
+    my $w = Funknet::Config->whoisclient();
     my $l = Funknet::ConfigFile::Tools->local;
     $w->type('aut-num');
     my $as = $w->query($l->{as});
@@ -265,7 +254,7 @@ sub firewall {
 	
 sub sessions {
     my ($self) = @_;
-    my $w = $self->{_fwc};
+    my $w = Funknet::Config->whoisclient();
     my $l = Funknet::ConfigFile::Tools->local;
     
     $w->type('route');
@@ -304,7 +293,7 @@ sub sessions {
 				       );
 
   SESSION: for my $tun_name ($as->tun) {
-	
+
 	$w->type('tunnel');
 	my $tun = $w->query($tun_name);
 
@@ -360,7 +349,7 @@ sub sessions {
 
 sub encryption {
     my ($self, $tun_set) = @_;
-    my $w = $self->{_fwc};
+    my $w = Funknet::Config->whoisclient();
     $w->type('tunnel');
     my @local_enc;
 

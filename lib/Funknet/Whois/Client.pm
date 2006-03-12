@@ -32,10 +32,9 @@
 package Funknet::Whois::Client;
 use strict;
 use IO::Socket::INET;
-use Data::Dumper;
+use Funknet::Debug;
 use Funknet::Whois::Object;
-
-our $cache;
+use Funknet::Whois::ObjectFile;
 
 =head1 NAME
 
@@ -45,7 +44,7 @@ Funknet::Whois::Client
 
 A library for doing whois lookups. Similar interface to
 Net::Whois::RIPE. Caches found objects for the lifetime of the client
-object. 
+object.
 
 =head1 SYNOPSIS
 
@@ -113,17 +112,48 @@ sub new {
     $self->{_host}    = $host;
     $self->{_port}    = $args{Port}    || 43;
     $self->{_timeout} = $args{Timeout} || 10;
+    $self->{_source}  = $args{Source}  || 'FUNKNET';
+    $self->{_file}    = $args{File}    || '';
 
-    $self->{_cache} = {};
+    $self->_load_cache();
     return $self;
 }
 
-sub source {
-    my ($self, $source) = @_;
-    if (defined $source) {
-	$self->{_source} = $source;
+sub _load_cache {
+    my ($self) = @_;
+    my $object_file = Funknet::Whois::ObjectFile->new( filename => $self->{_file},
+                                                       source   => $self->{_source},
+                                                     );
+    return unless defined $object_file;
+
+    my $num = $object_file->load();
+    for my $object ($object_file->objects()) {
+
+        # store the object under its name
+        $self->{_cache}->{$object->object_type}->{$object->object_name} = $object;
+        
+        # index on origin for route object inverses
+        if ($object->object_type eq 'route') {            
+            push @{ $self->{_index}->{origin}->{$object->origin} }, $object;
+        }
+        
+        # index nic-handle for persons
+        if ($object->object_type eq 'person') {
+            $self->{_objects}->{person}->{$object->nic_hdl} = $object;
+        }
+        
+        # track types for wildcard-type search.
+        $self->{_types}->{$object->object_type}++;
     }
-    return $self->{_source};
+}
+
+sub _save_cache {
+    my ($self) = @_;
+    my $object_file = Funknet::Whois::ObjectFile->new( filename => $self->{_file},
+                                                       source   => $self->{_source},
+                                                     );
+    return unless defined $object_file;
+    $object_file->save($self->{_cache});
 }
 
 sub type {
@@ -136,23 +166,27 @@ sub type {
    
 sub query {
     my ($self, $query) = @_;
+    debug("query $query, $self->{_inverse}");
 
     my $query_string;
     if ($self->{_inverse}) {
-	if (defined $cache->{$self->{_type}}->{$self->{_inverse}}->{$query}) {
-	    my @objects = @{ $cache->{$self->{_type}}->{$self->{_inverse}}->{$query} };
+	if (defined $self->{_index}->{$self->{_inverse}}->{$query}) {
+	    my @objects = @{ $self->{_index}->{$self->{_inverse}}->{$query} };
+            $self->{_inverse} = '';
 	    return wantarray ? @objects : $objects[0];
 	} else {
 	    $query_string = "-t $self->{_type} -i $self->{_inverse} $query";
 	}
     } else {
-	if (defined $cache->{$self->{_type}}->{$query}) {
-	    my @objects = @{ $cache->{$self->{_type}}->{$query} };
-	    return wantarray ? @objects : $objects[0];
+	if (defined $self->{_cache}->{$self->{_type}}->{$query}) {
+	    my $object = $self->{_cache}->{$self->{_type}}->{$query};
+            return $object;
 	} else {
 	    $query_string = "-t $self->{_type} $query";
 	}
     }
+
+    debug("cache miss for $query, $self->{_inverse}");
 
     unless ($self->_connect()) {
         die "no connection";
@@ -161,12 +195,33 @@ sub query {
     print $s "$query_string\n";
     
     my @objects = $self->_parse_result();
+    return unless scalar @objects;
 
     if ($self->{_inverse}) {
-	$cache->{$self->{_type}}->{$self->{_inverse}}->{$query} = [ @objects ];
+	$self->{_index}->{$self->{_type}}->{$self->{_inverse}}->{$query} = [ @objects ];
 	$self->{_inverse} = '';
+
+        # stash these objects under their type and name too, to get them in the cache. 
+        for my $object (@objects) {
+            $self->{_cache}->{$object->object_type}->{$object->object_name} = $object;
+        }
     } else {
-	$cache->{$self->{_type}}->{$query} = [ @objects ];
+	$self->{_cache}->{$self->{_type}}->{$query} = $objects[0];
+    }
+
+    # retrieve the mntners and persons for any retrieved objects. 
+    for my $object (@objects) {
+        next if ($object->object_type eq 'mntner' || $object->object_type eq 'person');
+
+        if (defined $object->mnt_by) {
+            $self->query($object->mnt_by);
+        }
+        if (defined $object->admin_c) {
+            $self->query($object->admin_c);
+        }
+        if (defined $object->tech_c) {
+            $self->query($object->tech_c);
+        }
     }
 
     return wantarray ? @objects : $objects[0];

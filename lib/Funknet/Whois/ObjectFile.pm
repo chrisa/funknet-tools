@@ -43,6 +43,7 @@ package Funknet::Whois::ObjectFile;
 use strict;
 use FileHandle;
 use Fcntl qw/ :DEFAULT :flock :seek /;
+use Funknet::Debug;
 use Funknet::Whois::Object;
 
 sub new {
@@ -61,8 +62,10 @@ sub load {
     my ($self) = @_;
     my $fh = $self->{_fh};
 
-    $fh->open($self->{_filename})
-      or die "can't open $self->{_filename}: $!";
+    unless ($fh->open($self->{_filename})) {
+        debug("no file $self->{_filename}");
+        return;
+    }
 
     my $objects_text;
     while (my $line = <$fh>) {
@@ -86,7 +89,10 @@ sub load {
 
 sub objects {
     my ($self) = @_;
-    return @{$self->{_objects}};
+    if (defined $self->{_objects}) {
+        return @{$self->{_objects}};
+    }
+    return;
 }
 
 sub object_dump {
@@ -104,13 +110,27 @@ sub object_dump {
     
 sub save {
     my ($self, $objects) = @_;
-    my $fh = $self->{_fh};
-
-    unless ($fh->open($self->{_filename}, O_RDWR|O_TRUNC)) {
-        warn "couldn't open $self->{_objfile} for read/write: $!";
-        return undef;
-    }
     
+    unless (scalar keys %$objects) {
+        debug("no objects, not saving");
+        return;
+    }
+
+    my $fh = $self->{_fh};
+    
+    if (-f $self->{_filename}) {
+        unless ($fh->open($self->{_filename}, O_RDWR|O_TRUNC)) {
+            warn "couldn't open $self->{_objfile} for read/write: $!";
+            return undef;
+        }
+    }
+    else {
+        unless ($fh->open($self->{_filename}, O_RDWR|O_CREAT)) {
+            warn "couldn't create $self->{_objfile} for read/write: $!";
+            return undef;
+        }
+    }
+
     unless (flock $fh, LOCK_EX|LOCK_NB) {
 	warn "couldn't lock $self->{_objfile}: $!";
 	return undef;

@@ -176,9 +176,9 @@ sub get_cert {
     # give up and retrieve the cert from the server.
     debug("trying to get cert from server");
     my $fwc = Funknet::Whois::Client->new($self->{_whois_host}, 
+                                          Source  => $self->{_whois_source},
 					  Port    => $self->{_whois_port},
 					  Timeout => 10);
-    $fwc->source($self->{_whois_source});
     $fwc->type('key-cert');
     my $cert = $fwc->query($name);
 

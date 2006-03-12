@@ -77,6 +77,7 @@ use vars qw/ $VERSION /;
 $VERSION = 0.9;
 
 my (@warnings, @errors);
+my $fwc;
 
 sub new {
     my ($class,%args) = @_;
@@ -85,9 +86,43 @@ sub new {
     $self->{_warn} = [];
     $self->{_config} = Funknet::ConfigFile::Tools->new( $args{configfile}, $args{interactive} )
 	or die "Couldn't load config file";
+
+    unless (defined $fwc) {
+        debug("Creating a Funknet::Whois::Client object");
+        my $host   = Funknet::ConfigFile::Tools->whois_host   || 'whois.funknet.org';
+        my $port   = Funknet::ConfigFile::Tools->whois_port   || 43;
+        my $file   = Funknet::ConfigFile::Tools->whois_cache  || '';
+        my $source = Funknet::ConfigFile::Tools->whois_source || 'FUNKNET';
+
+        $self->{_fwc} = Funknet::Whois::Client->new($host, 
+                                                    File    => $file,
+                                                    Source  => $source,
+                                                    Timeout => 10, 
+                                                    Port    => $port);
+        unless (defined $self->{_fwc}) {
+            die "couldn't get a Funknet::Whois::Client object";
+        }
+        debug("Done creating a Funknet::Whois::Client object");
+        $fwc = $self->{_fwc};
+    }
+
     return $self;
 }
 
+sub DESTROY {
+    my ($self) = @_;
+
+    # This DESTROY should apply to Funknet::Config only, 
+    # not any derived classes.
+    return unless ref $self eq __PACKAGE__;
+
+    $fwc->_save_cache();
+}
+
+sub whoisclient {
+    my ($class) = @_;
+    return $fwc;
+}
 
 sub warn {
     my ($self, $errstr) = @_;
