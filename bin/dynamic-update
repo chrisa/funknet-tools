@@ -1,5 +1,4 @@
-#!/usr/pkg/bin/perl 
-
+#!/usr/bin/perl 
 #
 # Copyright (c) 2003
 #       The funknet.org Group.
@@ -88,6 +87,7 @@ my @mail_text;
 
 my $hostname = qx[/bin/hostname];
 
+my $config = Funknet::Config->new( configfile => $opt{f} );
 my $whois = Funknet::Config::Whois->new;
 unless (defined $whois)
 {
