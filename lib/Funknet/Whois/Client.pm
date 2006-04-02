@@ -189,7 +189,7 @@ sub query {
     debug("cache miss for $query, $self->{_inverse}");
 
     unless ($self->_connect()) {
-        die "no connection";
+        die "no connection to $self->{_host}:$self->{_port}";
     }
     my $s = $self->{_socket};
     print $s "$query_string\n";
@@ -214,12 +214,15 @@ sub query {
         next if ($object->object_type eq 'mntner' || $object->object_type eq 'person');
 
         if (defined $object->mnt_by) {
+            $self->type('mntner');
             $self->query($object->mnt_by);
         }
         if (defined $object->admin_c) {
+            $self->type('person');
             $self->query($object->admin_c);
         }
         if (defined $object->tech_c) {
+            $self->type('person');
             $self->query($object->tech_c);
         }
     }
