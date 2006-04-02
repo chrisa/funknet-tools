@@ -41,9 +41,9 @@
 use strict;
 use Mail::GnuPG;
 use MIME::Entity;
+use Getopt::Std;
 use Net::Interface;
 use Socket;
-use Getopt::Std;
 
 use lib './lib';
 use Funknet::Config;
@@ -60,28 +60,47 @@ unless ($opt{f} && $opt{i}) {
 }
 
 my $config = Funknet::ConfigFile->new( $opt{f} );
-my $nic = new Net::Interface($opt{i}) or die "whoopsy creating interface object";
 
-my $addr= $nic->address;
-my $ip_info = inet_ntoa($addr);
+# get our public ip address from the server
+my $fwc = Funknet::Whois::Client->new( $config->whois_host, 
+                                       Port => $config->whois_port);
+$fwc->type('inetnum');
+my $inetnum = $fwc->query('MY_ADDRESS');
+my $public_ip = $inetnum->inetnum();
 
-# if IP has changed, we need 1st to update the funknet.conf file
-# as other bits use it 
+# and get the configured ip address from the interface.
+my $nic = new Net::Interface($opt{i}) or die "couldn't create Net::Interface object";
+my $nic_address = $nic->address();
+my $nic_ip = inet_ntoa($nic_address);
 
-if ($config->local_endpoint ne $ip_info)
-{
-	print STDERR "best update the funknet.conf\n";
-	$config->local_endpoint($ip_info);
-	$config->write();
+print STDERR "Public address: $public_ip, Interface address: $nic_ip\n";
+
+# if the two addresses differ, update the local_endpoint and
+# local_public_endpoint config params, else just local_endpoint.
+if ($public_ip ne $nic_ip) {
+    if ($public_ip ne $config->local_public_endpoint()) {
+	$config->local_public_endpoint($public_ip);
+        $config->write();
+    }
+    if ($nic_ip ne $config->local_endpoint()) {
+	$config->local_endpoint($nic_ip);
+        $config->write();
+    }
 }
+else {
+    if ($nic_ip ne $config->local_endpoint()) {
+	$config->local_endpoint($nic_ip);
+        $config->write();
+    }
+}    
 
-my $update_email = $config->update_email;
-my $key_id = $config->pgp_key_id;
+my $update_email   = $config->update_email;
+my $key_id         = $config->pgp_key_id;
 my $pgp_passphrase = $config->pgp_passphrase;
-my $pgp_key_dir = $config->pgp_key_dir;
-my $signing_email = $config->signing_email;
-my $from_email = $config->from_email;
-my $local_as = $config->local_as;
+my $pgp_key_dir    = $config->pgp_key_dir;
+my $signing_email  = $config->signing_email;
+my $from_email     = $config->from_email;
+my $local_as       = $config->local_as;
 
 my @mail_text;
 
@@ -130,12 +149,10 @@ foreach my $tunnel_object (@tunnel_objects)
 		next;
 	}
 
-	chomp($ip_info);
-
-	if($old_ip ne $ip_info)
+	if($old_ip ne $public_ip)
 	{
-		print STDERR "IP changed from $old_ip to $ip_info\n";
-		update_whois($old_ip, $ip_info, $tunnel_object);
+		print STDERR "IP changed from $old_ip to $public_ip\n";
+		update_whois($old_ip, $public_ip, $tunnel_object);
 	}
 	else
 	{
