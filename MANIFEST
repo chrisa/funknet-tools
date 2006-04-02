@@ -122,6 +122,7 @@ lib/Funknet/Whois/Update/Robot.pm
 lib/Funknet/Whois/Client.pm
 lib/Funknet/Whois/DirectMysql.pm
 lib/Funknet/Whois/Object.pm
+lib/Funknet/Whois/ObjectFile.pm
 lib/Funknet/Whois/ObjectDefs.pm
 lib/Funknet/Whois/ObjectGenerator.pm
 lib/Funknet/Whois/ObjectSyntax.pm
